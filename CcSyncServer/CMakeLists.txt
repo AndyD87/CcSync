@@ -1,3 +1,6 @@
+
+set ( CURRENT_PROJECT CcSyncServer)
+
 ########
 # Add Source Files
 ########
@@ -8,13 +11,17 @@ file (GLOB SOURCE_FILES
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
-add_executable( CcSyncServer ${SOURCE_FILES})
+if(WINDOWS)
+  CcSyncGenerateRcFileToCurrentDir(${CURRENT_PROJECT} SOURCE_FILES )
+endif()
+
+add_executable( ${CURRENT_PROJECT} ${SOURCE_FILES})
 
 # To keep Header an Source together, display them in same Directory
 # It will only work with IDE's wich are supporting this features
 SOURCE_GROUP( ""        FILES ${SOURCE_FILES})
 
-target_link_libraries ( CcSyncServer LINK_PUBLIC
+target_link_libraries ( ${CURRENT_PROJECT} LINK_PUBLIC
                               CcKernel
                               CcSync
 							                CcSql )
@@ -22,4 +29,4 @@ target_link_libraries ( CcSyncServer LINK_PUBLIC
 #################
 # Post configuration steps
 #################
-CcSyncSetInstall( CcSyncServer )
+CcSyncSetInstall( ${CURRENT_PROJECT} )

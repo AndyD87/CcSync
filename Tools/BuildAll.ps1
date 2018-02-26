@@ -1,7 +1,6 @@
 PARAM(
     [bool]$StopOnError = $true
 )
-
 function StartBuildProcess
 {
     PARAM(
@@ -14,7 +13,6 @@ function StartBuildProcess
     $CurrentDir  = (Get-Item .\).FullName
     $TestLog     = $CurrentDir+"\Test.log" 
     $SolutionDir = $PSScriptRoot+"\Solution"
-    $OutputDir   = $PSScriptRoot+"\Output"
     $CcOSRootDir = $PSScriptRoot+"\.."
 
     # Fist Clean Solution if Existing
@@ -22,13 +20,7 @@ function StartBuildProcess
     {
         Remove-Item $SolutionDir -Recurse -Force
     }
-    # Fist Clean Solution if Existing
-    if((Test-Path $OutputDir))
-    {
-        Remove-Item $OutputDir -Recurse -Force
-    }
     New-Item $SolutionDir -ItemType Directory
-    New-Item $OutputDir -ItemType Directory
     cd $SolutionDir
 
     $VisualStudioString = $VisualStudio
@@ -48,7 +40,7 @@ function StartBuildProcess
         {
             $AppendCmake2 = "-DCC_WARNING_AS_ERROR=TRUE"
         }
-        & "cmake.exe" "$CcOSRootDir" "-G" $VisualStudioString "-DCC_OUTPUT_DIR=`"$OutputDir`"" "$AppendCmake" "$AppendCmake2"
+        & "cmake.exe" "$CcOSRootDir" "-G" $VisualStudioString "$AppendCmake" "$AppendCmake2"
         if($LASTEXITCODE -ne 0)
         {
             cd $CurrentDir
@@ -90,11 +82,6 @@ function StartBuildProcess
         {
             Remove-Item $SolutionDir -Recurse -Force
         }
-        # Fist Clean Solution if Existing
-        if((Test-Path $OutputDir))
-        {
-            Remove-Item $OutputDir -Recurse -Force
-        }
     }
 }
 
@@ -114,7 +101,7 @@ if(Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.e
 }
 
 $Architectures  = @("win32", "x64")
-$Configurations = @("Release", "Debug") # Not required but possible to test : "RelWithDebInfo", "MinSizeRel")
+$Configurations = @("Release", "Debug") # Not required but possible to use: , "RelWithDebInfo", "MinSizeRel"
 $Statics = @("Static", "Shared")
     
 $CurrentDir  = (Get-Item .\).FullName
@@ -137,5 +124,3 @@ foreach($VisualStudio in $VisualStudios)
         }
     }
 }
-# ExampleCall StartBuildProcess "Visual Studio 12" "win32" "Release" "Shared"
-# ExampleCall StartBuildProcess "Visual Studio 12" "x64" "Debug" "Static"

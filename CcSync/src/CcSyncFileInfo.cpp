@@ -136,7 +136,7 @@ bool CcSyncFileInfo::fromJsonObject(const CcJsonObject& oJsonData)
 
   const CcJsonData& oSizeNode = oJsonData[CcSyncGlobals::FileInfo::Size];
   if (oSizeNode.isValue())
-    size() = oSizeNode.getValue().getUint64();
+    fileSize() = oSizeNode.getValue().getUint64();
 
   const CcJsonData& oModifiedNode = oJsonData[CcSyncGlobals::FileInfo::Modified];
   if (oModifiedNode.isValue())
@@ -177,8 +177,8 @@ CcJsonObject CcSyncFileInfo::getJsonObject() const
   if (getName().length() != 0)
     oFileData.add(CcJsonData(CcSyncGlobals::FileInfo::Name, getName()));
 
-  if (getSize() != 0)
-    oFileData.add(CcJsonData(CcSyncGlobals::FileInfo::Size, getSize()));
+  if (getFileSize() != 0)
+    oFileData.add(CcJsonData(CcSyncGlobals::FileInfo::Size, getFileSize()));
 
   if (getModified() != 0)
     oFileData.add(CcJsonData(CcSyncGlobals::FileInfo::Modified, getModified()));

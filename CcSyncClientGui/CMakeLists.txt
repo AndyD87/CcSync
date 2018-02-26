@@ -1,10 +1,12 @@
+
+set ( CURRENT_PROJECT CcSyncClientGui)
+
 ########
 # Add Source Files
 ########
 file (GLOB SOURCE_FILES
       "src/*.c"
       "src/*.cpp")
-
 
 ########
 # Add Source Files
@@ -20,13 +22,16 @@ SOURCE_GROUP( ""        FILES ${SOURCE_FILES})
 
 CcLoadGuiSettings()
 
-add_executable( CcSyncClientGui ${SOURCE_FILES} ${HEADER_FILES} )
+if(WINDOWS)
+  CcSyncGenerateRcFileToCurrentDir(${CURRENT_PROJECT} SOURCE_FILES )
+endif()
+add_executable( ${CURRENT_PROJECT} ${SOURCE_FILES} ${HEADER_FILES} )
 
 # To keep Header an Source together, display them in same Directory
 # It will only work with IDE's wich are supporting this features
 SOURCE_GROUP( ""        FILES ${SOURCE_FILES})
 
-target_link_libraries ( CcSyncClientGui LINK_PUBLIC
+target_link_libraries ( ${CURRENT_PROJECT} LINK_PUBLIC
                               CcGui
                               CcKernel
                               CcSync )
@@ -35,4 +40,4 @@ target_link_libraries ( CcSyncClientGui LINK_PUBLIC
 #################
 # Post configuration steps
 #################
-CcSyncSetInstall( CcSyncClientGui )
+CcSyncSetInstall( ${CURRENT_PROJECT} )

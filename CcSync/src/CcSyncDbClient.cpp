@@ -331,7 +331,7 @@ CcSyncFileInfoList CcSyncDbClient::getFileInfoListById(const CcString& sDirName,
     CcSyncFileInfo oFileInfo;
     oFileInfo.id() = oRow[0].getSize();
     oFileInfo.dirId() = oRow[1].getSize();
-    oFileInfo.size() = oRow[2].getSize();
+    oFileInfo.fileSize() = oRow[2].getUint64();
     oFileInfo.name() = oRow[3].getString();
     oFileInfo.modified() = oRow[4].getInt64();
     oFileInfo.crc() = oRow[5].getUint32();
@@ -404,7 +404,7 @@ CcSyncFileInfo CcSyncDbClient::getFileInfoById(const CcString& sDirName, uint64 
   {
     oFileInfo.id()        = oSqlResult[0][0].getSize();
     oFileInfo.dirId()  = oSqlResult[0][1].getSize();
-    oFileInfo.size()      = oSqlResult[0][2].getSize();
+    oFileInfo.fileSize()      = oSqlResult[0][2].getUint64();
     oFileInfo.name()      = oSqlResult[0][3].getString();
     oFileInfo.modified()  = oSqlResult[0][4].getInt64();
     oFileInfo.crc()       = oSqlResult[0][5].getUint32();
@@ -1064,7 +1064,7 @@ CcString CcSyncDbClient::getDbInsertFileList(const CcString& sDirName, const CcS
   sRet << sId << ",";
   sRet << CcString::fromNumber(oInfo.getDirId()) << ",";
   sRet << "'" << CcSqlite::escapeString(oInfo.getName()) << "',";
-  sRet << CcString::fromNumber(oInfo.getSize()) << ",";
+  sRet << CcString::fromNumber(oInfo.getFileSize()) << ",";
   sRet << CcString::fromNumber(oInfo.getModified()) << ",";
   sRet << "'" << CcSqlite::escapeString(oInfo.getAttributes()) << "',";
   sRet << CcString::fromNumber(oInfo.getCrc()) << ",";
@@ -1162,7 +1162,7 @@ CcString CcSyncDbClient::getDbInsertHistory(const CcString& sDirName, EBackupQue
   sRet << CcString::fromNumber((uint16) eQueueType) << ",";
   sRet << "'" << CcSqlite::escapeString(oFileInfo.getDirPath()) << "',";
   sRet << "'" << CcSqlite::escapeString(oFileInfo.getName()) << "',";
-  sRet << CcString::fromNumber(oFileInfo.getSize()) << ",";
+  sRet << CcString::fromNumber(oFileInfo.getFileSize()) << ",";
   sRet << CcString::fromNumber(oFileInfo.getModified()) << ",";
   sRet << "'" << CcSqlite::escapeString(oFileInfo.getAttributes()) << "',";
   sRet << CcString::fromNumber(oFileInfo.getCrc()) << ",";
@@ -1186,7 +1186,7 @@ CcString CcSyncDbClient::getDbUpdateFileList(const CcString& sDirName, const CcS
   //sRet << "`" << CcSyncGlobals::Database::FileList::Id       << "` = '" << sId +"',";
   sRet << "`" << CcSyncGlobals::Database::FileList::DirId    << "` = '" << CcString::fromNumber(oInfo.getDirId()) << "',";
   sRet << "`" << CcSyncGlobals::Database::FileList::Name     << "` = '" << CcSqlite::escapeString(oInfo.getName()) << "',";
-  sRet << "`" << CcSyncGlobals::Database::FileList::Size     << "` = '" << CcString::fromNumber(oInfo.getSize()) << "',";
+  sRet << "`" << CcSyncGlobals::Database::FileList::Size     << "` = '" << CcString::fromNumber(oInfo.getFileSize()) << "',";
   sRet << "`" << CcSyncGlobals::Database::FileList::Modified << "` = '" << CcString::fromNumber(oInfo.getModified()) << "',";
   sRet << "`" << CcSyncGlobals::Database::FileList::Attributes << "` = '" << CcSqlite::escapeString(oInfo.getAttributes()) << "',";
   sRet << "`" << CcSyncGlobals::Database::FileList::CRC      << "` = '" << CcString::fromNumber(oInfo.getCrc()) << "',";

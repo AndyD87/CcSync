@@ -100,7 +100,7 @@ public:
     { return m_uiDirId;}
   inline CcString& name ()
     { return m_sFilename; }
-  inline uint64& size()
+  inline uint64& fileSize()
     { return m_uiFileSize;}
   inline int64& modified()
     { return m_oLastModified; }
@@ -125,7 +125,7 @@ public:
     { return m_uiDirId;}
   inline const CcString& getName () const
     { return m_sFilename; }
-  inline const uint64& getSize() const
+  inline const uint64& getFileSize() const
     { return m_uiFileSize;}
   inline const int64& getModified() const
     { return m_oLastModified; }

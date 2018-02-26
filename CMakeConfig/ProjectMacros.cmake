@@ -54,7 +54,11 @@ endmacro()
 ################################################################################
 macro( CcSyncGenerateRcFileToCurrentDir ProjectName )
   set(PROJECT_NAME "${ProjectName}")
-  configure_file( ${CCSYNC_CMAKECONFIG_DIR}/InputFiles/ProjectVersion.rc.in ${CMAKE_CURRENT_SOURCE_DIR}/CcSyncVersion.rc @ONLY)
+  configure_file( ${CCSYNC_CMAKECONFIG_DIR}/InputFiles/ProjectVersion.rc.in ${CMAKE_CURRENT_SOURCE_DIR}/CcSyncVersion.rc.tmp @ONLY)
+  CcCopyFile(${CMAKE_CURRENT_SOURCE_DIR}/CcSyncVersion.rc.tmp ${CMAKE_CURRENT_SOURCE_DIR}/CcSyncVersion.rc)
+  if(${ARGC} GREATER 1)
+    list(APPEND ${ARGV1} "${CMAKE_CURRENT_SOURCE_DIR}/CcSyncVersion.rc")
+  endif(${ARGC} GREATER 1)
 endmacro()
 
 ################################################################################

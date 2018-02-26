@@ -12,6 +12,10 @@ file (GLOB SOURCE_FILES
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
+if(WINDOWS)
+  CcSyncGenerateRcFileToCurrentDir(${CURRENT_PROJECT} SOURCE_FILES )
+endif()
+                   
 add_executable( ${CURRENT_PROJECT} ${SOURCE_FILES} )
 
 # To keep Header an Source together, display them in same Directory

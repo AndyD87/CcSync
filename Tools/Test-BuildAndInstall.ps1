@@ -4,7 +4,8 @@ PARAM(
 
 $CurrentDir  = (Get-Item .\).FullName
 $TestLog     = $CurrentDir+"\Test.log" 
-$SolutionDir = $CurrentDir+"\Solution"
+$SolutionDir = $CurrentDir+"\Solution" 
+$OutputDir   = $CurrentDir+"\Output"
 
 $VisualStudios  = @("2017", "2015", "2013")
 $Architectures  = @("x86", "x64")
@@ -22,9 +23,9 @@ Import-Module ..\CcOS\ThirdParty\Powershell-Common\VisualStudio.ps1 -Force
 
 foreach($VisualStudio in $VisualStudios)
 {
-    foreach($Configuration in $Configurations)
+    foreach($Architecture in $Architectures)
     {
-        foreach($Architecture in $Architectures)
+        foreach($Configuration in $Configurations)
         {
             VisualStudio-GetEnv -Version $VisualStudio -Architecture $Architecture 
             $env:CL = "/MP"
@@ -34,7 +35,7 @@ foreach($VisualStudio in $VisualStudios)
             }
             New-Item $SolutionDir -ItemType Directory
             cd $SolutionDir
-            & "cmake.exe" "../../" "-G" "NMake Makefiles" "-DCMAKE_BUILD_TYPE=$Configurations"
+            & "cmake.exe" "../../" "-G" "NMake Makefiles" "-DCMAKE_BUILD_TYPE=$Configurations" "-DCC_OUTPUT_DIR=`"$OutputDir`""
             if($LASTEXITCODE -ne 0)
             {
                 cd $CurrentDir
@@ -51,13 +52,9 @@ foreach($VisualStudio in $VisualStudios)
                 if($StopOnError) { throw $Msg }
             }
             & "nmake" "install"
-            if((Test-Path $SolutionDir))
-            {
-                Remove-Item $SolutionDir -Recurse -Force
-            }
             cd $CurrentDir
             Add-Content $TestLog "Success: $VisualStudio $Architecture $Configuration"
+            return 0;
         }
-        return 0;
     }
 }

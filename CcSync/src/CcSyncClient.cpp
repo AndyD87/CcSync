@@ -970,14 +970,14 @@ bool CcSyncClient::receiveFile(CcFile* pFile, CcSyncFileInfo& oFileInfo)
   CcCrc32 oCrc;
   uint64 uiReceived = 0;
   size_t uiBufferSize = static_cast<size_t>(CcSyncGlobals::TransferSize);
-  if (oFileInfo.getSize() - uiReceived < CcSyncGlobals::TransferSize)
+  if (oFileInfo.getFileSize() < CcSyncGlobals::TransferSize)
   {
-    uiBufferSize = static_cast<size_t>(oFileInfo.getSize() - uiReceived);
+    uiBufferSize = static_cast<size_t>(oFileInfo.getFileSize());
   }
   CcByteArray oByteArray(uiBufferSize);
   while (bTransfer)
   {
-    if (uiReceived < oFileInfo.getSize())
+    if (uiReceived < oFileInfo.getFileSize())
     {
       size_t uiReadSize = m_oSocket.readArray(oByteArray, false);
       if (uiReadSize <= uiBufferSize)
@@ -1532,7 +1532,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
     {
       oClientFileInfo.fromSystemFile(false);
       oClientFileInfo = oServerFileInfo;;
-      if (oClientFileInfo.getSize() == oServerFileInfo.getSize() &&
+      if (oClientFileInfo.getFileSize() == oServerFileInfo.getFileSize() &&
           oClientFileInfo.fromSystemFile(true) &&
           oClientFileInfo.getCrc() == oServerFileInfo.getCrc())
       {
@@ -1569,7 +1569,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
       oClientFileInfo.fromSystemFile(false);
       if (oClientFileInfo.modified() > oServerFileInfo.modified())
       {
-        if (oClientFileInfo.getSize() == oServerFileInfo.getSize() && 
+        if (oClientFileInfo.getFileSize() == oServerFileInfo.getFileSize() &&
             oClientFileInfo.fromSystemFile(true) &&
             oClientFileInfo.getCrc() == oServerFileInfo.getCrc())
         {
@@ -1596,7 +1596,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
       }
       else if (oClientFileInfo.modified() < oServerFileInfo.modified())
       {
-        if (oClientFileInfo.getSize() == oServerFileInfo.getSize() &&
+        if (oClientFileInfo.getFileSize() == oServerFileInfo.getFileSize() &&
             oClientFileInfo.getCrc() == oServerFileInfo.getCrc())
         {
           if (oDirectory.fileListUpdate(oServerFileInfo, false))
@@ -1620,7 +1620,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
       }
       else
       {
-        if (oClientFileInfo.getSize() == oServerFileInfo.getSize() &&
+        if (oClientFileInfo.getFileSize() == oServerFileInfo.getFileSize() &&
             oClientFileInfo.getCrc() == oServerFileInfo.getCrc())
         {
           if (oDirectory.fileListUpdate(oServerFileInfo, false))
