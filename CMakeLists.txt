@@ -16,6 +16,14 @@ include( ${CMAKE_CURRENT_SOURCE_DIR}/VERSION.cmake )
 include( ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig/CcMacros.cmake )
 include( ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig/ProjectMacros.cmake )
 
+################################################################################
+# Setup Toolchain globaly
+################################################################################
+# Load Board settings if defined
+if(DEFINED CCOS_BOARD)
+  include( ${CCOS_BOARD} )
+endif()
+
 if(WINDOWS)
   set(CMAKE_INSTALL_PREFIX "C:/Program Files/CcSync")
 endif()
@@ -26,19 +34,7 @@ endif()
 project("CcSync" VERSION "${CCSYNC_VERSION_CMAKE}")
 
 ################################################################################
-# Setup Debug
-################################################################################
-if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
-  message("- Build-Type set to ${CMAKE_BUILD_TYPE}")
-  set(CCSYNC_BUILD_TYPE "DEBUG" )
-  set(CMAKE_VERBOSE_MAKEFILE          ON)
-else()
-  message("- Build-Type set to Release")
-  set(CCSYNC_BUILD_TYPE "RELEASE" )
-endif()
-
-################################################################################
-# Setup Output Paths
+# Setup Output Directory if not set
 ################################################################################
 # To be able to overwrite global output root use -DCC_OUTPUT_DIR=/path on configuration
 if(NOT CC_OUTPUT_DIR)
@@ -61,6 +57,11 @@ add_subdirectory(CcSync)
 add_subdirectory(CcSyncServer)
 add_subdirectory(CcSyncClient)
 add_subdirectory(CcSyncClientGui)
+
+################################################################################
+# Update dokumentation
+################################################################################
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Documents/Doxygen)
 
 
 set(CPACK_PACKAGE_DESCRIPTION         "CcSync - Backup System")

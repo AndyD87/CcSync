@@ -81,12 +81,7 @@ CcSyncClient::CcSyncClient(CcSyncClient&& oToMove)
 
 CcSyncClient::~CcSyncClient(void)
 {
-  close();
-  m_pAccount = nullptr;
-  m_pDatabase = nullptr;
-  m_oBackupDirectories.clear();
-  m_oRequest.data().clear();
-  m_oResponse.data().clear();
+  deinit();
 }
 
 CcSyncClient& CcSyncClient::operator=(const CcSyncClient& oToCopy)
@@ -119,6 +114,11 @@ bool CcSyncClient::login()
         m_bLogin = true;
       }
     }
+  }
+  if(m_bLogin == false)
+  {
+    // Logout and cleanup
+    logout();
   }
   return m_bLogin;
 }
@@ -169,6 +169,14 @@ bool CcSyncClient::serverRescan(bool bDeep)
     }
   }
   return false;
+}
+
+void CcSyncClient::cleanDatabase()
+{
+  for (CcSyncDirectory& oDirectory : m_oBackupDirectories)
+  {
+    m_pDatabase->cleanDirectory(oDirectory.getName());
+  }
 }
 
 void CcSyncClient::doRemoteSync(const CcString& sDirectoryName)
@@ -692,11 +700,20 @@ bool CcSyncClient::changeHostname(const CcString& sHostName)
       sFullNewDir.appendPath(CcSyncGlobals::ConfigDirName);
       sFullOldDir.appendPath(sOldDir);
       sFullNewDir.appendPath(sNewDir);
+      deinit();
       bSuccess = CcDirectory::move(sFullOldDir, sFullNewDir);
-      if (!bSuccess)
+      if (bSuccess)
       {
-        CcSyncLog::writeError("Failed to move AccountDir from " + sFullOldDir + " to " + sFullNewDir, ESyncLogTarget::Client);
+        if (selectAccount(sNewDir))
+        {
+          if (setupDatabase())
+          {
+            bSuccess = true;
+          }
+        }
       }
+      if(!bSuccess)
+        CcSyncLog::writeError("Failed to move AccountDir from " + sFullOldDir + " to " + sFullNewDir, ESyncLogTarget::Client);
     }
   }
   return bSuccess;
@@ -713,8 +730,7 @@ void CcSyncClient::remove(CcSyncClient* pToRemove)
 {
   if (pToRemove != nullptr)
   {
-    CCMONITORDELETE(pToRemove);
-    delete pToRemove;
+    CCDELETE(pToRemove);
   }
 };
 
@@ -725,6 +741,16 @@ void CcSyncClient::init(const CcString& sConfigFile)
   {
     CcSyncLog::writeDebug("No configuration file in config-directory", ESyncLogTarget::Client);
   }
+}
+
+void CcSyncClient::deinit()
+{
+  close();
+  m_pAccount = nullptr;
+  m_pDatabase = nullptr;
+  m_oBackupDirectories.clear();
+  m_oRequest.data().clear();
+  m_oResponse.data().clear();
 }
 
 bool CcSyncClient::setupDatabase()
@@ -829,7 +855,7 @@ bool CcSyncClient::sendRequestGetResponse()
   if (connect())
   {
     m_oResponse.clear();
-    if (m_oSocket.writeArray(oJsonDoc.getJsonDocument()))
+    if (m_oSocket.writeArray(oJsonDoc.getDocument()))
     {
       if (m_oRequest.getCommandType() != ESyncCommandType::Close)
       {
@@ -851,7 +877,7 @@ bool CcSyncClient::sendRequestGetResponse()
         {
           CcSyncLog::writeError("Read from socket failed, try reconnection", ESyncLogTarget::Client);
           CcSyncLog::writeError("Request:", ESyncLogTarget::Client);
-          CcSyncLog::writeError(oJsonDoc.getJsonDocument(), ESyncLogTarget::Client);
+          CcSyncLog::writeError(oJsonDoc.getDocument(), ESyncLogTarget::Client);
           CcSyncLog::writeError("Response 24 signs:", ESyncLogTarget::Client);
           CcSyncLog::writeError(sRead.substr(0,24), ESyncLogTarget::Client);
         }
@@ -859,7 +885,7 @@ bool CcSyncClient::sendRequestGetResponse()
         {
           CcSyncLog::writeError("Incoming data exceed maximum", ESyncLogTarget::Client);
           CcSyncLog::writeError("Request:", ESyncLogTarget::Client);
-          CcSyncLog::writeError(oJsonDoc.getJsonDocument(), ESyncLogTarget::Client);
+          CcSyncLog::writeError(oJsonDoc.getDocument(), ESyncLogTarget::Client);
           CcSyncLog::writeError("Response 24 signs:", ESyncLogTarget::Client);
           CcSyncLog::writeError(sRead.substr(0, 24), ESyncLogTarget::Client);
           reconnect();
@@ -1099,10 +1125,12 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
     {
       if (oClientFiles.containsFile(oServerFileInfo.getId()))
       {
-        const CcSyncFileInfo& oFileInfo = oClientFiles.getFile(oServerFileInfo.getId());
+        CcSyncFileInfo& oFileInfo = oClientFiles.getFile(oServerFileInfo.getId());
         if (oFileInfo != oServerFileInfo)
         {
-          oDirectory.fileListUpdate(oServerFileInfo, false);
+          // @todo always downloading works, okay, but it's not allways necessary (rename, etc)
+          oDirectory.queueDownloadFile(oServerFileInfo);
+          oDirectory.fileListRemove(oFileInfo, false, false);
         }
         oClientFiles.removeFile(oServerFileInfo.getId());
       }

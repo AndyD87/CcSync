@@ -45,6 +45,7 @@ class CcSyncServer;
 class CcSyncAccount;
 class CcSqlite;
 class CcFile;
+class CcSyncServerWorkerPrivate;
 
 /**
  * @brief Class impelmentation
@@ -95,6 +96,7 @@ private:
   void doDirectoryRemoveFile();
   void doDirectoryDownloadFile();
 private:
+  CcSyncServerWorkerPrivate* m_pPrivate;
   CcSyncServer*   m_oServer   = nullptr;
   CcSocket        m_oSocket;
   CcSyncUser      m_oUser;

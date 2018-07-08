@@ -154,7 +154,6 @@ void CcSyncClientApp::runDaemon()
 void CcSyncClientApp::runCli()
 {
   bool bSuccess = true;
-  // @todo add accountname from commandline, or current user
   m_poSyncClient = CcSyncClient::create();
   if (!m_poSyncClient->isConfigAvailable())
   {
@@ -336,10 +335,10 @@ bool CcSyncClientApp::createAccount()
   bool bSuccess = false;
   if (m_poSyncClient != nullptr)
   {
-    CcSyncConsole::writeLine("Setup new Configuration");
+    CcSyncConsole::writeLine("Setup new Account");
+    CcString sAccount = CcSyncConsole::query("Name");
     CcString sServer = CcSyncConsole::query("Server");
     CcString sPort = CcSyncConsole::query("Port [27500]", CcSyncGlobals::DefaultPortStr);
-    CcString sAccount = CcSyncConsole::query("Account");
     if (m_poSyncClient->selectAccount(sAccount + "@" + sServer))
     {
       CcString sAnswer = CcSyncConsole::query("Account already existing, change password? [y/N]", "n");
@@ -366,9 +365,10 @@ bool CcSyncClientApp::editAccount(const CcString& sAccount)
     if (m_poSyncClient->selectAccount(sAccount))
     {
       bSuccess = true;
-      CcSyncConsole::writeLine("Setup new Configuration");
-      CcString sServer = CcSyncConsole::query("Server ["+ m_poSyncClient->getCurrentAccountConfig()->getServer().getHostname() +"]", m_poSyncClient->getCurrentAccountConfig()->getServer().getHostname());
-      if (sServer != m_poSyncClient->getCurrentAccountConfig()->getServer().getHostname())
+      CcSyncConsole::writeLine("Edit Account");
+      CcString sOldServer = m_poSyncClient->getCurrentAccountConfig()->getServer().getHostname();
+      CcString sServer = CcSyncConsole::query("Server ["+ sOldServer +"]", m_poSyncClient->getCurrentAccountConfig()->getServer().getHostname());
+      if (sServer != sOldServer)
       {
         bSuccess &= m_poSyncClient->changeHostname(sServer);
       }
@@ -376,24 +376,35 @@ bool CcSyncClientApp::editAccount(const CcString& sAccount)
       {
         CcSyncConsole::writeLine("  not changed");
       }
-      CcString sPort = CcSyncConsole::query("Port [" + m_poSyncClient->getCurrentAccountConfig()->getServer().getPortString() + "]", m_poSyncClient->getCurrentAccountConfig()->getServer().getPortString());
-      if (sPort != m_poSyncClient->getCurrentAccountConfig()->getServer().getPortString())
+      if (bSuccess)
       {
-        bSuccess &= m_poSyncClient->getCurrentAccountConfig()->changePort(sPort);
+        CcString sPort = CcSyncConsole::query("Port [" + m_poSyncClient->getCurrentAccountConfig()->getServer().getPortString() + "]", m_poSyncClient->getCurrentAccountConfig()->getServer().getPortString());
+        if (sPort != m_poSyncClient->getCurrentAccountConfig()->getServer().getPortString())
+        {
+          bSuccess &= m_poSyncClient->getCurrentAccountConfig()->changePort(sPort);
+        }
+        else
+        {
+          CcSyncConsole::writeLine("  not changed");
+        }
+        if (!bSuccess &&
+            sServer != sOldServer)
+        {
+          bSuccess &= m_poSyncClient->changeHostname(sOldServer);
+        }
       }
-      else
+      if (bSuccess)
       {
-        CcSyncConsole::writeLine("  not changed");
-      }
-      CcString sAnswer = CcSyncConsole::query("Change password? [y/N]", "n");
-      if (sAnswer.toLower()[0] == 'y')
-      {
-        CcString sPassword = CcSyncConsole::queryHidden("Password");
-        bSuccess &= m_poSyncClient->getCurrentAccountConfig()->changePassword(sPassword);
-      }
-      else
-      {
-        CcSyncConsole::writeLine("  not changed");
+        CcString sAnswer = CcSyncConsole::query("Change password? [y/N]", "n");
+        if (sAnswer.toLower()[0] == 'y')
+        {
+          CcString sPassword = CcSyncConsole::queryHidden("Password");
+          bSuccess &= m_poSyncClient->getCurrentAccountConfig()->changePassword(sPassword);
+        }
+        else
+        {
+          CcSyncConsole::writeLine("  not changed");
+        }
       }
     }
     else

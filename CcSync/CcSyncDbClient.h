@@ -102,6 +102,8 @@ public:
   bool setupDirectory(const CcString& sDirName);
   bool removeDirectory(const CcString& sDirName);
 
+  void cleanDirectory(const CcString& sDirName);
+
   void beginTransaction();
   void endTransaction();
 

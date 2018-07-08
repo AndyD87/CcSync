@@ -126,7 +126,7 @@ CcString CcSyncRequest::getPassword()
 CcByteArray CcSyncRequest::getBinary()
 {
   CcJsonDocument oJsonDoc(m_oData);
-  CcByteArray oRet = oJsonDoc.getJsonDocument();
+  CcByteArray oRet = oJsonDoc.getDocument();
   return oRet;
 }
 

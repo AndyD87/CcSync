@@ -143,7 +143,7 @@ CcXmlNode CcSyncAccountConfig::getXmlNode() const
 
     for (CcSyncDirectoryConfig& oDirConfig : m_oDirectoryList)
     {
-      oAccountNode.append(std::move(oDirConfig.getXmlNode()));
+      oAccountNode.append(oDirConfig.getXmlNode());
     }
   }
   return oAccountNode;

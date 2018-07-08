@@ -64,6 +64,7 @@ bool CcSyncFileInfo::operator==(const CcSyncFileInfo& oToCompare) const
 
 bool CcSyncFileInfo::operator==(const CcFileInfo& oToCompare) const
 {
+  bool bRet = false;
   if (oToCompare.getName() == m_sFilename)
   {
     if (getIsFile())
@@ -71,15 +72,23 @@ bool CcSyncFileInfo::operator==(const CcFileInfo& oToCompare) const
       if (oToCompare.getModified().getTimestampS() == m_oLastModified &&
           oToCompare.getFileSize() == m_uiFileSize)
       {
-        return true;
+        bRet = true;
+      }
+      else
+      {
+        bRet = false;
       }
     }
     else
     {
-      return true;
+      bRet = true;
     }
   }
-  return false;
+  else
+  {
+    bRet = false;
+  }
+  return bRet;
 }
 
 bool CcSyncFileInfo::fromSystemFile(bool bWithCrc)

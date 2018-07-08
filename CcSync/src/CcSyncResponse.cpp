@@ -105,10 +105,18 @@ void CcSyncResponse::init(ESyncCommandType eCommandType)
 
 bool CcSyncResponse::hasError()
 {
+  bool bRet = false;
   CcJsonData& rErrorValue = m_oData[CcSyncGlobals::Commands::ErrorCode];
   if (rErrorValue.isValue())
-    return true;
-  return false;
+  {
+    bool bConvOk = false;
+    CcStatus oStatus = rErrorValue.getValue().getUint32(&bConvOk);
+    if (bConvOk && oStatus)
+    {
+      bRet = oStatus;
+    }
+  }
+  return bRet;
 }
 
 CcStatus CcSyncResponse::getError()
@@ -129,7 +137,7 @@ CcString CcSyncResponse::getErrorMsg()
 CcByteArray CcSyncResponse::getBinary()
 {
   CcJsonDocument oJsonDoc(m_oData);
-  CcByteArray oRet = oJsonDoc.getJsonDocument();
+  CcByteArray oRet = oJsonDoc.getDocument();
   return oRet;
 }
 

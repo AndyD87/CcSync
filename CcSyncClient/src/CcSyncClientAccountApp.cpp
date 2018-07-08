@@ -46,6 +46,8 @@ namespace AccountStrings
   static const CcString SelectDesc("[dir] select available directory to change settings");
   static const CcString Reset("reset");
   static const CcString ResetDesc("reset current working queue");
+  static const CcString Rebuild("rebuild");
+  static const CcString RebuildDesc("Clean database and rebuild with server.");
   static const CcString Admin("admin");
   static const CcString AdminDesc("if you are admin on server, open admin console");
   static const CcString Sync("sync");
@@ -109,6 +111,24 @@ void CcSyncClientAccountApp::run()
       {
         CcSyncConsole::writeLine("not enough arguments");
       }
+    }
+    else if (oArguments[0].compareInsensitve(AccountStrings::Rebuild))
+    {
+      m_poSyncClient->cleanDatabase();
+      m_poSyncClient->updateFromRemoteAccount();
+      CcSyncConsole::writeLine("Reset Queue");
+      m_poSyncClient->resetQueues();
+      CcSyncConsole::writeLine("Remote sync: scan");
+      m_poSyncClient->doRemoteSyncAll();
+      CcSyncConsole::writeLine("Remote sync: do");
+      m_poSyncClient->doQueues();
+      CcSyncConsole::writeLine("Remote sync: done");
+      CcSyncConsole::writeLine("Local sync: scan");
+      m_poSyncClient->doLocalSyncAll();
+      CcSyncConsole::writeLine("Local sync: do");
+      m_poSyncClient->doQueues();
+      CcSyncConsole::writeLine("Local sync: done");
+
     }
     else if (oArguments[0].compareInsensitve(AccountStrings::Reset))
     {
@@ -180,6 +200,7 @@ void CcSyncClientAccountApp::run()
       CcSyncConsole::printHelpLine(AccountStrings::List, 20, AccountStrings::ListDesc);
       CcSyncConsole::printHelpLine(AccountStrings::Logout, 20, AccountStrings::LogoutDesc);
       CcSyncConsole::printHelpLine(AccountStrings::Reset, 20, AccountStrings::ResetDesc);
+      CcSyncConsole::printHelpLine(AccountStrings::Rebuild, 20, AccountStrings::RebuildDesc);
       CcSyncConsole::printHelpLine(AccountStrings::Select, 20, AccountStrings::SelectDesc);
       CcSyncConsole::printHelpLine(AccountStrings::Sync, 20, AccountStrings::SyncDesc);
       CcSyncConsole::printHelpLine(AccountStrings::Verify, 20, AccountStrings::VerifyDesc);

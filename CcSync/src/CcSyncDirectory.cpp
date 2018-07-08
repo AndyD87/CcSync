@@ -182,8 +182,26 @@ bool CcSyncDirectory::fileListUpdate(CcSyncFileInfo& oFileInfo, bool bMoveToHist
         sPathInHistory.append(oFileInfo.getName());
         if (CcFile::move(oFileInfo.getSystemFullPath(), sPathInHistory))
         {
+          oFileInfo.changed() = oCurrentTime.getTimestampS();
+          if(m_pDatabase->fileListUpdate(getName(), oFileInfo))
+          {
+            bRet = historyInsert(EBackupQueueType::UpdateFile, oFileInfo);
+          }
+        }
+        else if (!CcFile::exists(oFileInfo.getSystemFullPath()))
+        {
+          oFileInfo.changed() = oCurrentTime.getTimestampS();
+          CcSyncLog::writeWarning("File was not existing to move: "+oFileInfo.getSystemFullPath(), ESyncLogTarget::Common);
           bRet = m_pDatabase->fileListUpdate(getName(), oFileInfo);
         }
+        else
+        {
+          CcSyncLog::writeError("Moving File to History failed: "+sPathInHistory, ESyncLogTarget::Common);
+        }
+      }
+      else
+      {
+        CcSyncLog::writeError("Creating Path in History failed: "+sPathInHistory, ESyncLogTarget::Common);
       }
     }
   }

@@ -36,15 +36,28 @@
 #include "CcSyncServerDirectory.h"
 #include "CcSqlite.h"
 #include "Hash/CcCrc32.h"
+#include "CcSyncServerRescanWorker.h"
+
+class CcSyncServerWorkerPrivate
+{
+public:
+  CcSyncServerWorkerPrivate(CcSyncServer* oServer) :
+    oRescanWorker(oServer)
+  { }
+  CcSyncServerRescanWorker oRescanWorker;
+};
 
 CcSyncServerWorker::CcSyncServerWorker(CcSyncServer* oServer, CcSocket oSocket) :
   m_oServer(oServer),
   m_oSocket(oSocket)
 {
+  m_pPrivate = new CcSyncServerWorkerPrivate(oServer);
+  CCMONITORNEW(m_pPrivate);
 }
 
 CcSyncServerWorker::~CcSyncServerWorker(void)
 {
+  CCDELETE(m_pPrivate);
 }
 
 void CcSyncServerWorker::run()
@@ -393,11 +406,9 @@ void CcSyncServerWorker::doServerRescan()
       m_oUser.getRights() >= ESyncRights::Admin)
   {
     bool bDeep = m_oRequest.getServerRescan();
-    for (const CcSyncServerAccount& oAccount : m_oServer->config().getAccountList())
+    if (m_pPrivate->oRescanWorker.start(bDeep))
     {
-      CcSyncUser oUser = m_oServer->getUserByName( oAccount.getName());
-      CcSyncServerDirectory oServerDir(oUser);
-      oServerDir.rescanDirs(bDeep);
+      m_oResponse.setError(EStatus::NoError, "Rescan in progress, it cant take a lot of time.");
     }
     m_oResponse.setError(EStatus::CommandNotImplemented, "Currently not implemented");
   }
@@ -1080,17 +1091,35 @@ void CcSyncServerWorker::doDirectoryDownloadFile()
       m_pDirectory.getFullDirPathById(oFileInfo);
       if (CcFile::exists(oFileInfo.getSystemFullPath()))
       {
-        m_oResponse.addFileInfo(oFileInfo);
-        sendResponse();
-        if (sendFile(oFileInfo.getSystemFullPath()))
+        bool bSuccess = true;
+        // Check if Database file is up to date with disk file
+        CcFileInfo oFileInfoLocal = CcFile(oFileInfo.getSystemFullPath()).getInfo();
+        if(oFileInfo != oFileInfoLocal)
         {
-          m_oResponse.init(ESyncCommandType::Crc);
+          // We have to update our file info in Database
+          oFileInfo.fromSystemFile(true);
+          bSuccess = m_pDirectory.fileListUpdate(oFileInfo, false);
+          if(bSuccess == false)
+          {
+            CcSyncLog::writeDebug("DirectoryDownloadFile send File failed:");
+            CcSyncLog::writeDebug("    " + oFileInfo.getSystemFullPath());
+            m_oResponse.setError(EStatus::FSFileError, "File in database differ with local");
+          }
         }
-        else
+        if(bSuccess == true)
         {
-          CcSyncLog::writeDebug("DirectoryDownloadFile send File failed:");
-          CcSyncLog::writeDebug("    " + oFileInfo.getSystemFullPath());
-          m_oResponse.setError(EStatus::FSFileCrcFailed, "FileTransfer failed");
+          m_oResponse.addFileInfo(oFileInfo);
+          sendResponse();
+          if (sendFile(oFileInfo.getSystemFullPath()))
+          {
+            m_oResponse.init(ESyncCommandType::Crc);
+          }
+          else
+          {
+            CcSyncLog::writeDebug("DirectoryDownloadFile send File failed:");
+            CcSyncLog::writeDebug("    " + oFileInfo.getSystemFullPath());
+            m_oResponse.setError(EStatus::FSFileCrcFailed, "FileTransfer failed");
+          }
         }
       }
       else

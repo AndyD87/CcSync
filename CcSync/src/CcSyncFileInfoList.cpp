@@ -26,6 +26,7 @@
  */
 #include "CcSyncFileInfoList.h"
 #include "CcSyncGlobals.h"
+#include "CcStatic.h"
 
 bool CcSyncFileInfoList::containsFile(const CcString& sFilename) const
 {
@@ -56,7 +57,7 @@ CcSyncFileInfo& CcSyncFileInfoList::getFile(const CcString& sFilename)
     if (oFileInfo.getName() == sFilename)
       return oFileInfo;
   }
-  return CCNULLREF(CcSyncFileInfo);
+  return CcStatic::getNullRef<CcSyncFileInfo>();
 }
 
 CcSyncFileInfo& CcSyncFileInfoList::getFile(uint64 uiFileId)
@@ -66,7 +67,7 @@ CcSyncFileInfo& CcSyncFileInfoList::getFile(uint64 uiFileId)
     if (oFileInfo.getId() == uiFileId)
       return oFileInfo;
   }
-  return CCNULLREF(CcSyncFileInfo);
+  return CcStatic::getNullRef<CcSyncFileInfo>();
 }
 
 const CcSyncFileInfo& CcSyncFileInfoList::getFile(const CcString& sFilename) const
@@ -76,7 +77,7 @@ const CcSyncFileInfo& CcSyncFileInfoList::getFile(const CcString& sFilename) con
     if (oFileInfo.getName() == sFilename)
       return oFileInfo;
   }
-  return CCNULLREF(CcSyncFileInfo);
+  return CcStatic::getConstNullRef<CcSyncFileInfo>();
 }
 
 const CcSyncFileInfo& CcSyncFileInfoList::getFile(uint64 uiFileId) const
@@ -86,7 +87,7 @@ const CcSyncFileInfo& CcSyncFileInfoList::getFile(uint64 uiFileId) const
     if (oFileInfo.getId() == uiFileId)
       return oFileInfo;
   }
-  return CCNULLREF(CcSyncFileInfo);
+  return CcStatic::getConstNullRef<CcSyncFileInfo>();
 }
 
 bool CcSyncFileInfoList::removeFile(const CcString& sFilename)

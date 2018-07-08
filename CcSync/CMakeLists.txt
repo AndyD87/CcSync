@@ -34,5 +34,4 @@ target_link_libraries ( ${CURRENT_PROJECT} LINK_PUBLIC
 # Post configuration steps
 #################
 CcSyncTargetIncludeDirs( ${CURRENT_PROJECT} )
-CcSyncSetInstall( ${CURRENT_PROJECT} )
-#CcSyncSetInstallConfig ( ${CURRENT_PROJECT} )
+CcSyncLibSettings(${CURRENT_PROJECT} TRUE TRUE ${SOURCE_FILES})

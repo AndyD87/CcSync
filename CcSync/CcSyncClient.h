@@ -89,6 +89,7 @@ public:
   void logout();
   bool isAdmin();
   bool serverRescan(bool bDeep=false);
+  void cleanDatabase();
   void doRemoteSync(const CcString& sDirectoryName);
   void doRemoteSyncAll();
   void doLocalSync(const CcString& sDirectoryName, bool bDeepScan = false);
@@ -135,6 +136,7 @@ public:
 
 private: // Methods
   void init(const CcString& sConfigFile);
+  void deinit();
   bool setupDatabase();
   bool checkSqlTables();
   bool setupSqlTables();

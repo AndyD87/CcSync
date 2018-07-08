@@ -69,8 +69,8 @@ bool CcSyncClientServerApp::createAccount()
   bool bSuccess = false;
   if (m_poSyncClient != nullptr)
   {
-    CcSyncConsole::writeLine("Setup new Configuration");
-    CcString sAccount = CcSyncConsole::query("Account");
+    CcSyncConsole::writeLine("Setup new Account");
+    CcString sAccount = CcSyncConsole::query("Name");
     CcString sPassword = CcSyncConsole::queryHidden("Password");
     bSuccess = m_poSyncClient->addRemoteAccount(sAccount, sPassword);
   }

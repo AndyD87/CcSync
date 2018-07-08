@@ -229,6 +229,22 @@ bool CcSyncDbClient::removeDirectory(const CcString& sDirName)
   return bRet;
 }
 
+void CcSyncDbClient::cleanDirectory(const CcString& sDirName)
+{
+  CcString sSql;
+  m_pDatabase->beginTransaction();
+  sSql << "DELETE FROM '" << sDirName << CcSyncGlobals::Database::DirectoryListAppend << "'";
+  m_pDatabase->query(sSql);
+  sSql << "DELETE FROM '" << sDirName << CcSyncGlobals::Database::FileListAppend << "'";
+  m_pDatabase->query(sSql);
+  sSql << "DELETE FROM '" << sDirName << CcSyncGlobals::Database::QueueAppend << "'";
+  m_pDatabase->query(sSql);
+  sSql << "DELETE FROM '" << sDirName << CcSyncGlobals::Database::HistoryAppend << "'";
+  m_pDatabase->query(sSql);
+  setupDirectory(sDirName);
+  m_pDatabase->endTransaction();
+}
+
 void CcSyncDbClient::beginTransaction()
 {
   if (m_uiTransactionCnt == 0)
