@@ -1,0 +1,29 @@
+sudo: required
+# Enable C++ support
+language: cpp
+
+# Compiler selection
+compiler:
+  - gcc
+  - clang
+  
+# Setup travis vm
+install:
+  - sudo apt-get install libssl-dev
+  - sudo apt-get install libx11-dev
+
+# Build steps
+script:
+  - mkdir build
+  - cd build
+  - cmake ../
+  - make -j $(nproc)
+  - make test
+  - sudo make install
+  - cd ..
+# Clean previous build
+  - rm -rf build
+  - rm -rf Output
+  - cd Tools
+  - sh Test-Builds.sh
+  
