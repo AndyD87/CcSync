@@ -5,6 +5,9 @@ A little overview:
 * Buildsystem: cmake
 * BugTracker: comming soon
 
+Current status:
+* [![Build Status](https://travis-ci.org/AndyD87/CcSync.svg?branch=master)](https://travis-ci.org/AndyD87/CcSync)
+
 ## Build on Windows
 
 For building on Windows, at least Visual Studio 2013 is required, earlier Version doesn't fully support c++11.
