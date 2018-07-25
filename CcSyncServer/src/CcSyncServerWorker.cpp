@@ -268,7 +268,12 @@ bool CcSyncServerWorker::receiveFile(CcFile* pFile, CcSyncFileInfo& oFileInfo)
     if (uiReceived < oFileInfo.getFileSize())
     {
       uiLastReceived = m_oSocket.readArray(oByteArray, false);
-      if (uiLastReceived > 0)
+      if(oByteArray.size() < uiLastReceived)
+      {
+        bRet = false;
+        bTransfer = false;
+      }
+      else if (uiLastReceived > 0)
       {
         oCrc.append(oByteArray.getArray(), uiLastReceived);
         uiReceived += uiLastReceived;
@@ -323,7 +328,7 @@ bool CcSyncServerWorker::sendFile(const CcString& sPath)
     while (bTransfer)
     {
       uiLastTransferSize = oFile.readArray(oBuffer, false);
-      if (uiLastTransferSize > 0)
+      if (uiLastTransferSize > 0 && uiLastTransferSize <= oBuffer.size() )
       {
         oCrc.append(oBuffer.getArray(), uiLastTransferSize);
         if (m_oSocket.write(oBuffer.getArray(), uiLastTransferSize) != uiLastTransferSize)

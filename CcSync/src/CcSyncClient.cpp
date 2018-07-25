@@ -620,10 +620,26 @@ CcString CcSyncClient::getAccountInfo()
     sRet << "Database: " << m_pAccount->getDatabaseFilePath() << CcGlobalStrings::EolOs;
     for (const CcSyncDirectoryConfig& oDirConfig : m_pAccount->getDirectoryList())
     {
+      sRet << "--------------------" << oDirConfig.getName() << CcGlobalStrings::EolOs;
       sRet << "Directory: " << oDirConfig.getName() << CcGlobalStrings::EolOs;
       sRet << "  Path:    " << oDirConfig.getLocation() << CcGlobalStrings::EolOs;
-      sRet << "  BCmd:    " << oDirConfig.getBackupCommand() << CcGlobalStrings::EolOs;
-      sRet << "  RCmd:    " << oDirConfig.getRestoreCommand() << CcGlobalStrings::EolOs;
+      sRet << "  Options: " << oDirConfig.getLocation() << CcGlobalStrings::EolOs;
+      if(oDirConfig.getBackupCommand().length() > 0 )
+      {
+        sRet << "    BCmd:    " << oDirConfig.getBackupCommand() << CcGlobalStrings::EolOs;
+      }
+      if(oDirConfig.getRestoreCommand().length() > 0 )
+      {
+        sRet << "    RCmd:    " << oDirConfig.getRestoreCommand() << CcGlobalStrings::EolOs;
+      }
+      if(oDirConfig.getGroupId() != UINT32_MAX )
+      {
+        sRet << "    GroupId: " << CcString::fromNumber(oDirConfig.getGroupId()) << CcGlobalStrings::EolOs;
+      }
+      if(oDirConfig.getUserId() != UINT32_MAX )
+      {
+        sRet << "    UserId:  " << CcString::fromNumber(oDirConfig.getUserId()) << CcGlobalStrings::EolOs;
+      }
     }
     if (m_pAccount->isValid())
     {
@@ -865,7 +881,7 @@ bool CcSyncClient::sendRequestGetResponse()
         do
         {
           uiReadSize = m_oSocket.readArray(oLastRead, false);
-          if (uiReadSize <= CcSyncGlobals::MaxResponseSize)
+          if ( uiReadSize > 0 && uiReadSize <= CcSyncGlobals::MaxResponseSize)
           {
             sRead.append(oLastRead, 0, uiReadSize);
           }
@@ -952,7 +968,7 @@ bool CcSyncClient::sendFile(CcSyncFileInfo& oFileInfo)
     while (bTransfer)
     {
       uiLastTransferSize = oFile.readArray(oBuffer, false);
-      if (uiLastTransferSize > 0)
+      if (uiLastTransferSize != 0 && uiLastTransferSize <= oBuffer.size())
       {
         oCrc.append(oBuffer.getArray(), uiLastTransferSize);
         if (m_oSocket.write(oBuffer.getArray(), uiLastTransferSize) == false)

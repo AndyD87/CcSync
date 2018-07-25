@@ -108,8 +108,18 @@ public:
     { return m_sBackupCommand; }
   const CcString& getRestoreCommand() const
     { return m_sRestoreCommand; }
+  /**
+   * @brief Get target user id for each file downloaded from server.
+   *        An invalid value will be set to UINT32_MAX
+   * @return Target user id or UINT32_MAX if not valid
+   */
   uint32 getUserId() const
     { return m_uiUser; }
+  /**
+   * @brief Get target group id for each file downloaded from server.
+   *        An invalid value will be set to UINT32_MAX
+   * @return Target group id or UINT32_MAX if not valid
+   */
   uint32 getGroupId() const
     { return m_uiGroup; }
   

@@ -176,6 +176,7 @@ void CcSyncClientDirectoryApp::help()
   CcSyncConsole::printHelpLine(DirectoryStrings::Verify, uiLength, DirectoryStrings::VerifyDesc);
   CcSyncConsole::printHelpLine(DirectoryStrings::BackupCommand, uiLength, DirectoryStrings::BackupCommandDesc);
   CcSyncConsole::printHelpLine(DirectoryStrings::RestoreCommand, uiLength, DirectoryStrings::RestoreCommandDesc);
+  CcSyncConsole::printHelpLine(DirectoryStrings::Set, uiLength, DirectoryStrings::SetDesc);
 }
 
 bool CcSyncClientDirectoryApp::setBackupCommand()
