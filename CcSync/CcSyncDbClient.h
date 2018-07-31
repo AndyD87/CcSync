@@ -137,12 +137,14 @@ public:
   void directoryListUpdateChanged(const CcString& sDirName, uint64 uiDirId);
   void directoryListUpdateChangedAll(const CcString& sDirName, uint64 uiDirId = 1);
   void directoryListSearchDouble(const CcString& sDirName, uint64 uiDirId = 1);
+  void directoryListSearchTemporary(const CcString& sDirName);
 
   bool fileListInsert(const CcString& sDirName, CcSyncFileInfo& oFileInfo);
   bool fileListUpdate(const CcString& sDirName, const CcSyncFileInfo& oFileInfo);
   bool fileListRemove(const CcString& sDirName, const CcSyncFileInfo& oFileInfo, bool bDoUpdateParents = true);
   bool fileListExists(const CcString& sDirName, uint64 uiFileId);
   bool fileListFileExists(const CcString& sDirName, uint64 uiDirId, const CcSyncFileInfo& oFileInfo);
+  void fileListSearchTemporary(const CcString& sDirName);
 
   bool historyInsert(const CcString& sDirName, EBackupQueueType eQueueType, const CcSyncFileInfo& oFileInfo);
   inline void historyEnable()

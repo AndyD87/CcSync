@@ -353,7 +353,20 @@ void CcSyncDirectory::scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool b
     }
     else
     {
-      if (oFileInfoList.containsFile(oSystemFileInfo.getName()))
+      if (oSystemFileInfo.getName().endsWith(CcSyncGlobals::TemporaryExtension))
+      {
+        CcString sPathToFile = sPath;
+        sPathToFile.appendPath(oSystemFileInfo.getName());
+        if (CcFile::remove(sPathToFile))
+        {
+          CcSyncLog::writeDebug("Temporary file found and removed: " + sPathToFile);
+        }
+        else
+        {
+          CcSyncLog::writeError("Temporary file found but failed to remove: " + sPathToFile);
+        }
+      }
+      else if (oFileInfoList.containsFile(oSystemFileInfo.getName()))
       {
         const CcSyncFileInfo& oBackupFileInfo = oFileInfoList.getFile(oSystemFileInfo.getName());
         if (oBackupFileInfo != oSystemFileInfo)
@@ -364,34 +377,32 @@ void CcSyncDirectory::scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool b
       }
       else
       {
-        if (oSystemFileInfo.getName().endsWith(CcSyncGlobals::TemporaryExtension))
-        {
-          CcString sPathToFile = sPath;
-          sPathToFile.appendPath(oSystemFileInfo.getName());
-          if (CcFile::remove(sPathToFile))
-          {
-            CcSyncLog::writeDebug("Temporary file found and removed: " + sPathToFile);
-          }
-          else
-          {
-            CcSyncLog::writeError("Temporary file found but failed to remove: " + sPathToFile);
-          }
-        }
-        else
-        {
-          queueAddFile(0, uiDbIndex, oSystemFileInfo);
-        }
+        queueAddFile(0, uiDbIndex, oSystemFileInfo);
       }
     }
   }
   // FileList is processed, start removing unfound files in database
   for (const CcSyncFileInfo& oBackupFileInfo : oFileInfoList)
   {
-    queueRemoveFile(0, oBackupFileInfo);
+    if (oBackupFileInfo.getName().endsWith(CcSyncGlobals::TemporaryExtension))
+    {
+      m_pDatabase->fileListRemove(getName(), oBackupFileInfo, false);
+    }
+    else
+    {
+      queueRemoveFile(0, oBackupFileInfo);
+    }
   }
   for (const CcSyncFileInfo& oBackupFileInfo : oDirectoryInfoList)
   {
-    queueRemoveDir(0, oBackupFileInfo);
+    if (oBackupFileInfo.getName().endsWith(CcSyncGlobals::TemporaryExtension))
+    {
+      m_pDatabase->directoryListRemove(getName(), oBackupFileInfo, false);
+    }
+    else
+    {
+      queueRemoveDir(0, oBackupFileInfo);
+    }
   }
 }
 

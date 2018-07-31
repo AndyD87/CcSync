@@ -1327,6 +1327,8 @@ bool CcSyncClient::verify(const CcString& sDirname)
     m_pDatabase->beginTransaction();
     m_pDatabase->directoryListSearchDouble(sDirname);
     m_pDatabase->directoryListUpdateChangedAll(sDirname);
+    m_pDatabase->directoryListSearchTemporary(sDirname);
+    m_pDatabase->fileListSearchTemporary(sDirname);
     m_pDatabase->endTransaction();
     return true;
   }

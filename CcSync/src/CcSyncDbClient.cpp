@@ -689,6 +689,18 @@ void CcSyncDbClient::directoryListSearchDouble(const CcString& sDirName, uint64 
   }
 }
 
+void CcSyncDbClient::directoryListSearchTemporary(const CcString& sDirName)
+{
+  CcString sQuery = "SELECT ";
+  sQuery << "`" << CcSyncGlobals::Database::DirectoryList::Id << "`";
+  sQuery << " FROM `" << sDirName + CcSyncGlobals::Database::DirectoryListAppend << "` "\
+            " WHERE `" << CcSyncGlobals::Database::DirectoryList::Name << "` LIKE '" << CcSyncGlobals::TemporaryExtension << "'";
+  CcSqlResult oResult = m_pDatabase->query(sQuery);
+  for (CcTableRow& oRow : oResult)
+  {
+    directoryListRemove(sDirName, getDirectoryInfoById(sDirName, oRow[0].getUint64()), false);
+  }
+}
 
 bool CcSyncDbClient::fileListFileExists(const CcString& sDirName, uint64 uiDirId, const CcSyncFileInfo& oFileInfo)
 {
@@ -707,6 +719,20 @@ bool CcSyncDbClient::fileListFileExists(const CcString& sDirName, uint64 uiDirId
   }
   return bRet;
 }
+
+void CcSyncDbClient::fileListSearchTemporary(const CcString& sDirName)
+{
+  CcString sQuery = "SELECT ";
+  sQuery << "`" << CcSyncGlobals::Database::DirectoryList::Id << "`";
+  sQuery << " FROM `" << sDirName + CcSyncGlobals::Database::FileListAppend << "` "\
+            " WHERE `" << CcSyncGlobals::Database::FileList::Name << "` LIKE '" << CcSyncGlobals::TemporaryExtension << "'";
+  CcSqlResult oResult = m_pDatabase->query(sQuery);
+  for (CcTableRow& oRow : oResult)
+  {
+    fileListRemove(sDirName, getFileInfoById(sDirName, oRow[0].getUint64()), true);
+  }
+}
+
 
 bool CcSyncDbClient::historyInsert(const CcString& sDirName, EBackupQueueType eQueueType, const CcSyncFileInfo& oFileInfo)
 {

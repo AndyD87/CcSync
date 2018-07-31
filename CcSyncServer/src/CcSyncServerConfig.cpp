@@ -39,6 +39,13 @@ CcSyncServerConfig::CcSyncServerConfig() :
   m_uiPort(CcSyncGlobals::DefaultPort),
   m_oLocation(this)
 {
+  // preinit members
+  m_sSslKeyFile = CcKernel::getConfigDir();
+  m_sSslKeyFile.appendPath(CcSyncGlobals::ConfigDirName);
+  m_sSslKeyFile.appendPath(CcSyncGlobals::DefaultKeyFile);
+  m_sSslCertFile = CcKernel::getConfigDir();
+  m_sSslCertFile.appendPath(CcSyncGlobals::ConfigDirName);
+  m_sSslCertFile.appendPath(CcSyncGlobals::DefaultCertFile);
 }
 
 void CcSyncServerConfig::addAdminAccount(const CcString& sName, const CcString& sPassword)
@@ -72,14 +79,6 @@ void CcSyncServerConfig::setLocation(const CcString& sPath)
 bool CcSyncServerConfig::readConfig(const CcString& sConfigFile)
 {
   m_bValid = true;
-  // preinit members
-  m_sSslKeyFile = CcKernel::getConfigDir();
-  m_sSslKeyFile.appendPath(CcSyncGlobals::ConfigDirName);
-  m_sSslKeyFile.appendPath(CcSyncGlobals::DefaultKeyFile);
-  m_sSslCertFile = CcKernel::getConfigDir();
-  m_sSslCertFile.appendPath(CcSyncGlobals::ConfigDirName);
-  m_sSslCertFile.appendPath(CcSyncGlobals::DefaultCertFile);
-
   m_oXmlFile.setFile(sConfigFile);
   m_oXmlFile.readData();
   CcXmlNode& oDocRootNode = m_oXmlFile.rootNode();
