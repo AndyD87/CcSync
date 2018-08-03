@@ -496,6 +496,9 @@ bool CcSyncDirectory::directoryListCreate(CcSyncFileInfo& oFileInfo)
   CcDirectory oNewDirectory(oFileInfo.getSystemFullPath());
   if (oNewDirectory.create(oFileInfo.getSystemFullPath(), true))
   {
+    CcFile oTempFile(oFileInfo.getSystemFullPath());
+    oFileInfo.changed() = CcKernel::getDateTime().getTimestampS();
+    oFileInfo.modified() = oTempFile.getCreated().getTimestampS();
     if (m_pDatabase->directoryListInsert(getName(), oFileInfo))
     {
       return true;
