@@ -332,7 +332,12 @@ void CcSyncDirectory::scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool b
   for (size_t i=0; i < oSystemFileList.size(); i++)
   {
     const CcFileInfo& oSystemFileInfo = oSystemFileList[i];
-    if (oSystemFileInfo.isDir())
+    if(oSystemFileInfo.getName().length() == 0)
+    {
+      // Do not process empty file names
+      // They will be generated, for example, from broken links
+    }
+    else if (oSystemFileInfo.isDir())
     {
       if (oDirectoryInfoList.containsDirectory(oSystemFileInfo.getName()))
       {

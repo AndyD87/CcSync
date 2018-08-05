@@ -107,14 +107,11 @@ bool CcSyncResponse::hasError()
 {
   bool bRet = false;
   CcJsonData& rErrorValue = m_oData[CcSyncGlobals::Commands::ErrorCode];
-  if (rErrorValue.isValue())
+  if (rErrorValue.isValue() &&
+      rErrorValue.getValue().isInt())
   {
-    bool bConvOk = false;
-    CcStatus oStatus = rErrorValue.getValue().getUint32(&bConvOk);
-    if (bConvOk && oStatus)
-    {
-      bRet = oStatus;
-    }
+    CcStatus oStatus = rErrorValue.getValue().getUint32();
+    bRet = oStatus;
   }
   return bRet;
 }
