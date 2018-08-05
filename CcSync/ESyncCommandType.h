@@ -37,7 +37,7 @@
  */
 enum class ESyncCommandType : uint16
 {
-  Unkown                 =      0 ,
+  Unknown                 =      0 ,
   AllOk                           ,
   Crc                             ,
   Close                           ,

@@ -919,6 +919,8 @@ bool CcSyncClient::sendRequestGetResponse()
           else
           {
             CcSyncLog::writeError("Wrong server response, try reconnect.", ESyncLogTarget::Client);
+            CcJsonDocument oDoc(m_oRequest.getData());
+            CCDEBUG(oDoc.getDocument());
             CCDEBUG(CcString(sRead));
             reconnect();
           }

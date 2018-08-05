@@ -168,9 +168,9 @@ void CcSyncServerWorker::run()
           doDirectoryDownloadFile();
           break;
         default:
-          m_oResponse.init(ESyncCommandType::Unkown);
+          m_oResponse.init(ESyncCommandType::Unknown);
           m_oResponse.setResult(false);
-          m_oResponse.setError(EStatus::CommandUnknown, "Unkown Command");
+          m_oResponse.setError(EStatus::CommandUnknown, "Unknown Command");
           sendResponse();
       }
       if (m_oUser.isValid())

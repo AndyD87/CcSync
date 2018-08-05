@@ -88,7 +88,7 @@ bool CcSyncRequest::parseData(const CcString& oData)
   bool bRet = false;
   m_oData.clear();
   m_bHasAdditionalData = false;
-  m_eType = ESyncCommandType::Unkown;
+  m_eType = ESyncCommandType::Unknown;
   CcJsonDocument oJsonDoc;
   if (oJsonDoc.parseDocument(oData))
   {
