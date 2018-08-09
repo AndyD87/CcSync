@@ -111,7 +111,7 @@ bool CcSyncResponse::hasError()
       rErrorValue.getValue().isInt())
   {
     CcStatus oStatus = rErrorValue.getValue().getUint32();
-    bRet = oStatus;
+    bRet = !oStatus;
   }
   return bRet;
 }
