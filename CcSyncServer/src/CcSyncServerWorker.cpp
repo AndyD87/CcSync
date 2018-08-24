@@ -864,18 +864,18 @@ void CcSyncServerWorker::doDirectoryRemoveDirectory()
 
 void CcSyncServerWorker::doDirectoryUpdateFile()
 {
-  // @todo Currently just uploading
   if (loadConfigsBySessionRequest() &&
       loadDirectory())
   {
-    if (m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId) &&
+    if (m_oRequest.data().contains(CcSyncGlobals::FileInfo::Id) &&
+        m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId) &&
         m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name) &&
         m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified))
     {
       CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
       if (m_pDirectory.directoryListExists(oFileInfo.getDirId()))
       {
-        if (m_pDirectory.fileInDirExists(oFileInfo.getDirId(), oFileInfo) == true)
+        if (m_pDirectory.fileIdInDirExists(oFileInfo.getDirId(), oFileInfo) == true)
         {
           m_pDirectory.getFullDirPathById(oFileInfo);
           CcString sTempFilePath = oFileInfo.getSystemFullPath();
@@ -964,7 +964,7 @@ void CcSyncServerWorker::doDirectoryUploadFile()
       CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
       if (m_pDirectory.directoryListExists(oFileInfo.getDirId()))
       {
-        if (m_pDirectory.fileInDirExists(oFileInfo.getDirId(), oFileInfo) == false)
+        if (m_pDirectory.fileNameInDirExists(oFileInfo.getDirId(), oFileInfo) == false)
         {
           m_pDirectory.getFullDirPathById(oFileInfo);
           CcString sTempFilePath = oFileInfo.getSystemFullPath();
@@ -1067,7 +1067,7 @@ void CcSyncServerWorker::doDirectoryRemoveFile()
       {
         m_oResponse.setError(EStatus::FSDirNotFound, "Directory Not Found");
       }
-      else if(m_pDirectory.fileInDirExists(oFileInfo.getDirId(), oFileInfo) == false)
+      else if(m_pDirectory.fileIdInDirExists(oFileInfo.getDirId(), oFileInfo) == false)
       {
         m_oResponse.setError(EStatus::FSFileNotFound, "File Not Found");
       }

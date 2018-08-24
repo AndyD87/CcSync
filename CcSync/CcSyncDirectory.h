@@ -120,7 +120,8 @@ public:
   bool directoryListInsert(CcSyncFileInfo& oFileInfo);
   void directoryListUpdateChanged(uint64 uiDirId);
 
-  bool fileInDirExists(uint64 uiDirectoryId, const CcSyncFileInfo& oFileInfo);
+  bool fileIdInDirExists(uint64 uiDirectoryId, const CcSyncFileInfo& oFileInfo);
+  bool fileNameInDirExists(uint64 uiDirectoryId, const CcSyncFileInfo& oFileInfo);
   const CcString& getLocation() const
     { return m_pConfig->getLocation(); }
   CcSyncFileInfoList getDirectoryInfoListById(uint64 uiDirId);

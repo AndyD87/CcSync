@@ -606,9 +606,14 @@ bool CcSyncDirectory::historyInsert(EBackupQueueType eQueueType, const CcSyncFil
   return m_pDatabase->historyInsert(getName(), eQueueType, oFileInfo);
 }
 
-bool CcSyncDirectory::fileInDirExists(uint64 uiDirId, const CcSyncFileInfo& oFileInfo)
+bool CcSyncDirectory::fileIdInDirExists(uint64 uiDirId, const CcSyncFileInfo& oFileInfo)
 {
   return m_pDatabase->fileListFileExists(getName(), uiDirId, oFileInfo);
+}
+
+bool CcSyncDirectory::fileNameInDirExists(uint64 uiDirId, const CcSyncFileInfo& oFileInfo)
+{
+  return m_pDatabase->fileListFileNameExists(getName(), uiDirId, oFileInfo);
 }
 
 CcString CcSyncDirectory::getTemporaryDir()

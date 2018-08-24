@@ -710,6 +710,24 @@ bool CcSyncDbClient::fileListFileExists(const CcString& sDirName, uint64 uiDirId
   sQuery << "`" << CcSyncGlobals::Database::FileList::Id << "` ";
   sQuery << " FROM `" << sDirName + CcSyncGlobals::Database::FileListAppend << "` "\
     "WHERE `" << CcSyncGlobals::Database::FileList::DirId << "`='" << CcString::fromNumber(uiDirId) << "' "\
+    "AND `" << CcSyncGlobals::Database::FileList::Id << "`='" << CcSqlite::escapeString(oFileInfo.getId()) << "'";
+  CcSqlResult oSqlDirectoryList = m_pDatabase->query(sQuery);
+  if (oSqlDirectoryList.ok() &&
+    oSqlDirectoryList.size() > 0)
+  {
+    bRet = true;
+  }
+  return bRet;
+}
+
+bool CcSyncDbClient::fileListFileNameExists(const CcString& sDirName, uint64 uiDirId, const CcSyncFileInfo& oFileInfo)
+{
+  bool bRet = false;
+  CcSyncFileInfoList oDirectoryList;
+  CcString sQuery = "SELECT ";
+  sQuery << "`" << CcSyncGlobals::Database::FileList::Id << "` ";
+  sQuery << " FROM `" << sDirName + CcSyncGlobals::Database::FileListAppend << "` "\
+    "WHERE `" << CcSyncGlobals::Database::FileList::DirId << "`='" << CcString::fromNumber(uiDirId) << "' "\
     "AND `" << CcSyncGlobals::Database::FileList::Name << "`='" << CcSqlite::escapeString(oFileInfo.getName()) << "'";
   CcSqlResult oSqlDirectoryList = m_pDatabase->query(sQuery);
   if (oSqlDirectoryList.ok() &&
