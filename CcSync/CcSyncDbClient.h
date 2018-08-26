@@ -143,7 +143,7 @@ public:
   bool fileListUpdate(const CcString& sDirName, const CcSyncFileInfo& oFileInfo);
   bool fileListRemove(const CcString& sDirName, const CcSyncFileInfo& oFileInfo, bool bDoUpdateParents = true);
   bool fileListExists(const CcString& sDirName, uint64 uiFileId);
-  bool fileListFileExists(const CcString& sDirName, uint64 uiDirId, const CcSyncFileInfo& oFileInfo);
+  bool fileListFileIdExists(const CcString& sDirName, uint64 uiDirId, const CcSyncFileInfo& oFileInfo);
   bool fileListFileNameExists(const CcString& sDirName, uint64 uiDirId, const CcSyncFileInfo& oFileInfo);
   void fileListSearchTemporary(const CcString& sDirName);
 

@@ -702,15 +702,14 @@ void CcSyncDbClient::directoryListSearchTemporary(const CcString& sDirName)
   }
 }
 
-bool CcSyncDbClient::fileListFileExists(const CcString& sDirName, uint64 uiDirId, const CcSyncFileInfo& oFileInfo)
+bool CcSyncDbClient::fileListFileIdExists(const CcString& sDirName, uint64 uiDirId, const CcSyncFileInfo& oFileInfo)
 {
   bool bRet = false;
-  CcSyncFileInfoList oDirectoryList;
   CcString sQuery = "SELECT ";
   sQuery << "`" << CcSyncGlobals::Database::FileList::Id << "` ";
   sQuery << " FROM `" << sDirName + CcSyncGlobals::Database::FileListAppend << "` "\
     "WHERE `" << CcSyncGlobals::Database::FileList::DirId << "`='" << CcString::fromNumber(uiDirId) << "' "\
-    "AND `" << CcSyncGlobals::Database::FileList::Id << "`='" << CcSqlite::escapeString(oFileInfo.getId()) << "'";
+    "AND `" << CcSyncGlobals::Database::FileList::Id << "`='" << CcString::fromNumber(oFileInfo.getId()) << "'";
   CcSqlResult oSqlDirectoryList = m_pDatabase->query(sQuery);
   if (oSqlDirectoryList.ok() &&
     oSqlDirectoryList.size() > 0)

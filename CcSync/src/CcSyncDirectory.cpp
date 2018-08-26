@@ -608,7 +608,7 @@ bool CcSyncDirectory::historyInsert(EBackupQueueType eQueueType, const CcSyncFil
 
 bool CcSyncDirectory::fileIdInDirExists(uint64 uiDirId, const CcSyncFileInfo& oFileInfo)
 {
-  return m_pDatabase->fileListFileExists(getName(), uiDirId, oFileInfo);
+  return m_pDatabase->fileListFileIdExists(getName(), uiDirId, oFileInfo);
 }
 
 bool CcSyncDirectory::fileNameInDirExists(uint64 uiDirId, const CcSyncFileInfo& oFileInfo)
