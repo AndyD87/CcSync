@@ -342,6 +342,7 @@ bool CcSyncServerWorker::sendFile(const CcString& sPath)
         bTransfer = false;
       }
     }
+    oFile.close();
   }
   if (bRet == true)
   {
@@ -901,6 +902,10 @@ void CcSyncServerWorker::doDirectoryUpdateFile()
                     CcSyncLog::writeDebug("Failed to move temporary File: ");
                     CcSyncLog::writeDebug("  " + sTempFilePath + " -> " + oFileInfo.getSystemFullPath());
                   }
+                  else
+                  {
+                    CcFile::setModified(oFileInfo.getSystemFullPath(), CcDateTimeFromSeconds(oFileInfo.getModified()));
+                  }
                   m_oResponse.init(ESyncCommandType::Crc);
                   m_oResponse.addFileInfo(oFileInfo);
                 }
@@ -908,7 +913,7 @@ void CcSyncServerWorker::doDirectoryUpdateFile()
                 {
                   m_oResponse.init(ESyncCommandType::Crc);
                   m_oResponse.setError(EStatus::FSFileCreateFailed, "File add to database failed");
-                  oFile.remove(oFileInfo.getSystemFullPath());
+                  CcFile::remove(sTempFilePath);
                 }
               }
             }
@@ -1010,7 +1015,7 @@ void CcSyncServerWorker::doDirectoryUploadFile()
                 {
                   m_oResponse.init(ESyncCommandType::Crc);
                   m_oResponse.setError(EStatus::FSFileCreateFailed, "File add to database failed");
-                  oFile.remove(oFileInfo.getSystemFullPath());
+                  CcFile::remove(sTempFilePath);
                 }
               }
             }
