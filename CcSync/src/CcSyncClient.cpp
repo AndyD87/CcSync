@@ -1,18 +1,18 @@
 /*
- * This file is part of CcOS.
+ * This file is part of CcSync.
  *
- * CcOS is free software: you can redistribute it and/or modify
+ * CcSync is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * CcOS is distributed in the hope that it will be useful,
+ * CcSync is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with CcOS.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CcSync.  If not, see <http://www.gnu.org/licenses/>.
  **/
 /**
  * @file
@@ -1077,45 +1077,18 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
     CcSyncFileInfoList oClientFiles = oDirectory.getFileInfoListById(uiDirId);
     for (CcSyncDirInfo& oServerDirInfo : oServerDirectories)
     {
-      if (oClientDirectories.containsFile(oServerDirInfo.getId()) )
+      if (oClientDirectories.containsFile(oServerDirInfo.getId()))
       {
         CcSyncDirInfo& oClientDirInfo = oClientDirectories.getFile(oServerDirInfo.getId());
         // Compare Server Directory with Client Directory
         if (oClientDirInfo != oServerDirInfo)
         {
-          oDirectory.getFullDirPathById(oClientDirInfo);
-          oDirectory.getFullDirPathById(oServerDirInfo);
-          if (oClientDirInfo.getName() != oServerDirInfo.getName())
-          {
-            if (!CcDirectory::move(oClientDirInfo.getSystemFullPath(), oServerDirInfo.getSystemFullPath()))
-            {
-              CcSyncLog::writeError("Failed to move directory: " + oClientDirInfo.getSystemFullPath() + " > " + oServerDirInfo.getSystemFullPath(), ESyncLogTarget::Client);
-            }
-            oDirectory.directoryListUpdate(oServerDirInfo);
-            CcSyncLog::writeDebug("Directory not up to date: " + oServerDirInfo.getName(), ESyncLogTarget::Client);
-            doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
-          }
-          else if (!CcDirectory::exists(oClientDirInfo.getSystemFullPath()))
-          {
-            // Do nothing, directory will be deleted on localsync
-            CcSyncLog::writeDebug("Directory not up to date: " + oServerDirInfo.getName(), ESyncLogTarget::Client);
-            doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
-          }
-          else
-          {
-            // first update files to get correct md5 hash if required
-            doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
-            oDirectory.directoryListUpdate(oServerDirInfo);
-            CcSyncLog::writeDebug("Directory not up to date: " + oServerDirInfo.getName(), ESyncLogTarget::Client);
-          }
+          // Update directory info in database
+          // @todo change attributes if required
+          oDirectory.directoryListUpdate(oServerDirInfo);
         }
         // Remove Directory from current list
         oClientDirectories.removeFile(oServerDirInfo.getId());
-      }
-      else if (oClientDirectories.containsFile(oServerDirInfo.getName()))
-      {
-        CcSyncDirInfo& oClientDirInfo = oClientDirectories.getFile(oServerDirInfo.getName());
-        oDirectory.directoryListUpdateId(oClientDirInfo.getId(), oServerDirInfo);
       }
       else
       {
@@ -1146,9 +1119,8 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
         CcSyncFileInfo& oFileInfo = oClientFiles.getFile(oServerFileInfo.getId());
         if (oFileInfo != oServerFileInfo)
         {
-          // @todo always downloading works, okay, but it's not allways necessary (rename, etc)
-          oDirectory.queueDownloadFile(oServerFileInfo);
-          oDirectory.fileListRemove(oFileInfo, false, false);
+          // @todo always downloading works, okay!
+          oDirectory.fileListUpdate(oServerFileInfo, false);
         }
         oClientFiles.removeFile(oServerFileInfo.getId());
       }

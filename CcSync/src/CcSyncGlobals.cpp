@@ -1,18 +1,18 @@
 /*
- * This file is part of CcOS.
+ * This file is part of CcSync.
  *
- * CcOS is free software: you can redistribute it and/or modify
+ * CcSync is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * CcOS is distributed in the hope that it will be useful,
+ * CcSync is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with CcOS.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CcSync.  If not, see <http://www.gnu.org/licenses/>.
  **/
 /**
  * @file
@@ -25,10 +25,13 @@
  * @brief     CcSyncGlobals definitions
  */
 #include "CcSyncGlobals.h"
+#include "CcVersion.h"
+#include "CcSyncVersion.h"
 
 namespace CcSyncGlobals
 {
   const CcString sTest           ("Test");
+  const CcVersion Version        (CCSYNC_VERSION_MAJOR, CCSYNC_VERSION_MINOR, CCSYNC_VERSION_PATCH, CCSYNC_VERSION_BUILD);
   const CcString ConfigDirName   ("CcSync");
   const size_t MaxReconnections  = 5;
   const uint64 TransferSize      = 10240000;

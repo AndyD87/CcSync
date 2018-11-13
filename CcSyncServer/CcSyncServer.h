@@ -1,18 +1,18 @@
 /*
- * This file is part of CcOS.
+ * This file is part of CcSync.
  *
- * CcOS is free software: you can redistribute it and/or modify
+ * CcSync is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * CcOS is distributed in the hope that it will be useful,
+ * CcSync is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with CcOS.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CcSync.  If not, see <http://www.gnu.org/licenses/>.
  **/
 /**
 
@@ -43,7 +43,8 @@
 /**
  * @brief Class impelmentation
  */
-class CcSyncServer : public CcApp{
+class CcSyncServer : public CcApp
+{
 public:
   /**
    * @brief Constructor
@@ -78,6 +79,7 @@ public:
   CcSyncUser loginUser(const CcString& sAccount, const CcString& sUserName, const CcString& sPassword);
   CcSyncUser getUserByToken(const CcString& sToken);
   CcSyncUser getUserByName(const CcString& sName);
+  virtual CcVersion getVersion() const override;
 
   bool createConfig();
   bool createAccount(const CcString& sUsername, const CcString& sPassword, bool bAdmin);

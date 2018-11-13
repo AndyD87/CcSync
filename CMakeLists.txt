@@ -19,11 +19,6 @@ include( ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig/ProjectMacros.cmake )
 ################################################################################
 # Setup Toolchain globaly
 ################################################################################
-# Load Board settings if defined
-if(DEFINED CCOS_BOARD)
-  include( ${CCOS_BOARD} )
-endif()
-
 if(WINDOWS)
   set(CMAKE_INSTALL_PREFIX "C:/Program Files/CcSync")
 endif()

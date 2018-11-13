@@ -12,6 +12,11 @@ file (GLOB SOURCE_FILES
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
+########
+# Update Version Info
+########
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/CcSyncVersion.h.in ${CMAKE_CURRENT_SOURCE_DIR}/CcSyncVersion.h @ONLY)
+
 if(WINDOWS)
   CcSyncGenerateRcFileToCurrentDir(${CURRENT_PROJECT} SOURCE_FILES )
 endif()
