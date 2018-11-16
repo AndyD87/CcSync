@@ -1077,7 +1077,7 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
     CcSyncFileInfoList oClientFiles = oDirectory.getFileInfoListById(uiDirId);
     for (CcSyncDirInfo& oServerDirInfo : oServerDirectories)
     {
-      if (oClientDirectories.containsFile(oServerDirInfo.getId()))
+      if (oClientDirectories.containsDirectory(oServerDirInfo.getId()))
       {
         CcSyncDirInfo& oClientDirInfo = oClientDirectories.getFile(oServerDirInfo.getId());
         // Compare Server Directory with Client Directory
@@ -1087,26 +1087,37 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
           // @todo change attributes if required
           oDirectory.directoryListUpdate(oServerDirInfo);
         }
+        doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
         // Remove Directory from current list
         oClientDirectories.removeFile(oServerDirInfo.getId());
       }
       else
       {
-        oDirectory.getFullDirPathById(oServerDirInfo);
-        if (CcDirectory::exists(oServerDirInfo.getSystemFullPath()))
+        if (oClientDirectories.containsDirectory(oServerDirInfo.getName()))
         {
-          if (oDirectory.directoryListInsert(oServerDirInfo))
+          CcSyncDirInfo oDirInfo = oClientDirectories.getDirectory(oServerDirInfo.getName());
+          oDirectory.directoryListUpdateId(oDirInfo.getId(), oServerDirInfo);
+          doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
+          oClientDirectories.removeFile(oServerDirInfo.getName());
+        }
+        else
+        {
+          oDirectory.getFullDirPathById(oServerDirInfo);
+          if (CcDirectory::exists(oServerDirInfo.getSystemFullPath()))
           {
-            doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
+            if (oDirectory.directoryListInsert(oServerDirInfo))
+            {
+              doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
+            }
+            else
+            {
+              oDirectory.queueDownloadDirectory(oServerDirInfo);
+            }
           }
           else
           {
             oDirectory.queueDownloadDirectory(oServerDirInfo);
           }
-        }
-        else
-        {
-          oDirectory.queueDownloadDirectory(oServerDirInfo);
         }
       }
     }
@@ -1126,9 +1137,35 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
       }
       else
       {
+        if (oClientFiles.containsFile(oServerFileInfo.getName()))
+        {
+          CcSyncFileInfo& oClientFileInfo = oClientFiles.getFile(oServerFileInfo.getName());
+          oDirectory.getFullDirPathById(oClientFileInfo);
+          if (CcFile::exists(oServerFileInfo.getSystemFullPath()))
+          {
+            CcFileInfo oLocalFileInfo = CcFile::getInfo(oServerFileInfo.getSystemFullPath());
+            if (oLocalFileInfo.getModified().getTimestampS() <= oClientFileInfo.getModified())
+            {
+              // Remove from database and disk
+              oDirectory.fileListRemove(oClientFileInfo, false, false);
+            }
+            else
+            {
+              // Remove from database
+              oDirectory.fileListRemove(oClientFileInfo, false, true);
+            }
+          }
+          else
+          {
+            // Remove from database
+            oDirectory.fileListRemove(oClientFileInfo, false, true);
+          }
+          oClientFiles.removeFile(oServerFileInfo.getName());
+        }
         oDirectory.getFullDirPathById(oServerFileInfo);
         if (CcFile::exists(oServerFileInfo.getSystemFullPath()))
         {
+          // File still existing, insert fileinfo and wait for local sync
           oDirectory.fileListInsert(oServerFileInfo);
         }
         else
@@ -1137,19 +1174,12 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
         }
       }
     }
-    // remove all not listed directories on server
+    // remove all not listed files on local directory
     for (CcSyncFileInfo& oClientFileInfo : oClientFiles)
     {
-      if (oServerFiles.containsFile(oClientFileInfo.getName()))
-      {
-        oDirectory.fileListRemove(oClientFileInfo, false, false);
-      }
-      else
-      {
-        oDirectory.fileListRemove(oClientFileInfo, false, false);
-      }
+      oDirectory.fileListRemove(oClientFileInfo, false, false);
     }
-    // remove all not listed files on server
+    // remove all not listed directories on local directory
     for (CcSyncFileInfo& oClientDirInfo : oClientDirectories)
     {
       recursiveRemoveDirectory(oDirectory, oClientDirInfo);

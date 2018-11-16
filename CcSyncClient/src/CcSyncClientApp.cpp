@@ -33,8 +33,8 @@
 #include "CcSyncConsole.h"
 #include "CcSyncClientAccountApp.h"
 #include "CcGlobalStrings.h"
-#include "CcSyncGlobals.h";
-#include "CcVersion.h";
+#include "CcSyncGlobals.h"
+#include "CcVersion.h"
 
 namespace Strings
 {

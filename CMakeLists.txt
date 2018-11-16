@@ -3,7 +3,7 @@
 #
 # Main File to build CcSync
 #
-# To Generate a Solution execute the command:
+# To Generate a Solution execute a command like:
 #   cmake -G "Visual Studio 12"
 #
 ################################################################################
@@ -29,7 +29,19 @@ endif()
 project("CcSync" VERSION "${CCSYNC_VERSION_CMAKE}")
 
 ################################################################################
-# Setup Output Directory if not set
+# Setup Debug
+################################################################################
+if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
+  message("- Build-Type set to ${CMAKE_BUILD_TYPE}")
+  set(CCOSEXAMPLEPROJECT_BUILD_TYPE "DEBUG" )
+  set(CMAKE_VERBOSE_MAKEFILE          ON)
+else()
+  message("Build-Type set to release")
+  set(CCOSEXAMPLEPROJECT_BUILD_TYPE "RELEASE" )
+endif()
+
+################################################################################
+# Setup Output Paths
 ################################################################################
 # To be able to overwrite global output root use -DCC_OUTPUT_DIR=/path on configuration
 if(NOT CC_OUTPUT_DIR)
@@ -48,10 +60,14 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 ################################################################################
 include(CcOSImport.cmake)
 
+################################################################################
+# Setup CcSync Projects
+################################################################################
 add_subdirectory(CcSync)
 add_subdirectory(CcSyncServer)
 add_subdirectory(CcSyncClient)
 add_subdirectory(CcSyncClientGui)
+add_subdirectory(CcSyncTest)
 
 ################################################################################
 # Update dokumentation

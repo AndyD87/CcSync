@@ -21,7 +21,6 @@ endmacro()
 macro( CcLoadGuiSettings )
   if(DEFINED MSVC)
     set ( CompilerFlags
-            CMAKE_EXE_LINKER_FLAGS
             CMAKE_EXE_LINKER_FLAGS_DEBUG
             CMAKE_EXE_LINKER_FLAGS_RELEASE
             CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO
@@ -31,6 +30,12 @@ macro( CcLoadGuiSettings )
       # For Windows set Subsystem to Windows (/SUBSYSTEM:CONSOLE was set before)
       # keep entry point on main(argc, argv)
       string(REPLACE "/SUBSYSTEM:CONSOLE" "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup" ${CompilerFlag} "${${CompilerFlag}}")
+      # afxcwd.lib libcpmtd.lib must be set in right order
+      if("${CompilerFlag} " MATCHES "DEBUG ")
+        set(${CompilerFlag} "${${CompilerFlag}} uafxcwd.lib libcpmtd.lib")
+      else()
+        set(${CompilerFlag} "${${CompilerFlag}} uafxcw.lib libcpmt.lib")
+      endif()
     endforeach()
   endif(DEFINED MSVC)
 endmacro( CcLoadGuiSettings )
@@ -156,7 +161,7 @@ macro( CcLoadWixTools )
   set(WIX_ZIP_FILE        ${WIX_CACHE_DIR}/${WIX_ZIP_FILENAME} )
   set(WIX_ZIP_FOLDER      ${WIX_CACHE_DIR}/${WIX_ZIP_FOLDERNAME} )
   set(WIX_VERSION         3.11)
-  set(DOWNLOAD_URL      "http://mirror.adirmeier.de/projects/ThirdParty/WiXToolset/binaries/${WIX_VERSION}/${WIX_ZIP_FILENAME}")
+  set(DOWNLOAD_URL      "http://coolcow.de/projects/ThirdParty/WiXToolset/binaries/${WIX_VERSION}/${WIX_ZIP_FILENAME}")
 
   # Extract file if not exits  
   if(NOT EXISTS ${WIX_ZIP_FOLDER})
@@ -184,6 +189,7 @@ macro( CcLoadWixTools )
       if(${WIX_ZIP_FILE_EXTRACT_RESULT} EQUAL 0)
         file(REMOVE ${WIX_ZIP_FILE})
       else(${WIX_ZIP_FILE_EXTRACT_RESULT} EQUAL 0)
+        file(REMOVE ${WIX_ZIP_FILE})
         file(REMOVE_RECURSE ${WIX_ZIP_FOLDER})
       endif(${WIX_ZIP_FILE_EXTRACT_RESULT} EQUAL 0)
     endif( EXISTS ${WIX_ZIP_FILE} ) 

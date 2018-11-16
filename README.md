@@ -26,7 +26,7 @@ Execute following to get a Solution:
 One way to build on Linux is to use building scripts under Tools:
 
     cd Tools
-    build.sh # change to "builDebug.sh" if debug is requried
+    sh build.sh # change to "builDebug.sh" if debug is requried
     cd ..\Solution
 
 Second way is to build on commandline, without build script.
