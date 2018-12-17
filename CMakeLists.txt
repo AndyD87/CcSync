@@ -13,16 +13,24 @@ cmake_minimum_required (VERSION 3.0)
 # Setup Globals
 ################################################################################
 include( ${CMAKE_CURRENT_SOURCE_DIR}/VERSION.cmake )
-include( ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig/CcMacros.cmake )
-include( ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig/ProjectMacros.cmake )
+include( ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig/ProjectMacros.cmake)
+include( ${CMAKE_CURRENT_SOURCE_DIR}/CcOSImport.cmake )
 
 ################################################################################
-# Setup Toolchain globaly
+# Setup Cache directory if not yet defined
 ################################################################################
-# Load Board settings if defined
-if(DEFINED CCOS_BOARD)
-  include( ${CCOS_BOARD} )
+if(NOT DEFINED CC_CACHE_DIR)
+  set( CC_CACHE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Cache)
+  if(NOT EXISTS ${CC_CACHE_DIR})
+    file(MAKE_DIRECTORY ${CC_CACHE_DIR})
+  endif()
 endif()
+
+################################################################################
+# Load CcOS
+################################################################################
+CcOSLoad()
+CcOSLoadMacros()
 
 if(WINDOWS)
   set(CMAKE_INSTALL_PREFIX "C:/Program Files/CcSync")
@@ -51,7 +59,11 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 ################################################################################
 # Import CcOS
 ################################################################################
-include(CcOSImport.cmake)
+CcOSLoadProjects()
+
+################################################################################
+# Setup all projects
+################################################################################
 
 add_subdirectory(CcSync)
 add_subdirectory(CcSyncServer)

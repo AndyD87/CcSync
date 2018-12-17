@@ -1,24 +1,32 @@
-if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/CcOS/CcOS.cmake)
-  execute_process(COMMAND git submodule init CcOS
-                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-  execute_process(COMMAND git submodule update CcOS
-                  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
-endif()
+set(CCOS_DIR ${CMAKE_CURRENT_LIST_DIR}/CcOS)  
 
-if(NOT DEFINED CCOS_CACHE_DIR)
-  set( CCOS_CACHE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Cache)
-  if(NOT EXISTS ${CCOS_CACHE_DIR})
-    file(MAKE_DIRECTORY ${CCOS_CACHE_DIR})
+macro(CcOSLoad)
+  if(NOT EXISTS ${CCOS_DIR}/CcOS.cmake)
+    execute_process(COMMAND git submodule init "${CCOS_DIR}"
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
+    execute_process(COMMAND git submodule update "${CCOS_DIR}"
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
   endif()
-endif()
+endmacro()
 
-set(CCOS_BUILDLEVEL 1)
-set(CCOS_CCGUI_ACTIVE 4)
-set(CCOS_CCUTIL_CCDOCUMENTS_ACTIVE 4)
-set(CCOS_CCUTIL_CCSQL_ACTIVE 4)
-set(CCOS_CCNETWORK_CCSSL_ACTIVE 4)
-set(CCOS_THIRDPARTY_SQLITE3_ACTIVE 4)
-set(CMAKE_CURRENT_SOURCE_DIR_BACKUP ${CMAKE_CURRENT_SOURCE_DIR})
-set(CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CcOS)
-include(CcOS/CcOS.cmake)
-set(CMAKE_CURRENT_SOURCE_DIR ${CMAKE_CURRENT_SOURCE_DIR_BACKUP})
+macro(CcOSLoadMacros)
+  include(${CCOS_DIR}/CMakeConfig/CcMacros.cmake)
+endmacro()
+
+macro(CcOSLoadProjects)
+  set(CCOS_BUILDLEVEL 1)
+  set(CCOS_CCGUI_ACTIVE 4)
+  set(CCOS_CCUTIL_CCDOCUMENTS_ACTIVE 4)
+  set(CCOS_CCUTIL_CCSQL_ACTIVE 4)
+  set(CCOS_CCNETWORK_CCSSL_ACTIVE 4)
+  set(CCOS_THIRDPARTY_SQLITE3_ACTIVE 4)
+  include(${CCOS_DIR}/CcOS.cmake)
+endmacro()
+
+################################################################################
+# Setup board if required
+################################################################################
+if(DEFINED CCOS_BOARD)
+  CcOSLoadMacros()
+  add_subdirectory(${CCOS_DIR}/${CCOS_BOARD} )
+endif()
