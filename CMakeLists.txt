@@ -16,6 +16,10 @@ include( ${CMAKE_CURRENT_SOURCE_DIR}/VERSION.cmake )
 include( ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig/ProjectMacros.cmake)
 include( ${CMAKE_CURRENT_SOURCE_DIR}/CcOSImport.cmake )
 
+if(WINDOWS)
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files/CcSync")
+endif()
+
 ################################################################################
 # Setup Cache directory if not yet defined
 ################################################################################
@@ -32,17 +36,25 @@ endif()
 CcOSLoad()
 CcOSLoadMacros()
 
-if(WINDOWS)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files/CcSync")
-endif()
-
 ################################################################################
 # Configuration is done, setup Project
 ################################################################################
 project("CcSync" VERSION "${CCSYNC_VERSION_CMAKE}")
 
 ################################################################################
-# Setup Output Directory if not set
+# Setup Debug
+################################################################################
+if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
+  message("- Build-Type set to Debug")
+  set(CCOSEXAMPLEPROJECT_BUILD_TYPE "DEBUG" )
+  set(CMAKE_VERBOSE_MAKEFILE          ON)
+else()
+  message("- Build-Type set to Release")
+  set(CCOSEXAMPLEPROJECT_BUILD_TYPE "RELEASE" )
+endif()
+
+################################################################################
+# Setup Output Paths
 ################################################################################
 # To be able to overwrite global output root use -DCC_OUTPUT_DIR=/path on configuration
 if(NOT CC_OUTPUT_DIR)
