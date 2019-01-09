@@ -34,5 +34,5 @@ int main(int argc, char **argv)
   CcArguments oArguments(argc, argv);
   
   CcSyncClientApp oSyncClient(oArguments);
-  return oSyncClient.exec();
+  return oSyncClient.exec().getErrorInt();
 }

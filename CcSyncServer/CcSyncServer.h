@@ -39,6 +39,7 @@
 #include "CcSyncServerAccount.h"
 #include "CcSslSocket.h"
 #include "Network/CcSocket.h"
+#include "CcArguments.h"
 
 /**
  * @brief Class impelmentation
@@ -49,7 +50,7 @@ public:
   /**
    * @brief Constructor
    */
-  CcSyncServer( void );
+  CcSyncServer(int pArgc, char **ppArgv);
 
   /**
    * @brief CopyConstructor
@@ -67,6 +68,8 @@ public:
   virtual ~CcSyncServer( void );
 
   void run() override;
+  void runHelp();
+  void runServer();
 
   CcSyncServerConfig& config()
     { return m_oConfig; }
@@ -89,6 +92,7 @@ private:
   bool setupDatabase();
 
 private:
+  CcArguments           m_oArguments;
   CcString              m_sDatabaseFile;
   CcSyncServerConfig    m_oConfig;
   CcSyncDbServer        m_oDatabase;

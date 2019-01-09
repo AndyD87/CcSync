@@ -167,7 +167,7 @@ void CcSyncResponse::setResult(bool uiResult)
 
 void CcSyncResponse::setError(CcStatus uiErrorCode, const CcString& sErrorMsg)
 {
-  m_oData.add(CcJsonData(CcSyncGlobals::Commands::ErrorCode, uiErrorCode.getErrorUnit()));
+  m_oData.add(CcJsonData(CcSyncGlobals::Commands::ErrorCode, uiErrorCode.getErrorUint()));
   m_oData.add(CcJsonData(CcSyncGlobals::Commands::ErrorMsg, sErrorMsg));
 }
 

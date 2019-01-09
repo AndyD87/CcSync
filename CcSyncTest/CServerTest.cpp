@@ -20,32 +20,40 @@
  * @author    Andreas Dirmeier
  * @par       Web:      http://coolcow.de/projects/CcOS
  * @par       Language: C++11
- * @brief    Development default CLI-Application for testing new Implementations
+ * @brief     Implemtation of class CServerTest
  */
-
-#include "CcBase.h"
-#include "CcKernel.h"
-#include "CcConsole.h"
-
 #include "CServerTest.h"
+#include "CcProcess.h"
+#include "CcIODevice.h"
+#include "CcByteArray.h"
+#include "CcKernel.h"
 
-// Application entry point. 
-int main(int argc, char **argv)
+CServerTest::CServerTest( void )
+{
+}
+
+CServerTest::~CServerTest( void )
+{
+}
+
+bool CServerTest::test()
 {
   bool bSuccess = true;
-  CcKernel::setArg(argc, argv);
-  CcConsole::writeLine("Start: CcSyncTest");
-#ifdef DEBUG
-  CcKernel::initCLI();
-#endif
+  CcString sData;
 
-  CServerTest oServerTest;
-  bSuccess = oServerTest.test();
-
-  if (bSuccess)
-    return 0;
-  else
+  CcProcess oServerRun("CcSyncServer.exe");
+  oServerRun.addArgument("configure");
+  oServerRun.start();
+  oServerRun.pipe().writeLine("Test");
+  oServerRun.pipe().writeLine("test");
+  oServerRun.pipe().writeLine("test");
+  oServerRun.pipe().writeLine("");
+  //oServerRun.pipe().writeLine("");
+  //oServerRun.pipe().writeLine("y");
+  if (oServerRun.waitForExit(CcDateTimeFromSeconds(1)))
   {
-    return 1;
+    CCERROR("Succeeded to setup CcSyncServer but it should faile");
+    bSuccess = false;
   }
+  return bSuccess;
 }

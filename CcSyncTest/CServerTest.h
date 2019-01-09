@@ -15,37 +15,39 @@
  * along with CcOS.  If not, see <http://www.gnu.org/licenses/>.
  **/
 /**
- * @file
+ * @page      CcSyncTest
+ * @subpage   CServerTest
+ *
+ * @page      CServerTest
  * @copyright Andreas Dirmeier (C) 2017
  * @author    Andreas Dirmeier
  * @par       Web:      http://coolcow.de/projects/CcOS
  * @par       Language: C++11
- * @brief    Development default CLI-Application for testing new Implementations
- */
+ * @brief     Class CServerTest
+ **/
+#ifndef _CServerTest_H_
+#define _CServerTest_H_
 
 #include "CcBase.h"
-#include "CcKernel.h"
-#include "CcConsole.h"
+#include "CcTest.h"
 
-#include "CServerTest.h"
-
-// Application entry point. 
-int main(int argc, char **argv)
+/**
+ * @brief Class impelmentation
+ */
+class CServerTest : public CcTest
 {
-  bool bSuccess = true;
-  CcKernel::setArg(argc, argv);
-  CcConsole::writeLine("Start: CcSyncTest");
-#ifdef DEBUG
-  CcKernel::initCLI();
-#endif
+public:
+  /**
+   * @brief Constructor
+   */
+  CServerTest( void );
 
-  CServerTest oServerTest;
-  bSuccess = oServerTest.test();
+  /**
+   * @brief Destructor
+   */
+  virtual ~CServerTest( void );
 
-  if (bSuccess)
-    return 0;
-  else
-  {
-    return 1;
-  }
-}
+  virtual bool test() override;
+};
+
+#endif /* _CServerTest_H_ */

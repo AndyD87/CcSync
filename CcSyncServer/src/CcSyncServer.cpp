@@ -39,8 +39,10 @@
 #include "Network/CcCommonPorts.h"
 #include "CcSyncVersion.h"
 #include "CcVersion.h"
+#include "CcConsole.h"
 
-CcSyncServer::CcSyncServer(void)
+CcSyncServer::CcSyncServer(int pArgc, char **ppArgv) : 
+  m_oArguments(pArgc, ppArgv)
 {
 }
 
@@ -60,6 +62,70 @@ CcSyncServer::~CcSyncServer(void)
 }
 
 void CcSyncServer::run()
+{
+  if (m_oArguments.size() > 1)
+  {
+    // select mode
+    if (m_oArguments[1] == "daemon")
+    {
+      switch (CcKernel::initService())
+      {
+        case -1:
+          CCERROR("Starting Service failed");
+          setExitCode(EStatus::Error);
+        case 0:
+          break;
+        default:
+          CCDEBUG("Service started, close main application.");
+          setExitCode(EStatus::Success);
+          break;
+      }
+    }
+    else if (m_oArguments[1] == "configure")
+    {
+      createConfig();
+    }
+    else if (m_oArguments[1] == "start")
+    {
+      CcKernel::initCLI();
+    }
+    else if (m_oArguments[1] == "info")
+    {
+      CcConsole::writeLine("CcSyncServer Version: " + getVersion().getVersionString());
+      CcConsole::writeLine("CcOS         Version: " + CcKernel::getVersion().getVersionString());
+    }
+    else
+    {
+      setExitCode(EStatus::CommandUnknownParameter);
+      if (m_oArguments[1] != "help" &&
+        m_oArguments[1] != "-h")
+      {
+        CcConsole::writeLine("ERROR, wrong command: " + m_oArguments[1]);
+      }
+      runHelp();
+    }
+  }
+  else
+  {
+    setExitCode(EStatus::CommandRequiredParameter);
+    runHelp();
+  }
+}
+
+void CcSyncServer::runHelp()
+{
+  CcConsole::writeLine("Usage of CcSyncServer:");
+  CcConsole::writeLine("  CcSyncServer <command>");
+  CcConsole::writeLine("");
+  CcConsole::writeLine("Commands");
+  CcConsole::writeLine("  daemon      Start server as background application");
+  CcConsole::writeLine("  start       Start server and keep running until closed");
+  CcConsole::writeLine("  configure   Change or create CcSyncServer settings");
+  CcConsole::writeLine("  info        Get information about this server");
+  CcConsole::writeLine("  help|-h     Get information about this server");
+}
+
+void CcSyncServer::runServer()
 {
   CcString sConfigFile = m_sDatabaseFile = CcKernel::getConfigDir();
   sConfigFile.appendPath(CcSyncGlobals::ConfigDirName);

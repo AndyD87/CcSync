@@ -38,6 +38,5 @@ int main(int argc, char **argv)
   CcKernel::initGUI();
 
   CcSyncClientGui oApplication(oArguments);
-  oApplication.exec();
-  return 0;
+  return oApplication.exec().getErrorInt();
 }

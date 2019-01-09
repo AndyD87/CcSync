@@ -25,7 +25,11 @@ if("${CMAKE_PROJECT_NAME}" STREQUAL "CcSync")
   
   source_group( "" FILES ${SOURCE_FILES})
   
-  target_link_libraries ( ${CURRENT_PROJECT} LINK_PUBLIC CcKernel )
+  target_link_libraries ( 
+    ${CURRENT_PROJECT} LINK_PUBLIC 
+    CcKernel 
+    CcTesting 
+  )
 
   CcAddTest( ${CURRENT_PROJECT} )
  
