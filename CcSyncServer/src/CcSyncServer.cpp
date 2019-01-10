@@ -65,8 +65,38 @@ void CcSyncServer::run()
 {
   if (m_oArguments.size() > 1)
   {
+    bool bParamOk = true;
+    if(m_oArguments.size() > 2)
+    {
+      // Parse options
+      for(size_t iArg = 2; iArg<m_oArguments.size();iArg++)
+      {
+        if(m_oArguments[iArg] == "--config-dir")
+        {
+          if(iArg+1<m_oArguments.size())
+          {
+            iArg++;
+            m_sConfigDir = m_oArguments[iArg];
+            if(!CcDirectory::exists(m_sConfigDir))
+            {
+              bParamOk=false;
+              CcSyncConsole::writeLine("--config-dir requires an existing valid path");
+            }
+          }
+          else
+          {
+            bParamOk=false;
+            CcSyncConsole::writeLine("--config-dir requires an additional paramter");
+          }
+        }
+      }
+    }
+    if(bParamOk == false)
+    {
+      setExitCode(EStatus::CommandInvalidParameter);
+    }
     // select mode
-    if (m_oArguments[1] == "daemon")
+    else if (m_oArguments[1] == "daemon")
     {
       switch (CcKernel::initService())
       {
@@ -127,7 +157,12 @@ void CcSyncServer::runHelp()
 
 void CcSyncServer::runServer()
 {
-  CcString sConfigFile = m_sDatabaseFile = CcKernel::getConfigDir();
+  if(m_sConfigDir.length() == 0)
+  {
+    m_sConfigDir = CcKernel::getConfigDir();
+  }
+  m_sDatabaseFile = m_sConfigDir;
+  CcString sConfigFile;
   sConfigFile.appendPath(CcSyncGlobals::ConfigDirName);
   if (!CcDirectory::exists(sConfigFile))
   {
@@ -344,7 +379,12 @@ CcVersion CcSyncServer::getVersion() const
 bool CcSyncServer::createConfig()
 {
   bool bSuccess = true;
-  CcString sConfigFile = m_sDatabaseFile = CcKernel::getConfigDir();
+  if(m_sConfigDir.length() == 0)
+  {
+    m_sConfigDir = CcKernel::getConfigDir();
+  }
+  CcString sConfigFile = m_sConfigDir;
+  m_sDatabaseFile = m_sConfigDir;
   sConfigFile.appendPath(CcSyncGlobals::ConfigDirName);
   if (!CcDirectory::exists(sConfigFile))
   {

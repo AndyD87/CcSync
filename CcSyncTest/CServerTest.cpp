@@ -27,6 +27,8 @@
 #include "CcIODevice.h"
 #include "CcByteArray.h"
 #include "CcKernel.h"
+#include "CcFileSystem.h"
+#include "CcDirectory.h"
 
 CServerTest::CServerTest( void )
 {
@@ -39,20 +41,45 @@ CServerTest::~CServerTest( void )
 bool CServerTest::test()
 {
   bool bSuccess = true;
-  CcString sData;
-
-  CcProcess oServerRun("CcSyncServer.exe");
-  oServerRun.addArgument("configure");
-  oServerRun.start();
-  oServerRun.pipe().writeLine("Test");
-  oServerRun.pipe().writeLine("test");
-  oServerRun.pipe().writeLine("test");
-  oServerRun.pipe().writeLine("");
-  //oServerRun.pipe().writeLine("");
-  //oServerRun.pipe().writeLine("y");
-  if (oServerRun.waitForExit(CcDateTimeFromSeconds(1)))
+  CcString sApplicationPath = CcKernel::getWorkingDir();
+  CcString sConfigDir = CcKernel::getWorkingDir();
+  sConfigDir.appendPath("CServerTest");
+  if(CcDirectory::create(sConfigDir))
   {
-    CCERROR("Succeeded to setup CcSyncServer but it should faile");
+    sApplicationPath.appendPath("CcSyncServer");
+  #ifdef WINDOWS
+    sApplicationPath.append(".exe");
+  #endif
+    CcProcess oServerRun(sApplicationPath);
+    oServerRun.addArgument("configure");
+    oServerRun.addArgument("--config-dir");
+    oServerRun.addArgument(sConfigDir);
+    oServerRun.start();
+    if (oServerRun.waitForRunning(CcDateTimeFromSeconds(1)))
+    {
+      oServerRun.pipe().writeLine("Test");
+      oServerRun.pipe().writeLine("test");
+      oServerRun.pipe().writeLine("test");
+      oServerRun.pipe().writeLine("");
+      //oServerRun.pipe().writeLine("");
+      //oServerRun.pipe().writeLine("y");
+      if (oServerRun.waitForExit(CcDateTimeFromSeconds(1)))
+      {
+        CCERROR("Succeeded to setup CcSyncServer but it should fail");
+        bSuccess = false;
+      }
+      CcString sTestRead = oServerRun.pipe().readAll();
+      CCDEBUG(sTestRead);
+    }
+    else
+    {
+      CCERROR("Succeeded to setup CcSyncServer but it should fail");
+      bSuccess = false;
+    }
+  }
+  else
+  {
+    CCERROR("Failed to create testconfig dir");
     bSuccess = false;
   }
   return bSuccess;

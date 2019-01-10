@@ -80,19 +80,26 @@ public:
   CcSyncServer& operator=(const CcSyncServer& oToCopy);
   CcSyncServer& operator=(CcSyncServer&& oToMove);
   CcSyncUser loginUser(const CcString& sAccount, const CcString& sUserName, const CcString& sPassword);
+
   CcSyncUser getUserByToken(const CcString& sToken);
   CcSyncUser getUserByName(const CcString& sName);
+
+  void setConfigDir(const CcString& sConfigDir)
+    { m_sConfigDir = sConfigDir;}
+
   virtual CcVersion getVersion() const override;
 
   bool createConfig();
   bool createAccount(const CcString& sUsername, const CcString& sPassword, bool bAdmin);
   bool removeAccount(const CcString& sUsername);
 
+
 private:
   bool setupDatabase();
 
 private:
   CcArguments           m_oArguments;
+  CcString              m_sConfigDir;
   CcString              m_sDatabaseFile;
   CcSyncServerConfig    m_oConfig;
   CcSyncDbServer        m_oDatabase;
