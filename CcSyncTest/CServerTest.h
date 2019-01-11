@@ -34,7 +34,7 @@
 /**
  * @brief Class impelmentation
  */
-class CServerTest : public CcTest
+class CServerTest : public CcTest<CServerTest>
 {
 public:
   /**
@@ -48,6 +48,9 @@ public:
   virtual ~CServerTest( void );
 
   virtual bool test() override;
+
+private:
+  bool testConfigureFailed();
 };
 
 #endif /* _CServerTest_H_ */

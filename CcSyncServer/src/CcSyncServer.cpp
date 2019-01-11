@@ -63,6 +63,7 @@ CcSyncServer::~CcSyncServer(void)
 
 void CcSyncServer::run()
 {
+  CcSyncConsole::writeLine("CcSyncServer");
   if (m_oArguments.size() > 1)
   {
     bool bParamOk = true;

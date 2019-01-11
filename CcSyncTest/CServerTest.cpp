@@ -40,11 +40,17 @@ CServerTest::~CServerTest( void )
 
 bool CServerTest::test()
 {
+  testMethod(&CServerTest::testConfigureFailed);
+  return isOk();
+}
+
+bool CServerTest::testConfigureFailed()
+{
   bool bSuccess = true;
   CcString sApplicationPath = CcKernel::getWorkingDir();
   CcString sConfigDir = CcKernel::getWorkingDir();
   sConfigDir.appendPath("CServerTest");
-  if(CcDirectory::create(sConfigDir))
+  if(CcDirectory::create(sConfigDir, true))
   {
     sApplicationPath.appendPath("CcSyncServer");
   #ifdef WINDOWS
