@@ -59,7 +59,20 @@ CcSyncClient::CcSyncClient()
 
 CcSyncClient::CcSyncClient(const CcString& sConfigFilePath)
 {
-  if (CcFile::exists(sConfigFilePath))
+  CcFile oFileObject(sConfigFilePath);
+  if (oFileObject.isDir())
+  {
+    CcString sPath = sConfigFilePath;
+    sPath.appendPath(CcSyncGlobals::Client::ConfigFileName);
+    if (CcFile::exists(sPath))
+    {
+      init(sPath);
+    }
+    else
+    {
+}
+  }
+  else if (oFileObject.isFile())
   {
     init(sConfigFilePath);
   }
@@ -574,9 +587,17 @@ bool CcSyncClient::selectAccount(const CcString& sNewAccount)
   return bRet;
 }
 
-bool CcSyncClient::createConfig()
+bool CcSyncClient::createConfig(const CcString& sConfigDir)
 {
-  CcString sConfigFile = CcKernel::getUserDataDir();
+  CcString sConfigFile;
+  if (sConfigDir.length() > 0)
+  {
+    sConfigFile = sConfigDir;
+  }
+  else
+  {
+    sConfigFile = CcKernel::getUserDataDir();
+  }
   sConfigFile.appendPath(CcSyncGlobals::ConfigDirName);
   if (CcDirectory::exists(sConfigFile) ||
       CcDirectory::create(sConfigFile, true))

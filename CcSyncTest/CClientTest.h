@@ -16,44 +16,44 @@
  **/
 /**
  * @page      CcSyncTest
- * @subpage   CServerTest
+ * @subpage   CClientTest
  *
- * @page      CServerTest
+ * @page      CClientTest
  * @copyright Andreas Dirmeier (C) 2017
  * @author    Andreas Dirmeier
  * @par       Web:      http://coolcow.de/projects/CcOS
  * @par       Language: C++11
- * @brief     Class CServerTest
+ * @brief     Class CClientTest
  **/
-#ifndef _CServerTest_H_
-#define _CServerTest_H_
+#ifndef _CClientTest_H_
+#define _CClientTest_H_
 
 #include "CcBase.h"
 #include "CcTest.h"
-#include "CTestServer.h"
+#include "CTestClient.h"
 
 /**
  * @brief Class impelmentation
  */
-class CServerTest : public CcTest<CServerTest>
+class CClientTest : public CcTest<CClientTest>
 {
 public:
   /**
    * @brief Constructor
    */
-  CServerTest( void );
+  CClientTest( void );
 
   /**
    * @brief Destructor
    */
-  virtual ~CServerTest( void );
+  virtual ~CClientTest( void );
 
 private:
-  bool testServerProc();
+  bool testClientExists();
   bool testConfigureFailed();
 
 private: // Member
-  CTestServer* m_pServer = nullptr;
+  CTestClient * m_pClient = nullptr;
 };
 
-#endif /* _CServerTest_H_ */
+#endif /* _CClientTest_H_ */

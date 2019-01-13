@@ -20,9 +20,9 @@
  * @author    Andreas Dirmeier
  * @par       Web:      http://coolcow.de/projects/CcOS
  * @par       Language: C++11
- * @brief     Implemtation of class CServerTest
+ * @brief     Implemtation of class CClientTest
  */
-#include "CServerTest.h"
+#include "CClientTest.h"
 #include "CcProcess.h"
 #include "CcIODevice.h"
 #include "CcByteArray.h"
@@ -30,41 +30,41 @@
 #include "CcFileSystem.h"
 #include "CcDirectory.h"
 
-CServerTest::CServerTest( void )
+CClientTest::CClientTest( void )
 {
   CcString sApplicationPath = CcKernel::getWorkingDir();
   CcString sConfigDir = CcKernel::getWorkingDir();
-  sConfigDir.appendPath("CServerTest");
+  sConfigDir.appendPath("CClientTest");
   if (CcDirectory::create(sConfigDir, true))
   {
-    sApplicationPath.appendPath("CcSyncServer");
+    sApplicationPath.appendPath("CcSyncClient");
 #ifdef WINDOWS
     sApplicationPath.append(".exe");
 #endif
   }
-  m_pServer = new CTestServer(sApplicationPath, sConfigDir);
+  m_pClient = new CTestClient(sApplicationPath, sConfigDir);
 
-  appendTestMethod("Test if server can be exectued", &CServerTest::testServerProc);
-  appendTestMethod("Test if configure can fail", &CServerTest::testConfigureFailed);
-  CCMONITORNEW(m_pServer);
+  appendTestMethod("Test if client can be exectued", &CClientTest::testClientExists);
+  appendTestMethod("Test if configure can fail", &CClientTest::testConfigureFailed);
+  CCMONITORNEW(m_pClient);
 }
 
-CServerTest::~CServerTest( void )
+CClientTest::~CClientTest( void )
 {
-  CCDELETE(m_pServer);
+  CCDELETE(m_pClient);
 }
 
-bool CServerTest::testServerProc()
+bool CClientTest::testClientExists()
 {
-  return m_pServer->serverExists();
+  return m_pClient->clientExists();
 }
 
-bool CServerTest::testConfigureFailed()
+bool CClientTest::testConfigureFailed()
 {
   bool bSuccess = true;
   CcString sApplicationPath = CcKernel::getWorkingDir();
   CcString sConfigDir = CcKernel::getWorkingDir();
-  sConfigDir.appendPath("CServerTest");
+  sConfigDir.appendPath("CClientTest");
   if(CcDirectory::create(sConfigDir, true))
   {
     sApplicationPath.appendPath("CcSyncServer");

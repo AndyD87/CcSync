@@ -35,6 +35,7 @@
 #include "CcGlobalStrings.h"
 #include "CcSyncGlobals.h"
 #include "CcVersion.h"
+#include "CcDirectory.h"
 
 namespace Strings
 {
@@ -70,7 +71,39 @@ CcVersion CcSyncClientApp::getVersion() const
 
 void CcSyncClientApp::run()
 {
+  bool bParamOk = true;
   if (m_oArguments.size() > 1)
+  {
+    // Parse options
+    for (size_t iArg = 1; iArg < m_oArguments.size(); iArg++)
+    {
+      if (m_oArguments[iArg] == "--config-dir")
+      {
+        m_oArguments.remove(iArg);
+        if (iArg<m_oArguments.size())
+        {
+          m_sConfigDir = m_oArguments[iArg];
+          m_oArguments.remove(iArg);
+          iArg--;
+          if (!CcDirectory::exists(m_sConfigDir))
+          {
+            bParamOk = false;
+            CcSyncConsole::writeLine("--config-dir requires an existing valid path");
+          }
+        }
+        else
+        {
+          bParamOk = false;
+          CcSyncConsole::writeLine("--config-dir requires an additional paramter");
+        }
+      }
+    }
+  }
+  if (bParamOk == false)
+  {
+    setExitCode(EStatus::CommandInvalidParameter);
+  }
+  else if (m_oArguments.size() > 1)
   {
     if (m_oArguments[1].compareInsensitve("cli"))
     {
@@ -87,6 +120,10 @@ void CcSyncClientApp::run()
     else if (m_oArguments[1].compareInsensitve("help"))
     {
       m_eMode = ESyncClientMode::Help;
+    }
+    else
+    {
+      m_eMode = ESyncClientMode::Unknown;
     }
   }
   switch (m_eMode)
@@ -116,8 +153,9 @@ void CcSyncClientApp::run()
     case ESyncClientMode::Help:
       runHelp();
       break;
-  default:
-    break;
+    default:
+      setExitCode(EStatus::CommandInvalidParameter);
+      break;
   }
 }
 
@@ -164,7 +202,7 @@ void CcSyncClientApp::runCli()
   m_poSyncClient = CcSyncClient::create();
   if (!m_poSyncClient->isConfigAvailable())
   {
-    bSuccess = createConfig();
+    bSuccess = createConfig(m_sConfigDir);
   }
   if (bSuccess)
   {
@@ -330,10 +368,10 @@ void CcSyncClientApp::runHelp()
 
 }
 
-bool CcSyncClientApp::createConfig()
+bool CcSyncClientApp::createConfig(const CcString& sConfigDir)
 {
   if (m_poSyncClient != nullptr)
-    return m_poSyncClient->createConfig();
+    return m_poSyncClient->createConfig(sConfigDir);
   return false;
 }
 

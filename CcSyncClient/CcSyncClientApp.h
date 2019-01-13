@@ -39,7 +39,8 @@
 
 enum class ESyncClientMode
 {
-  Cli = 0,
+  Unknown = 0,
+  Cli = 1,
   Once,
   Daemon,
   Help
@@ -58,13 +59,14 @@ public:
   void runCli();
   void runOnce();
   void runHelp();
-  bool createConfig();
+  bool createConfig(const CcString& sConfigDir);
   bool createAccount();
   bool editAccount(const CcString& sAccount);
 private:
   ESyncClientMode m_eMode = ESyncClientMode::Cli;
-  CcArguments m_oArguments;
-  CcSyncClient* m_poSyncClient = nullptr;
+  CcString        m_sConfigDir;
+  CcArguments     m_oArguments;
+  CcSyncClient*   m_poSyncClient = nullptr;
 };
 
 #endif /* _SyncClient_H_ */

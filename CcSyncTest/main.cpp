@@ -28,6 +28,7 @@
 #include "CcConsole.h"
 
 #include "CServerTest.h"
+#include "CClientTest.h"
 
 // Application entry point. 
 int main(int argc, char **argv)
@@ -41,6 +42,9 @@ int main(int argc, char **argv)
 
   CServerTest oServerTest;
   bSuccess = oServerTest.test();
+
+  CClientTest oClientTest;
+  bSuccess &= oClientTest.test();
 
   if (bSuccess)
     return 0;

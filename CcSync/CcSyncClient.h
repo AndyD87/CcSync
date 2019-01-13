@@ -113,7 +113,7 @@ public:
   void close();
   void reconnect();
   bool selectAccount(const CcString& sNewAccount);
-  bool createConfig();
+  bool createConfig(const CcString& sConfigDir);
   bool addAccount(const CcString& sUsername, const CcString& sPassword, const CcString& sServer, const CcString& sPort);
   bool addRemoteAccount(const CcString& sUsername, const CcString& sPassword);
   bool removeAccount(const CcString& sUsername);

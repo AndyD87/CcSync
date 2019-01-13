@@ -63,41 +63,42 @@ CcSyncServer::~CcSyncServer(void)
 
 void CcSyncServer::run()
 {
-  CcSyncConsole::writeLine("CcSyncServer");
+  bool bParamOk = true;
   if (m_oArguments.size() > 1)
   {
-    bool bParamOk = true;
-    if(m_oArguments.size() > 2)
+    // Parse options
+    for (size_t iArg = 1; iArg < m_oArguments.size(); iArg++)
     {
-      // Parse options
-      for(size_t iArg = 2; iArg<m_oArguments.size();iArg++)
+      if (m_oArguments[iArg] == "--config-dir")
       {
-        if(m_oArguments[iArg] == "--config-dir")
+        m_oArguments.remove(iArg);
+        if (iArg<m_oArguments.size())
         {
-          if(iArg+1<m_oArguments.size())
+          m_sConfigDir = m_oArguments[iArg];
+          m_oArguments.remove(iArg);
+          iArg--;
+          if (!CcDirectory::exists(m_sConfigDir))
           {
-            iArg++;
-            m_sConfigDir = m_oArguments[iArg];
-            if(!CcDirectory::exists(m_sConfigDir))
-            {
-              bParamOk=false;
-              CcSyncConsole::writeLine("--config-dir requires an existing valid path");
-            }
+            bParamOk = false;
+            CcSyncConsole::writeLine("--config-dir requires an existing valid path");
           }
-          else
-          {
-            bParamOk=false;
-            CcSyncConsole::writeLine("--config-dir requires an additional paramter");
-          }
+        }
+        else
+        {
+          bParamOk = false;
+          CcSyncConsole::writeLine("--config-dir requires an additional paramter");
         }
       }
     }
-    if(bParamOk == false)
-    {
-      setExitCode(EStatus::CommandInvalidParameter);
-    }
-    // select mode
-    else if (m_oArguments[1] == "daemon")
+  }
+  if (bParamOk == false)
+  {
+    setExitCode(EStatus::CommandInvalidParameter);
+  }
+  // select mode
+  else if (m_oArguments.size() > 1)
+  {
+    if (m_oArguments[1] == "daemon")
     {
       switch (CcKernel::initService())
       {
@@ -127,10 +128,10 @@ void CcSyncServer::run()
     }
     else
     {
-      setExitCode(EStatus::CommandUnknownParameter);
       if (m_oArguments[1] != "help" &&
         m_oArguments[1] != "-h")
       {
+        setExitCode(EStatus::CommandUnknownParameter);
         CcConsole::writeLine("ERROR, wrong command: " + m_oArguments[1]);
       }
       runHelp();
