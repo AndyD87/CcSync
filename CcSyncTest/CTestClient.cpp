@@ -51,6 +51,7 @@ bool CTestClient::clientExists(void)
   if (oStatus)
   {
     resetArguments();
+    m_oClientProc.addArgument("hel");
     // test if a wrong parameter would faild server
     oStatus = m_oClientProc.exec(CcDateTimeFromSeconds(1));
     if (!oStatus && oStatus != EStatus::TimeoutReached)

@@ -50,7 +50,7 @@ public:
 
 private:
   bool testClientExists();
-  bool testConfigureFailed();
+  bool testClientWaitInput();
 
 private: // Member
   CTestClient * m_pClient = nullptr;

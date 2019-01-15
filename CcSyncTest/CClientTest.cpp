@@ -45,7 +45,7 @@ CClientTest::CClientTest( void )
   m_pClient = new CTestClient(sApplicationPath, sConfigDir);
 
   appendTestMethod("Test if client can be exectued", &CClientTest::testClientExists);
-  appendTestMethod("Test if configure can fail", &CClientTest::testConfigureFailed);
+  appendTestMethod("Test if sync server is waiting for input", &CClientTest::testClientWaitInput);
   CCMONITORNEW(m_pClient);
 }
 
@@ -59,7 +59,7 @@ bool CClientTest::testClientExists()
   return m_pClient->clientExists();
 }
 
-bool CClientTest::testConfigureFailed()
+bool CClientTest::testClientWaitInput()
 {
   bool bSuccess = true;
   CcString sApplicationPath = CcKernel::getWorkingDir();
@@ -67,7 +67,7 @@ bool CClientTest::testConfigureFailed()
   sConfigDir.appendPath("CClientTest");
   if(CcDirectory::create(sConfigDir, true))
   {
-    sApplicationPath.appendPath("CcSyncServer");
+    sApplicationPath.appendPath("CcSyncClient");
   #ifdef WINDOWS
     sApplicationPath.append(".exe");
   #endif
@@ -78,18 +78,11 @@ bool CClientTest::testConfigureFailed()
     oServerRun.start();
     if (oServerRun.waitForRunning(CcDateTimeFromSeconds(1)))
     {
-      oServerRun.pipe().writeLine("Test");
-      oServerRun.pipe().writeLine("test");
-      oServerRun.pipe().writeLine("test");
-      oServerRun.pipe().writeLine("");
-      //oServerRun.pipe().writeLine("");
-      //oServerRun.pipe().writeLine("y");
       if (oServerRun.waitForExit(CcDateTimeFromSeconds(1)))
       {
-        CCERROR("Succeeded to setup CcSyncServer but it should fail");
+        CCERROR("Succeeded to setup CcSyncClient but it should fail");
         bSuccess = false;
       }
-      CcString sTestRead = oServerRun.pipe().readAll();
     }
     else
     {

@@ -89,7 +89,6 @@ bool CServerTest::testConfigureFailed()
         CCERROR("Succeeded to setup CcSyncServer but it should fail");
         bSuccess = false;
       }
-      CcString sTestRead = oServerRun.pipe().readAll();
     }
     else
     {
