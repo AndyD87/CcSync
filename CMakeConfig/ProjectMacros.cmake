@@ -25,7 +25,6 @@ macro (CcSyncSetInstall ProjectName )
     
     install( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} DESTINATION include
              FILES_MATCHING PATTERN "*.h"
-             PATTERN "*/src"  EXCLUDE
              PATTERN "*/test" EXCLUDE)
   endif()
 endmacro()

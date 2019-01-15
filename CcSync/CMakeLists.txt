@@ -5,8 +5,8 @@ set ( CURRENT_PROJECT CcSync)
 # Add Source Files
 ########
 file (GLOB SOURCE_FILES
-      "src/*.c"
-      "src/*.cpp"
+      "*.c"
+      "*.cpp"
       "config/*.xml"
       "*.h")
 
