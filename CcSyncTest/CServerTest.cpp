@@ -82,8 +82,6 @@ bool CServerTest::testConfigureFailed()
       oServerRun.pipe().writeLine("test");
       oServerRun.pipe().writeLine("test");
       oServerRun.pipe().writeLine("");
-      //oServerRun.pipe().writeLine("");
-      //oServerRun.pipe().writeLine("y");
       if (oServerRun.waitForExit(CcDateTimeFromSeconds(1)))
       {
         CCERROR("Succeeded to setup CcSyncServer but it should fail");

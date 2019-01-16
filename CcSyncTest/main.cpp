@@ -26,6 +26,7 @@
 #include "CcBase.h"
 #include "CcKernel.h"
 #include "CcConsole.h"
+#include "CcTestFramework.h"
 
 #include "CServerTest.h"
 #include "CClientTest.h"
@@ -34,7 +35,10 @@
 int main(int argc, char **argv)
 {
   bool bSuccess = true;
-  CcKernel::setArg(argc, argv);
+  CcTestFramework::init(argc, argv);
+
+  CcString sTestString = CcTestFramework::getBinaryDir();
+  sTestString = CcTestFramework::getTemporaryDir();
   CcConsole::writeLine("Start: CcSyncTest");
 #ifdef DEBUG
   CcKernel::initCLI();
@@ -45,6 +49,8 @@ int main(int argc, char **argv)
 
   CClientTest oClientTest;
   bSuccess &= oClientTest.test();
+
+  CcTestFramework::deinit();
 
   if (bSuccess)
     return 0;
