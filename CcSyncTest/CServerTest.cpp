@@ -32,8 +32,8 @@
 
 CServerTest::CServerTest( void )
 {
-  CcString sApplicationPath = CcKernel::getWorkingDir();
-  CcString sConfigDir = CcKernel::getWorkingDir();
+  CcString sApplicationPath = CcTestFramework::getBinaryDir();
+  CcString sConfigDir = CcTestFramework::getTemporaryDir();
   sConfigDir.appendPath("CServerTest");
   if (CcDirectory::create(sConfigDir, true))
   {
@@ -62,8 +62,8 @@ bool CServerTest::testServerProc()
 bool CServerTest::testConfigureFailed()
 {
   bool bSuccess = true;
-  CcString sApplicationPath = CcKernel::getWorkingDir();
-  CcString sConfigDir = CcKernel::getWorkingDir();
+  CcString sApplicationPath = CcTestFramework::getBinaryDir();
+  CcString sConfigDir = CcTestFramework::getTemporaryDir();
   sConfigDir.appendPath("CServerTest");
   if(CcDirectory::create(sConfigDir, true))
   {

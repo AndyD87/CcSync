@@ -44,12 +44,9 @@ int main(int argc, char **argv)
   CcKernel::initCLI();
 #endif
 
-  CServerTest oServerTest;
-  bSuccess = oServerTest.test();
-
-  CClientTest oClientTest;
-  bSuccess &= oClientTest.test();
-
+  CcTestFramework::addTest(CServerTest::create);
+  CcTestFramework_addTest(CClientTest);
+  bSuccess = CcTestFramework::runTests();
   CcTestFramework::deinit();
 
   if (bSuccess)

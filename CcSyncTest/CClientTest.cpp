@@ -32,8 +32,8 @@
 
 CClientTest::CClientTest( void )
 {
-  CcString sApplicationPath = CcKernel::getWorkingDir();
-  CcString sConfigDir = CcKernel::getWorkingDir();
+  CcString sApplicationPath = CcTestFramework::getBinaryDir();
+  CcString sConfigDir = CcTestFramework::getTemporaryDir();
   sConfigDir.appendPath("CClientTest");
   if (CcDirectory::create(sConfigDir, true))
   {
@@ -62,8 +62,8 @@ bool CClientTest::testClientExists()
 bool CClientTest::testClientWaitInput()
 {
   bool bSuccess = true;
-  CcString sApplicationPath = CcKernel::getWorkingDir();
-  CcString sConfigDir = CcKernel::getWorkingDir();
+  CcString sApplicationPath = CcTestFramework::getBinaryDir();
+  CcString sConfigDir = CcTestFramework::getTemporaryDir();
   sConfigDir.appendPath("CClientTest");
   if(CcDirectory::create(sConfigDir, true))
   {
