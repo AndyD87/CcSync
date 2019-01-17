@@ -395,6 +395,7 @@ bool CcSyncServer::createConfig()
     {
       CcSyncConsole::writeLine("Configuration Directory could not be created");
       bSuccess = false;
+      setExitCode(EStatus::FSDirNotFound);
     }
   }
   if (bSuccess)
@@ -402,7 +403,11 @@ bool CcSyncServer::createConfig()
     sConfigFile.appendPath(CcSyncGlobals::Server::ConfigFileName);
     if (CcFile::exists(sConfigFile))
     {
-      m_oConfig.readConfig(sConfigFile);
+      bSuccess = m_oConfig.readConfig(sConfigFile);
+      if(!bSuccess)
+      {
+        setExitCode(EStatus::ConfigReadFailed);
+      }
     }
     else
     {

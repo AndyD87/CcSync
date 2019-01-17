@@ -25,6 +25,7 @@
 #include "CTestServer.h"
 #include "CcIODevice.h"
 #include "CcTestFramework.h"
+#include "CcByteArray.h"
 
 CTestServer::CTestServer(const CcString& sServerExePath, const CcString& sConfigDir) :
   m_sConfigDir(sConfigDir)
@@ -76,6 +77,11 @@ bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUs
   m_oServerProc.start();
   if (m_oServerProc.waitForRunning(CcDateTimeFromSeconds(1)))
   {
+    CcString sAllData;
+    do
+    {
+      sAllData += m_oServerProc.pipe().readAll();
+    } while(!sAllData.contains("Administrator"));
     m_oServerProc.pipe().writeLine(sUsername);
     m_oServerProc.pipe().writeLine(sPassword);
     m_oServerProc.pipe().writeLine(sPassword);
@@ -83,7 +89,8 @@ bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUs
     m_oServerProc.pipe().writeLine(sPath);
     if (m_oServerProc.waitForExit(CcDateTimeFromSeconds(1)))
     {
-      bSuccess = true;
+      CcString sNewData = m_oServerProc.pipe().readAll();
+      bSuccess = m_oServerProc.getExitCode();
     }
   }
   return bSuccess;

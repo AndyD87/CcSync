@@ -30,7 +30,8 @@
 #include "CcFileSystem.h"
 #include "CcDirectory.h"
 
-CServerTest::CServerTest( void )
+CServerTest::CServerTest( void ) :
+  CcTest("CServerTest")
 {
   CcString sApplicationPath = CcTestFramework::getBinaryDir();
   CcString sConfigDir = CcTestFramework::getTemporaryDir();
