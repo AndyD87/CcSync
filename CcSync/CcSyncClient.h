@@ -56,10 +56,6 @@ class CcFile;
 class CcSyncSHARED CcSyncClient 
 {
 public:
-  /**
-   * @brief Constructor
-   */
-  CcSyncClient();
   
   /**
    * @brief Constructor
@@ -131,7 +127,7 @@ public:
 
   bool changeHostname(const CcString& sHostName);
 
-  static CcSyncClient* create();
+  static CcSyncClient* create(const CcString& sConfigFilePath);
   static void remove(CcSyncClient* pToRemove);
 
 private: // Methods

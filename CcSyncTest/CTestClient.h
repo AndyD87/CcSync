@@ -50,6 +50,8 @@ public:
   void resetArguments();
 
   bool clientExists();
+  bool addNewServer(const CcString& sServerName, const CcString& sServerPort, const CcString& sUsername, const CcString& sPassword);
+  bool checkLogin(const CcString& sServerName, const CcString& sUsername);
 
 private:
   CcProcess m_oClientProc;

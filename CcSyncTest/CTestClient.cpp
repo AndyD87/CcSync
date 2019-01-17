@@ -23,6 +23,7 @@
  * @brief     Implemtation of class CTestClient
  */
 #include "CTestClient.h"
+#include "CcIODevice.h"
 
 CTestClient::CTestClient(const CcString& sServerExePath, const CcString& sConfigDir) :
   m_sConfigDir(sConfigDir)
@@ -62,6 +63,25 @@ bool CTestClient::clientExists(void)
     {
       oStatus = false;
     }
+  }
+  return oStatus;
+}
+
+bool CTestClient::addNewServer(const CcString& sServerName, const CcString& sServerPort, const CcString& sUsername, const CcString& sPassword)
+{
+  CcStatus oStatus;
+  resetArguments();
+  m_oClientProc.start();
+  if (m_oClientProc.waitForRunning(CcDateTimeFromSeconds(1)))
+  {
+    m_oClientProc.pipe().writeLine("new");
+    m_oClientProc.pipe().writeLine(sUsername);
+    m_oClientProc.pipe().writeLine(sServerName);
+    m_oClientProc.pipe().writeLine(sServerPort);
+    m_oClientProc.pipe().writeLine(sPassword);
+    m_oClientProc.pipe().writeLine("exit");
+    // test if a wrong parameter would faild server
+    oStatus = m_oClientProc.waitForExit(CcDateTimeFromSeconds(1));
   }
   return oStatus;
 }

@@ -52,6 +52,10 @@ public:
 private:
   bool testEnvironment();
   bool testSetupServer();
+  bool testSetupClient1();
+  bool testSetupClient2();
+  bool testLoginClient1();
+  bool testLoginClient2();
 
 private: // Member
   CSyncTestPrivate* m_pPrivate = nullptr;

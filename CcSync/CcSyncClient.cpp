@@ -42,43 +42,42 @@
 #include "CcSyncLog.h"
 #include "CcGlobalStrings.h"
 
-CcSyncClient::CcSyncClient()
-{
-  CcString sConfigFile = CcKernel::getUserDataDir();
-  sConfigFile.appendPath(CcSyncGlobals::ConfigDirName);
-  sConfigFile.appendPath(CcSyncGlobals::Client::ConfigFileName);
-  if (CcFile::exists(sConfigFile))
-  {
-    init(sConfigFile);
-  }
-  else
-  {
-    CcSyncLog::writeDebug("No configuration file in config-directory", ESyncLogTarget::Client);
-  }
-}
-
 CcSyncClient::CcSyncClient(const CcString& sConfigFilePath)
 {
-  CcFile oFileObject(sConfigFilePath);
-  if (oFileObject.isDir())
+  if (sConfigFilePath.length() == 0)
   {
-    CcString sPath = sConfigFilePath;
-    sPath.appendPath(CcSyncGlobals::Client::ConfigFileName);
-    if (CcFile::exists(sPath))
+    CcString sConfigFile = CcKernel::getUserDataDir();
+    sConfigFile.appendPath(CcSyncGlobals::ConfigDirName);
+    sConfigFile.appendPath(CcSyncGlobals::Client::ConfigFileName);
+    if (CcFile::exists(sConfigFile))
     {
-      init(sPath);
+      init(sConfigFile);
     }
     else
     {
-}
-  }
-  else if (oFileObject.isFile())
-  {
-    init(sConfigFilePath);
+      CcSyncLog::writeDebug("No configuration file in config-directory", ESyncLogTarget::Client);
+    }
   }
   else
   {
-    CcSyncLog::writeWarning("Configuration not found.", ESyncLogTarget::Client);
+    CcFile oFileObject(sConfigFilePath);
+    if (oFileObject.isDir())
+    {
+      CcString sPath = sConfigFilePath;
+      sPath.appendPath(CcSyncGlobals::Client::ConfigFileName);
+      if (CcFile::exists(sPath))
+      {
+        init(sPath);
+      }
+    }
+    else if (oFileObject.isFile())
+    {
+      init(sConfigFilePath);
+    }
+    else
+    {
+      CcSyncLog::writeWarning("Configuration not found.", ESyncLogTarget::Client);
+    }
   }
 }
 
@@ -756,9 +755,9 @@ bool CcSyncClient::changeHostname(const CcString& sHostName)
   return bSuccess;
 }
 
-CcSyncClient* CcSyncClient::create()
+CcSyncClient* CcSyncClient::create(const CcString& sConfigFilePath)
 {
-  CcSyncClient* pNew = new CcSyncClient();
+  CcSyncClient* pNew = new CcSyncClient(sConfigFilePath);
   CCMONITORNEW(pNew);
   return pNew;
 }

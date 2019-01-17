@@ -72,7 +72,11 @@ CSyncTest::CSyncTest( void ) :
 #endif
 
   appendTestMethod("Test if environment for sync test is successfully created", &CSyncTest::testEnvironment);
-  appendTestMethod("Test if server can be exectued", &CSyncTest::testSetupServer);
+  appendTestMethod("Setup TestServer", &CSyncTest::testSetupServer); 
+  appendTestMethod("Setup TestClient1", &CSyncTest::testSetupClient1);
+  appendTestMethod("Setup TestClient2", &CSyncTest::testSetupClient2);
+  appendTestMethod("Login TestClient1", &CSyncTest::testLoginClient1);
+  appendTestMethod("Login TestClient2", &CSyncTest::testLoginClient2);
 }
 
 CSyncTest::~CSyncTest( void )
@@ -136,6 +140,30 @@ bool CSyncTest::testSetupServer()
     m_pPrivate->sAdminName,
     m_pPrivate->sAdminPW,
     m_pPrivate->sTestServerDir
+  );
+  return bSuccess;
+}
+
+bool CSyncTest::testSetupClient1()
+{
+  bool bSuccess = true;
+  bSuccess = m_pPrivate->pClient1->addNewServer(
+    m_pPrivate->sServerName,
+    m_pPrivate->sServerPort,
+    m_pPrivate->sAdminName,
+    m_pPrivate->sAdminPW
+  );
+  return bSuccess;
+}
+
+bool CSyncTest::testSetupClient2()
+{
+  bool bSuccess = true;
+  bSuccess = m_pPrivate->pClient2->addNewServer(
+    m_pPrivate->sServerName,
+    m_pPrivate->sServerPort,
+    m_pPrivate->sAdminName,
+    m_pPrivate->sAdminPW
   );
   return bSuccess;
 }
