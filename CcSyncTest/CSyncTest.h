@@ -15,35 +15,46 @@
  * along with CcOS.  If not, see <http://www.gnu.org/licenses/>.
  **/
 /**
- * @page      CcUtil
- * @subpage   CTestClient1
+ * @page      CcSyncTest
+ * @subpage   CSyncTest
  *
- * @page      CTestClient1
+ * @page      CSyncTest
  * @copyright Andreas Dirmeier (C) 2017
  * @author    Andreas Dirmeier
  * @par       Web:      http://coolcow.de/projects/CcOS
  * @par       Language: C++11
- * @brief     Class CTestClient1
+ * @brief     Class CSyncTest
  **/
-#ifndef _CTestClient1_H_
-#define _CTestClient1_H_
+#ifndef _CSyncTest_H_
+#define _CSyncTest_H_
 
 #include "CcBase.h"
+#include "CcTest.h"
+
+class CSyncTestPrivate;
 
 /**
  * @brief Class impelmentation
  */
-class CTestClient1 {
+class CSyncTest : public CcTest<CSyncTest>
+{
 public:
   /**
    * @brief Constructor
    */
-  CTestClient1( void );
+  CSyncTest( void );
 
   /**
    * @brief Destructor
    */
-  virtual ~CTestClient1( void );
+  virtual ~CSyncTest( void );
+
+private:
+  bool testEnvironment();
+  bool testSetupServer();
+
+private: // Member
+  CSyncTestPrivate* m_pPrivate = nullptr;
 };
 
-#endif /* _CTestClient1_H_ */
+#endif /* _CSyncTest_H_ */

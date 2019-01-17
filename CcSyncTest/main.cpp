@@ -30,6 +30,7 @@
 
 #include "CServerTest.h"
 #include "CClientTest.h"
+#include "CSyncTest.h"
 
 // Application entry point. 
 int main(int argc, char **argv)
@@ -44,8 +45,10 @@ int main(int argc, char **argv)
   CcKernel::initCLI();
 #endif
 
-  CcTestFramework::addTest(CServerTest::create);
+  CcTestFramework_addTest(CServerTest);
   CcTestFramework_addTest(CClientTest);
+  CcTestFramework_addTest(CSyncTest);
+
   bSuccess = CcTestFramework::runTests();
   CcTestFramework::deinit();
 

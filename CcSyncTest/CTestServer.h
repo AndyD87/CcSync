@@ -48,8 +48,13 @@ public:
   virtual ~CTestServer( void );
 
   void resetArguments();
+  void addArgument(const CcString& sArgument)
+    { m_oServerProc.addArgument(sArgument); }
 
   bool serverExists();
+
+  bool createConfiguration(const CcString& sPort, const CcString& sUsername, const CcString& sPassword, const CcString& sPath);
+
 
 private:
   CcProcess m_oServerProc;

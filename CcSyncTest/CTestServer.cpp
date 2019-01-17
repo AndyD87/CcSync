@@ -23,6 +23,8 @@
  * @brief     Implemtation of class CTestServer
  */
 #include "CTestServer.h"
+#include "CcIODevice.h"
+#include "CcTestFramework.h"
 
 CTestServer::CTestServer(const CcString& sServerExePath, const CcString& sConfigDir) :
   m_sConfigDir(sConfigDir)
@@ -64,4 +66,25 @@ bool CTestServer::serverExists(void)
     }
   }
   return oStatus;
+}
+
+bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUsername, const CcString& sPassword, const CcString& sPath)
+{
+  bool bSuccess = false;
+  resetArguments();
+  addArgument("configure");
+  m_oServerProc.start();
+  if (m_oServerProc.waitForRunning(CcDateTimeFromSeconds(1)))
+  {
+    m_oServerProc.pipe().writeLine(sUsername);
+    m_oServerProc.pipe().writeLine(sPassword);
+    m_oServerProc.pipe().writeLine(sPassword);
+    m_oServerProc.pipe().writeLine(sPort);
+    m_oServerProc.pipe().writeLine(sPath);
+    if (m_oServerProc.waitForExit(CcDateTimeFromSeconds(1)))
+    {
+      bSuccess = true;
+    }
+  }
+  return bSuccess;
 }
