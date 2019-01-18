@@ -55,6 +55,8 @@ public:
 
   bool createConfiguration(const CcString& sPort, const CcString& sUsername, const CcString& sPassword, const CcString& sPath);
 
+  bool start();
+  bool stop();
 
 private:
   CcProcess m_oServerProc;

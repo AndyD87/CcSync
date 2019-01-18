@@ -75,8 +75,10 @@ CSyncTest::CSyncTest( void ) :
   appendTestMethod("Setup TestServer", &CSyncTest::testSetupServer); 
   appendTestMethod("Setup TestClient1", &CSyncTest::testSetupClient1);
   appendTestMethod("Setup TestClient2", &CSyncTest::testSetupClient2);
+  appendTestMethod("Setup TestClient2", &CSyncTest::testStartServer);
   appendTestMethod("Login TestClient1", &CSyncTest::testLoginClient1);
   appendTestMethod("Login TestClient2", &CSyncTest::testLoginClient2);
+  appendTestMethod("Setup TestClient2", &CSyncTest::testStopServer);
 }
 
 CSyncTest::~CSyncTest( void )
@@ -165,5 +167,31 @@ bool CSyncTest::testSetupClient2()
     m_pPrivate->sAdminName,
     m_pPrivate->sAdminPW
   );
+  return bSuccess;
+}
+
+bool CSyncTest::testStartServer()
+{
+  return m_pPrivate->pServer->start();
+}
+
+bool CSyncTest::testStopServer()
+{
+  return m_pPrivate->pServer->stop();
+}
+
+bool CSyncTest::testLoginClient1()
+{
+  bool bSuccess = m_pPrivate->pClient1->checkLogin(
+        m_pPrivate->sServerName,
+        m_pPrivate->sAdminName);
+  return bSuccess;
+}
+
+bool CSyncTest::testLoginClient2()
+{
+  bool bSuccess = m_pPrivate->pClient2->checkLogin(
+        m_pPrivate->sServerName,
+        m_pPrivate->sAdminName);
   return bSuccess;
 }

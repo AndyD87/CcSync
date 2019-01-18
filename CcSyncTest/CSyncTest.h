@@ -54,6 +54,8 @@ private:
   bool testSetupServer();
   bool testSetupClient1();
   bool testSetupClient2();
+  bool testStartServer();
+  bool testStopServer();
   bool testLoginClient1();
   bool testLoginClient2();
 

@@ -95,3 +95,17 @@ bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUs
   }
   return bSuccess;
 }
+
+bool CTestServer::start()
+{
+  resetArguments();
+  addArgument("start");
+  m_oServerProc.start();
+  return m_oServerProc.waitForState(EThreadState::Running, CcDateTimeFromSeconds(1));
+}
+
+bool CTestServer::stop()
+{
+  m_oServerProc.stop();
+  return m_oServerProc.waitForState(EThreadState::Stopped, CcDateTimeFromSeconds(1));
+}

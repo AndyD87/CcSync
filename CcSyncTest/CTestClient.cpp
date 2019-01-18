@@ -24,6 +24,7 @@
  */
 #include "CTestClient.h"
 #include "CcIODevice.h"
+#include "CcByteArray.h"
 
 CTestClient::CTestClient(const CcString& sServerExePath, const CcString& sConfigDir) :
   m_sConfigDir(sConfigDir)
@@ -82,6 +83,32 @@ bool CTestClient::addNewServer(const CcString& sServerName, const CcString& sSer
     m_oClientProc.pipe().writeLine("exit");
     // test if a wrong parameter would faild server
     oStatus = m_oClientProc.waitForExit(CcDateTimeFromSeconds(1));
+  }
+  return oStatus;
+}
+
+bool CTestClient::checkLogin(const CcString& sServerName, const CcString& sUsername)
+{
+  CcStatus oStatus;
+  resetArguments();
+  m_oClientProc.start();
+  if (m_oClientProc.waitForRunning(CcDateTimeFromSeconds(1)))
+  {
+    CcString sData = m_oClientProc.pipe().readAll();
+    m_oClientProc.pipe().writeLine("login "+sUsername+"@"+sServerName);
+    sData = m_oClientProc.pipe().readAll();
+    sData.trim();
+    if(sData.endsWith(sUsername+":"))
+    {
+      m_oClientProc.pipe().writeLine("exit");
+      m_oClientProc.pipe().writeLine("exit");
+      oStatus = m_oClientProc.waitForExit(CcDateTimeFromSeconds(1));
+    }
+    else
+    {
+      oStatus = EStatus::UserLoginFailed;
+    }
+    // test if a wrong parameter would faild server
   }
   return oStatus;
 }
