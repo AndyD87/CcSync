@@ -75,6 +75,8 @@ void CcSyncServer::run()
         if (iArg<m_oArguments.size())
         {
           m_sConfigDir = m_oArguments[iArg];
+          m_oConfig.setConfigDir(m_sConfigDir);
+          m_bOverwriteDefaultDirs = true;
           m_oArguments.remove(iArg);
           iArg--;
           if (!CcDirectory::exists(m_sConfigDir))
@@ -120,6 +122,7 @@ void CcSyncServer::run()
     else if (m_oArguments[1] == "start")
     {
       CcKernel::initCLI();
+      runServer();
     }
     else if (m_oArguments[1] == "info")
     {
@@ -159,12 +162,12 @@ void CcSyncServer::runHelp()
 
 void CcSyncServer::runServer()
 {
-  if(m_sConfigDir.length() == 0)
+  if(m_bOverwriteDefaultDirs == false)
   {
     m_sConfigDir = CcKernel::getConfigDir();
   }
   m_sDatabaseFile = m_sConfigDir;
-  CcString sConfigFile;
+  CcString sConfigFile = m_sConfigDir;
   sConfigFile.appendPath(CcSyncGlobals::ConfigDirName);
   if (!CcDirectory::exists(sConfigFile))
   {
@@ -381,7 +384,7 @@ CcVersion CcSyncServer::getVersion() const
 bool CcSyncServer::createConfig()
 {
   bool bSuccess = true;
-  if(m_sConfigDir.length() == 0)
+  if(m_bOverwriteDefaultDirs == false)
   {
     m_sConfigDir = CcKernel::getConfigDir();
   }
@@ -412,6 +415,11 @@ bool CcSyncServer::createConfig()
     else
     {
       CcString sDefaultLocation = CcKernel::getDataDir();
+      if(m_bOverwriteDefaultDirs)
+      {
+        sDefaultLocation = m_sConfigDir;
+        sDefaultLocation.appendPath(CcSyncGlobals::ConfigDirName);
+      }
       sDefaultLocation.appendPath("CcSync/Server");
       m_oConfig.setLocation(sDefaultLocation);
       m_oConfig.setPort(CcCommonPorts::CcSync);
@@ -515,6 +523,10 @@ bool CcSyncServer::createConfig()
 bool CcSyncServer::setupDatabase()
 {
   m_sDatabaseFile = CcKernel::getDataDir();
+  if(m_bOverwriteDefaultDirs)
+  {
+    m_sDatabaseFile = m_sConfigDir;
+  }
   m_sDatabaseFile.appendPath(CcSyncGlobals::ConfigDirName);
   if (CcDirectory::exists(m_sDatabaseFile) ||
       CcDirectory::create(m_sDatabaseFile, true))

@@ -49,7 +49,7 @@ public:
   /**
    * @brief Constructor
    */
-  CcSyncServerConfig(void);
+  CcSyncServerConfig();
   
   uint16 getPort() const
     { return m_uiPort; }
@@ -62,6 +62,7 @@ public:
   const CcSyncServerLocationConfig& getLocation() const
     {return m_oLocation; }
   
+  void setConfigDir(const CcString& sConfigDir);
   void setPort(uint16 uiPort)
     { m_uiPort = uiPort; }
   void setSslCertFile(const CcString& sSslCertFile)
@@ -95,6 +96,7 @@ private:
   uint16   m_uiPort;
   bool     m_bSsl = true;
   bool     m_bSslRequired = true;
+  CcString m_sConfigDir;
   CcString m_sSslCertFile;
   CcString m_sSslKeyFile;
   CcPassword m_oRootPassword;

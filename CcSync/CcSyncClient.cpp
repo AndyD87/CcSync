@@ -69,6 +69,16 @@ CcSyncClient::CcSyncClient(const CcString& sConfigFilePath)
       {
         init(sPath);
       }
+      else
+      {
+        sPath = sConfigFilePath;
+        sPath.appendPath(CcSyncGlobals::ConfigDirName);
+        sPath.appendPath(CcSyncGlobals::Client::ConfigFileName);
+        if (CcFile::exists(sPath))
+        {
+          init(sPath);
+        }
+      }
     }
     else if (oFileObject.isFile())
     {

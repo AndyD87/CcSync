@@ -100,6 +100,7 @@ private:
 private:
   CcArguments           m_oArguments;
   CcString              m_sConfigDir;
+  bool                  m_bOverwriteDefaultDirs = false;
   CcString              m_sDatabaseFile;
   CcSyncServerConfig    m_oConfig;
   CcSyncDbServer        m_oDatabase;

@@ -62,7 +62,7 @@ bool CClientTest::testClientExists()
 
 bool CClientTest::testClientWaitInput()
 {
-  bool bSuccess = true;
+  bool bSuccess = false;
   CcString sApplicationPath = CcTestFramework::getBinaryDir();
   CcString sConfigDir = CcTestFramework::getTemporaryDir();
   sConfigDir.appendPath("CClientTest");
@@ -73,7 +73,6 @@ bool CClientTest::testClientWaitInput()
     sApplicationPath.append(".exe");
   #endif
     CcProcess oServerRun(sApplicationPath);
-    oServerRun.addArgument("configure");
     oServerRun.addArgument("--config-dir");
     oServerRun.addArgument(sConfigDir);
     oServerRun.start();
@@ -81,20 +80,21 @@ bool CClientTest::testClientWaitInput()
     {
       if (oServerRun.waitForExit(CcDateTimeFromSeconds(1)))
       {
-        CCERROR("Succeeded to setup CcSyncClient but it should fail");
-        bSuccess = false;
+        CcTestFramework::writeError("Succeeded to setup CcSyncClient but it should fail");
+      }
+      else
+      {
+        bSuccess = true;
       }
     }
     else
     {
-      CCERROR("Succeeded to setup CcSyncServer but it should fail");
-      bSuccess = false;
+      CcTestFramework::writeError("Succeeded to setup CcSyncServer but it should fail");
     }
   }
   else
   {
-    CCERROR("Failed to create testconfig dir");
-    bSuccess = false;
+    CcTestFramework::writeError("Failed to create testconfig dir");
   }
   return bSuccess;
 }

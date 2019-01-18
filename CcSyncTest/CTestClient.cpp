@@ -25,6 +25,8 @@
 #include "CTestClient.h"
 #include "CcIODevice.h"
 #include "CcByteArray.h"
+#include "CcTestFramework.h"
+#include "CcKernel.h"
 
 CTestClient::CTestClient(const CcString& sServerExePath, const CcString& sConfigDir) :
   m_sConfigDir(sConfigDir)
@@ -73,7 +75,8 @@ bool CTestClient::addNewServer(const CcString& sServerName, const CcString& sSer
   CcStatus oStatus;
   resetArguments();
   m_oClientProc.start();
-  if (m_oClientProc.waitForRunning(CcDateTimeFromSeconds(1)))
+  oStatus = m_oClientProc.waitForRunning(CcDateTimeFromSeconds(1));
+  if (oStatus)
   {
     m_oClientProc.pipe().writeLine("new");
     m_oClientProc.pipe().writeLine(sUsername);
@@ -81,7 +84,6 @@ bool CTestClient::addNewServer(const CcString& sServerName, const CcString& sSer
     m_oClientProc.pipe().writeLine(sServerPort);
     m_oClientProc.pipe().writeLine(sPassword);
     m_oClientProc.pipe().writeLine("exit");
-    // test if a wrong parameter would faild server
     oStatus = m_oClientProc.waitForExit(CcDateTimeFromSeconds(1));
   }
   return oStatus;
@@ -92,21 +94,30 @@ bool CTestClient::checkLogin(const CcString& sServerName, const CcString& sUsern
   CcStatus oStatus;
   resetArguments();
   m_oClientProc.start();
-  if (m_oClientProc.waitForRunning(CcDateTimeFromSeconds(1)))
+  oStatus = m_oClientProc.waitForRunning(CcDateTimeFromSeconds(1));
+  if (oStatus)
   {
-    CcString sData = m_oClientProc.pipe().readAll();
     m_oClientProc.pipe().writeLine("login "+sUsername+"@"+sServerName);
-    sData = m_oClientProc.pipe().readAll();
-    sData.trim();
-    if(sData.endsWith(sUsername+":"))
+    CcString sData;
+    CcDateTime oCountDown  = CcDateTimeFromSeconds(5);
+    // Wait for input
+    oStatus = EStatus::UserLoginFailed;
+    while(oCountDown.timestampUs() > 0)
+    {
+      oCountDown.addSeconds(-1);
+      CcKernel::delayS(1);
+      sData += m_oClientProc.pipe().readAll();
+      sData.trim();
+      if(sData.endsWith(sUsername+"]:"))
+      {
+        break;
+      }
+    }
+    if(sData.endsWith(sUsername+"]:"))
     {
       m_oClientProc.pipe().writeLine("exit");
       m_oClientProc.pipe().writeLine("exit");
       oStatus = m_oClientProc.waitForExit(CcDateTimeFromSeconds(1));
-    }
-    else
-    {
-      oStatus = EStatus::UserLoginFailed;
     }
     // test if a wrong parameter would faild server
   }

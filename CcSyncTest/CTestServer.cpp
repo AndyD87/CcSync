@@ -98,10 +98,18 @@ bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUs
 
 bool CTestServer::start()
 {
+  bool bStarted = false;
   resetArguments();
   addArgument("start");
   m_oServerProc.start();
-  return m_oServerProc.waitForState(EThreadState::Running, CcDateTimeFromSeconds(1));
+  if(m_oServerProc.waitForState(EThreadState::Running, CcDateTimeFromSeconds(1)))
+  {
+    if(m_oServerProc.waitForState(EThreadState::Stopped, CcDateTimeFromSeconds(1)) == EStatus::TimeoutReached)
+    {
+      bStarted = true;
+    }
+  }
+  return bStarted;
 }
 
 bool CTestServer::stop()

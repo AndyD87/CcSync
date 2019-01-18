@@ -40,10 +40,17 @@ CcSyncServerConfig::CcSyncServerConfig() :
   m_oLocation(this)
 {
   // preinit members
-  m_sSslKeyFile = CcKernel::getConfigDir();
+  setConfigDir(CcKernel::getConfigDir());
+}
+
+void CcSyncServerConfig::setConfigDir(const CcString& sConfigDir)
+{
+  m_sConfigDir = sConfigDir;
+  // preinit members
+  m_sSslKeyFile = m_sConfigDir;
   m_sSslKeyFile.appendPath(CcSyncGlobals::ConfigDirName);
   m_sSslKeyFile.appendPath(CcSyncGlobals::DefaultKeyFile);
-  m_sSslCertFile = CcKernel::getConfigDir();
+  m_sSslCertFile = m_sConfigDir;
   m_sSslCertFile.appendPath(CcSyncGlobals::ConfigDirName);
   m_sSslCertFile.appendPath(CcSyncGlobals::DefaultCertFile);
 }

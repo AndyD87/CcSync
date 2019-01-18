@@ -75,10 +75,10 @@ CSyncTest::CSyncTest( void ) :
   appendTestMethod("Setup TestServer", &CSyncTest::testSetupServer); 
   appendTestMethod("Setup TestClient1", &CSyncTest::testSetupClient1);
   appendTestMethod("Setup TestClient2", &CSyncTest::testSetupClient2);
-  appendTestMethod("Setup TestClient2", &CSyncTest::testStartServer);
+  appendTestMethod("Start TestServer", &CSyncTest::testStartServer);
   appendTestMethod("Login TestClient1", &CSyncTest::testLoginClient1);
   appendTestMethod("Login TestClient2", &CSyncTest::testLoginClient2);
-  appendTestMethod("Setup TestClient2", &CSyncTest::testStopServer);
+  appendTestMethod("Stop TestServer", &CSyncTest::testStopServer);
 }
 
 CSyncTest::~CSyncTest( void )
