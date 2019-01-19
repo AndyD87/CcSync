@@ -56,8 +56,11 @@ private:
   bool testSetupClient2();
   bool testStartServer();
   bool testStopServer();
+  bool testCheckLoginClient1();
+  bool testCheckLoginClient2();
+
   bool testLoginClient1();
-  bool testLoginClient2();
+  bool testCreateTestDir();
 
 private: // Member
   CSyncTestPrivate* m_pPrivate = nullptr;

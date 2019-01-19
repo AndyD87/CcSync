@@ -111,7 +111,7 @@ if(Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.e
 }
 
 $Architectures  = @("win32", "x64")
-$Configurations = @("Release", "Debug") # Not required but possible to test : "RelWithDebInfo", "MinSizeRel")
+$Configurations = @("Release") # Not required but possible to test :, "Debug", "RelWithDebInfo", "MinSizeRel")
 $Statics = @("Static", "Shared")
     
 $CurrentDir  = (Get-Item .\).FullName

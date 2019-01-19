@@ -51,11 +51,19 @@ public:
 
   bool clientExists();
   bool addNewServer(const CcString& sServerName, const CcString& sServerPort, const CcString& sUsername, const CcString& sPassword);
+  bool login(const CcString& sServerName, const CcString& sUsername);
+  bool logout();
   bool checkLogin(const CcString& sServerName, const CcString& sUsername);
+  bool createDirectory(const CcString & sDirectoryPath);
+
+private:
+  CcString readUntil(const CcString& sStringEnd);
 
 private:
   CcProcess m_oClientProc;
   CcString  m_sConfigDir;
+  CcString  m_sUsername;
+  bool m_bLogin = false;
 };
 
 #endif /* _CTestClient_H_ */

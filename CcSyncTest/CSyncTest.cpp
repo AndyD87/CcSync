@@ -76,8 +76,10 @@ CSyncTest::CSyncTest( void ) :
   appendTestMethod("Setup TestClient1", &CSyncTest::testSetupClient1);
   appendTestMethod("Setup TestClient2", &CSyncTest::testSetupClient2);
   appendTestMethod("Start TestServer", &CSyncTest::testStartServer);
+  appendTestMethod("Check login TestClient1", &CSyncTest::testCheckLoginClient1);
+  appendTestMethod("Check login TestClient2", &CSyncTest::testCheckLoginClient2);
   appendTestMethod("Login TestClient1", &CSyncTest::testLoginClient1);
-  appendTestMethod("Login TestClient2", &CSyncTest::testLoginClient2);
+  appendTestMethod("Create first Testdir", &CSyncTest::testCreateTestDir);
   appendTestMethod("Stop TestServer", &CSyncTest::testStopServer);
 }
 
@@ -180,7 +182,7 @@ bool CSyncTest::testStopServer()
   return m_pPrivate->pServer->stop();
 }
 
-bool CSyncTest::testLoginClient1()
+bool CSyncTest::testCheckLoginClient1()
 {
   bool bSuccess = m_pPrivate->pClient1->checkLogin(
         m_pPrivate->sServerName,
@@ -188,10 +190,34 @@ bool CSyncTest::testLoginClient1()
   return bSuccess;
 }
 
-bool CSyncTest::testLoginClient2()
+bool CSyncTest::testCheckLoginClient2()
 {
   bool bSuccess = m_pPrivate->pClient2->checkLogin(
         m_pPrivate->sServerName,
         m_pPrivate->sAdminName);
+  return bSuccess;
+}
+
+bool CSyncTest::testLoginClient1()
+{
+  bool bSuccess = m_pPrivate->pClient1->login(
+    m_pPrivate->sServerName,
+    m_pPrivate->sAdminName);
+  return bSuccess;
+}
+
+bool CSyncTest::testCreateTestDir()
+{
+  bool bSuccess = m_pPrivate->pClient1->createDirectory("TestDir");
+  if (bSuccess)
+  {
+    bSuccess = m_pPrivate->pClient2->login(
+      m_pPrivate->sServerName,
+      m_pPrivate->sAdminName);
+    if (bSuccess)
+    {
+      bSuccess = m_pPrivate->pClient2->createDirectory("TestDir");
+    }
+  }
   return bSuccess;
 }

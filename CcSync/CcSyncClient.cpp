@@ -1611,27 +1611,19 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
     if (oClientFileInfo.getId() == 0)
     {
       oClientFileInfo.fromSystemFile(false);
-      oClientFileInfo = oServerFileInfo;;
       if (oClientFileInfo.getFileSize() == oServerFileInfo.getFileSize() &&
           oClientFileInfo.fromSystemFile(true) &&
           oClientFileInfo.getCrc() == oServerFileInfo.getCrc())
       {
-        if (oServerFileInfo.modified() < 0)
+        setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
+        if (oDirectory.fileListUpdate(oClientFileInfo, false))
         {
-          m_oRequest.init(ESyncCommandType::DirectoryDownloadFile);
-          bRet = doDownloadFile(oDirectory, oFileInfo, uiQueueIndex);
+          bRet = true;
         }
         else
         {
-          if (oDirectory.fileListUpdate(oClientFileInfo, false))
-          {
-            bRet = true;
-          }
-          else
-          {
-            CcSyncLog::writeDebug("Update file, update in database failed: " + oServerFileInfo.getName(), ESyncLogTarget::Client);
-            oDirectory.queueIncrementItem(uiQueueIndex);
-          }
+          CcSyncLog::writeDebug("Update file, update in database failed: " + oServerFileInfo.getName(), ESyncLogTarget::Client);
+          oDirectory.queueIncrementItem(uiQueueIndex);
         }
       }
       else
@@ -1659,13 +1651,12 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
           }
           else if (oDirectory.fileListUpdate(oServerFileInfo, false))
           {
-            CcFile::setModified(oClientFileInfo.getSystemFullPath(), CcDateTimeFromSeconds(oServerFileInfo.getModified()));
-            CcSyncLog::writeDebug("1 Update file, update in database succeeded: " + oServerFileInfo.getName(), ESyncLogTarget::Client);
+            setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
             oDirectory.queueFinalizeFile(uiQueueIndex);
           }
           else
           {
-            CcSyncLog::writeDebug("1 Update file, update in database failed: " + oServerFileInfo.getName(), ESyncLogTarget::Client);
+            CcSyncLog::writeDebug("Update file, update in database failed: " + oServerFileInfo.getName(), ESyncLogTarget::Client);
             oDirectory.queueIncrementItem(uiQueueIndex);
           }
         }
@@ -1681,13 +1672,12 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
         {
           if (oDirectory.fileListUpdate(oServerFileInfo, false))
           {
-            CcFile::setModified(oClientFileInfo.getSystemFullPath(), CcDateTimeFromSeconds(oServerFileInfo.getModified()));
-            CcSyncLog::writeDebug("2 Update file, update in database succeeded: " + oServerFileInfo.getName(), ESyncLogTarget::Client);
+            setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
             oDirectory.queueFinalizeFile(uiQueueIndex);
           }
           else
           {
-            CcSyncLog::writeDebug("2 Update file, update in database failed: " + oServerFileInfo.getName(), ESyncLogTarget::Client);
+            CcSyncLog::writeDebug("Update file, update in database failed: " + oServerFileInfo.getName(), ESyncLogTarget::Client);
             oDirectory.queueIncrementItem(uiQueueIndex);
           }
         }
@@ -1705,8 +1695,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
         {
           if (oDirectory.fileListUpdate(oServerFileInfo, false))
           {
-            CcFile::setModified(oClientFileInfo.getSystemFullPath(), CcDateTimeFromSeconds(oServerFileInfo.getModified()));
-            CcSyncLog::writeDebug("3 Update file, update in database succeeded: " + oServerFileInfo.getName(), ESyncLogTarget::Client);
+            setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
             oDirectory.queueFinalizeFile(uiQueueIndex);
           }
           else
@@ -1823,9 +1812,9 @@ bool CcSyncClient::doDownloadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& o
           {
             if (!CcFile::remove(oFileInfo.getSystemFullPath()))
             {
-              bSuccess = CcFile::remove(sTempFilePath);
-              if(bSuccess == false)
-                CcSyncLog::writeDebug("Failed to remove original File: " + oFileInfo.getSystemFullPath(), ESyncLogTarget::Client);
+              bSuccess = false;
+              CcFile::remove(sTempFilePath);
+              CcSyncLog::writeDebug("Failed to remove original File: " + oFileInfo.getSystemFullPath(), ESyncLogTarget::Client);
             }
           }
           if (bSuccess)
@@ -1833,23 +1822,14 @@ bool CcSyncClient::doDownloadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& o
             bSuccess = CcFile::move(sTempFilePath, oFileInfo.getSystemFullPath());
             if (bSuccess == false)
             {
+              CcFile::remove(sTempFilePath);
               CcSyncLog::writeDebug("Failed to move temporary File: ", ESyncLogTarget::Client);
               CcSyncLog::writeDebug("  " + sTempFilePath + " -> " + oFileInfo.getSystemFullPath(), ESyncLogTarget::Client);
             }
           }
           if (bSuccess)
           {
-#ifndef WIN32
-            if(oDirectory.getGroupId() != UINT32_MAX)
-            {
-              CcFile::setGroupId(oFileInfo.getSystemFullPath(), oDirectory.getGroupId());
-            }
-            if (oDirectory.getUserId() != UINT32_MAX)
-            {
-              CcFile::setUserId(oFileInfo.getSystemFullPath(), oDirectory.getUserId());
-            }
-#endif
-            CcFile::setModified(oFileInfo.getSystemFullPath(), CcDateTimeFromSeconds(oFileInfo.getModified()));
+            setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oFileInfo.getModified());
             if (oDirectory.fileListInsert(oFileInfo))
             {
               CcSyncLog::writeDebug("File downloaded: " + oFileInfo.getName(), ESyncLogTarget::Client);
@@ -1893,4 +1873,19 @@ bool CcSyncClient::doDownloadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& o
     oDirectory.queueIncrementItem(uiQueueIndex);
   }
   return bRet;
+}
+
+void CcSyncClient::setFileInfo(const CcString& sPathToFile, uint32 uiUserId, uint32 uiGroupId, int64 iModified)
+{
+#ifndef WIN32
+  if (oDirectory.getGroupId() != UINT32_MAX)
+  {
+    CcFile::setGroupId(sPathToFile, uiGroupId);
+  }
+  if (oDirectory.getUserId() != UINT32_MAX)
+  {
+    CcFile::setUserId(sPathToFile, uiUserId);
+  }
+#endif
+  CcFile::setModified(sPathToFile, CcDateTimeFromSeconds(iModified));
 }

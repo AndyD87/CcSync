@@ -27,6 +27,8 @@
 #include "CcByteArray.h"
 #include "CcTestFramework.h"
 #include "CcKernel.h"
+#include "CcFile.h"
+#include "CcDirectory.h"
 
 CTestClient::CTestClient(const CcString& sServerExePath, const CcString& sConfigDir) :
   m_sConfigDir(sConfigDir)
@@ -89,8 +91,9 @@ bool CTestClient::addNewServer(const CcString& sServerName, const CcString& sSer
   return oStatus;
 }
 
-bool CTestClient::checkLogin(const CcString& sServerName, const CcString& sUsername)
+bool CTestClient::login(const CcString& sServerName, const CcString& sUsername)
 {
+  m_sUsername = sUsername;
   CcStatus oStatus;
   resetArguments();
   m_oClientProc.start();
@@ -98,28 +101,66 @@ bool CTestClient::checkLogin(const CcString& sServerName, const CcString& sUsern
   if (oStatus)
   {
     m_oClientProc.pipe().writeLine("login "+sUsername+"@"+sServerName);
-    CcString sData;
-    CcDateTime oCountDown  = CcDateTimeFromSeconds(5);
+    CcString sData = readUntil(sUsername + "]:");
     // Wait for input
     oStatus = EStatus::UserLoginFailed;
-    while(oCountDown.timestampUs() > 0)
-    {
-      oCountDown.addSeconds(-1);
-      CcKernel::delayS(1);
-      sData += m_oClientProc.pipe().readAll();
-      sData.trim();
-      if(sData.endsWith(sUsername+"]:"))
-      {
-        break;
-      }
-    }
+
     if(sData.endsWith(sUsername+"]:"))
     {
-      m_oClientProc.pipe().writeLine("exit");
-      m_oClientProc.pipe().writeLine("exit");
-      oStatus = m_oClientProc.waitForExit(CcDateTimeFromSeconds(1));
+      oStatus = EStatus::AllOk;
     }
     // test if a wrong parameter would faild server
   }
   return oStatus;
+}
+
+bool CTestClient::logout()
+{
+  m_oClientProc.pipe().writeLine("exit");
+  m_oClientProc.pipe().writeLine("exit");
+  return m_oClientProc.waitForExit(CcDateTimeFromSeconds(1));
+}
+
+bool CTestClient::checkLogin(const CcString& sServerName, const CcString& sUsername)
+{
+  CcStatus oStatus(EStatus::LoginFailed);
+  if (login(sServerName, sUsername))
+  {
+    oStatus = logout();
+  }
+  return oStatus;
+}
+
+bool CTestClient::createDirectory(const CcString& sDirectoryPath)
+{
+  bool bSuccess = false;
+  m_oClientProc.pipe().writeLine("create");
+  m_oClientProc.pipe().writeLine("TestDir");
+  CcString sDir = m_sConfigDir.appendPath("CcSync").appendPath(sDirectoryPath);
+  m_oClientProc.pipe().writeLine(sDir);
+  CcString sData = readUntil(m_sUsername + "]:");
+
+  if (CcDirectory::exists(sDir))
+  {
+    bSuccess = true;
+  }
+  return bSuccess;
+}
+
+CcString CTestClient::readUntil(const CcString& sStringEnd)
+{
+  CcString sData;
+  CcDateTime oCountDown = CcDateTimeFromSeconds(5);
+  while (oCountDown.timestampUs() > 0)
+  {
+    oCountDown.addSeconds(-1);
+    CcKernel::delayS(1);
+    sData += m_oClientProc.pipe().readAll();
+    sData.trim();
+    if (sData.endsWith(sStringEnd))
+    {
+      break;
+    }
+  }
+  return sData;
 }

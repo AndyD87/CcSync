@@ -35,27 +35,13 @@
 // Application entry point. 
 int main(int argc, char **argv)
 {
-  bool bSuccess = true;
   CcTestFramework::init(argc, argv);
-
-  CcString sTestString = CcTestFramework::getBinaryDir();
-  sTestString = CcTestFramework::getTemporaryDir();
   CcConsole::writeLine("Start: CcSyncTest");
-#ifdef DEBUG
-  CcKernel::initCLI();
-#endif
 
   CcTestFramework_addTest(CServerTest);
   CcTestFramework_addTest(CClientTest);
   CcTestFramework_addTest(CSyncTest);
 
-  bSuccess = CcTestFramework::runTests();
-  CcTestFramework::deinit();
-
-  if (bSuccess)
-    return 0;
-  else
-  {
-    return 1;
-  }
+  CcTestFramework::runTests();
+  return CcTestFramework::deinit();
 }
