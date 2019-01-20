@@ -29,5 +29,11 @@
 #define _CcSyncTestGlobals_H_
 
 #include "CcBase.h"
+#include "CcDateTime.h"
+
+namespace CcSyncTestGlobals
+{
+  CcDateTime DefaultSyncTimeout = CcDateTimeFromSeconds(5);
+}
 
 #endif /* _CcSyncTestGlobals_H_ */

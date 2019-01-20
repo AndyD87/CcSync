@@ -154,6 +154,7 @@ private: // Methods
   static void setFileInfo(const CcString& sPathToFile, uint32 uiUserId, uint32 uiGroupId, int64 iModified);
 
 private: // Member
+  CcString                      m_sConfigPath;
   CcString                      m_sDatabaseFile;
   CcSyncClientConfig            m_oConfig;
   CcSyncAccountConfigHandle     m_pAccount    = nullptr;

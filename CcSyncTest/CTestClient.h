@@ -30,6 +30,7 @@
 
 #include "CcBase.h"
 #include "CcProcess.h"
+#include "CcStringList.h"
 
 /**
  * @brief Class impelmentation
@@ -53,15 +54,20 @@ public:
   bool addNewServer(const CcString& sServerName, const CcString& sServerPort, const CcString& sUsername, const CcString& sPassword);
   bool login(const CcString& sServerName, const CcString& sUsername);
   bool logout();
+  bool sync();
   bool checkLogin(const CcString& sServerName, const CcString& sUsername);
+  bool createSyncDirectory(const CcString & sDirectoryPath);
   bool createDirectory(const CcString & sDirectoryPath);
+  bool createFile(const CcString & sPathInDir, const CcString &sContent);
 
 private:
   CcString readUntil(const CcString& sStringEnd);
+  bool readUntilSucceeded(const CcString& sStringEnd);
 
 private:
   CcProcess m_oClientProc;
   CcString  m_sConfigDir;
+  CcStringList m_sSyncDirs;
   CcString  m_sUsername;
   bool m_bLogin = false;
 };

@@ -975,7 +975,7 @@ void CcSyncServerWorker::doDirectoryUploadFile()
           CcString sTempFilePath = oFileInfo.getSystemFullPath();
           sTempFilePath.append(CcSyncGlobals::TemporaryExtension);
           CcFile oFile(sTempFilePath);
-          if (oFile.open(EOpenFlags::Write))
+          if (oFile.open(EOpenFlags::Overwrite))
           {
             sendResponse();
             if (receiveFile(&oFile, oFileInfo))

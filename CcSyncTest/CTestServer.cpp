@@ -23,6 +23,7 @@
  * @brief     Implemtation of class CTestServer
  */
 #include "CTestServer.h"
+#include "CcSyncTestGlobals.h"
 #include "CcIODevice.h"
 #include "CcTestFramework.h"
 #include "CcByteArray.h"
@@ -50,13 +51,13 @@ bool CTestServer::serverExists(void)
 {
   resetArguments();
   m_oServerProc.addArgument("help");
-  CcStatus oStatus = m_oServerProc.exec(CcDateTimeFromSeconds(1));
+  CcStatus oStatus = m_oServerProc.exec(CcSyncTestGlobals::DefaultSyncTimeout);
   if (oStatus)
   {
     resetArguments();
     // test if a wrong parameter would faild server
     m_oServerProc.addArgument("hel");
-    oStatus = m_oServerProc.exec(CcDateTimeFromSeconds(1));
+    oStatus = m_oServerProc.exec(CcSyncTestGlobals::DefaultSyncTimeout);
     if (!oStatus && oStatus != EStatus::TimeoutReached)
     {
       oStatus = true;
@@ -65,6 +66,11 @@ bool CTestServer::serverExists(void)
     {
       oStatus = false;
     }
+  }
+  else
+  {
+    CcTestFramework::writeError("Help request failed, response:");
+    CcTestFramework::writeError(CcString("  ") + m_oServerProc.pipe().readAll());
   }
   return oStatus;
 }

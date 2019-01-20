@@ -502,15 +502,24 @@ bool CcSyncDirectory::directoryListCreate(CcSyncFileInfo& oFileInfo)
   if (oNewDirectory.create(oFileInfo.getSystemFullPath(), true))
   {
     CcFile oTempFile(oFileInfo.getSystemFullPath());
-    oFileInfo.changed() = CcKernel::getDateTime().getTimestampS();
-    oFileInfo.modified() = oTempFile.getCreated().getTimestampS();
-    if (m_pDatabase->directoryListInsert(getName(), oFileInfo))
+    if (oTempFile.open(EOpenFlags::Attributes))
     {
-      return true;
+      oFileInfo.modified() = oTempFile.getCreated().getTimestampS();
+      oTempFile.close();
+      oFileInfo.changed() = CcKernel::getDateTime().getTimestampS();
+      if (m_pDatabase->directoryListInsert(getName(), oFileInfo))
+      {
+        return true;
+      }
+      else
+      {
+        CcSyncLog::writeDebug("Adding new Directory to Database failed: " + oFileInfo.getSystemFullPath());
+        oNewDirectory.remove();
+      }
     }
     else
     {
-      CcSyncLog::writeDebug("Adding new Directory to Database failed: " + oFileInfo.getSystemFullPath());
+      CcSyncLog::writeDebug("Reading directory information failed: " + oFileInfo.getSystemFullPath());
       oNewDirectory.remove();
     }
   }

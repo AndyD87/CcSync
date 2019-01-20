@@ -60,7 +60,11 @@ private:
   bool testCheckLoginClient2();
 
   bool testLoginClient1();
+  bool testLoginClient2();
+  bool testSyncClient1();
+  bool testSyncClient2();
   bool testCreateTestDir();
+  bool testWriteTestDataClient1();
 
 private: // Member
   CSyncTestPrivate* m_pPrivate = nullptr;

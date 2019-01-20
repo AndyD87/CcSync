@@ -28,7 +28,6 @@
 #include "CcSyncGlobals.h"
 #include "CcSyncRequest.h"
 #include "CcSyncResponse.h"
-#include "CcKernel.h"
 #include "CcFile.h"
 #include "CcDirectory.h"
 #include "CcSyncDirectory.h"
@@ -60,6 +59,7 @@ CcSyncClient::CcSyncClient(const CcString& sConfigFilePath)
   }
   else
   {
+    m_sConfigPath = sConfigFilePath;
     CcFile oFileObject(sConfigFilePath);
     if (oFileObject.isDir())
     {
@@ -576,6 +576,8 @@ bool CcSyncClient::selectAccount(const CcString& sNewAccount)
   if (m_pAccount != nullptr)
   {
     CcString sClientConfigDir = CcKernel::getUserDataDir();
+    if (m_sConfigPath.length() > 0)
+      sClientConfigDir = m_sConfigPath;
     sClientConfigDir.appendPath(CcSyncGlobals::ConfigDirName);
     sClientConfigDir.appendPath(m_pAccount->getAccountDirName());
     // Check for Client config dir
@@ -602,6 +604,10 @@ bool CcSyncClient::createConfig(const CcString& sConfigDir)
   if (sConfigDir.length() > 0)
   {
     sConfigFile = sConfigDir;
+  }
+  else if (m_sConfigPath.length() > 0)
+  {
+    sConfigFile = m_sConfigPath;
   }
   else
   {
@@ -742,6 +748,11 @@ bool CcSyncClient::changeHostname(const CcString& sHostName)
       CcString sNewDir = m_pAccount->getAccountDirName();
       CcString sFullOldDir = CcKernel::getUserDataDir();
       CcString sFullNewDir = CcKernel::getUserDataDir();
+      if (m_sConfigPath.length() > 0)
+      {
+        sFullNewDir = m_sConfigPath;
+        sFullOldDir = m_sConfigPath;
+      }
       sFullOldDir.appendPath(CcSyncGlobals::ConfigDirName);
       sFullNewDir.appendPath(CcSyncGlobals::ConfigDirName);
       sFullOldDir.appendPath(sOldDir);
@@ -802,7 +813,10 @@ void CcSyncClient::deinit()
 bool CcSyncClient::setupDatabase()
 {
   bool bRet = false;
+
   m_sDatabaseFile = CcKernel::getUserDataDir();
+  if (m_sConfigPath.length() > 0)
+    m_sDatabaseFile = m_sConfigPath;
   m_sDatabaseFile.appendPath(CcSyncGlobals::ConfigDirName);
   m_sDatabaseFile.appendPath(m_pAccount->getAccountDirName());
   m_sDatabaseFile.appendPath(m_pAccount->getDatabaseFilePath());
@@ -1878,14 +1892,17 @@ bool CcSyncClient::doDownloadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& o
 void CcSyncClient::setFileInfo(const CcString& sPathToFile, uint32 uiUserId, uint32 uiGroupId, int64 iModified)
 {
 #ifndef WIN32
-  if (oDirectory.getGroupId() != UINT32_MAX)
+  if (uiGroupId != UINT32_MAX)
   {
     CcFile::setGroupId(sPathToFile, uiGroupId);
   }
-  if (oDirectory.getUserId() != UINT32_MAX)
+  if (uiUserId != UINT32_MAX)
   {
     CcFile::setUserId(sPathToFile, uiUserId);
   }
+#else
+  CCUNUSED(uiUserId);
+  CCUNUSED(uiGroupId);
 #endif
   CcFile::setModified(sPathToFile, CcDateTimeFromSeconds(iModified));
 }

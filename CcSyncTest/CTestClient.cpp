@@ -29,6 +29,7 @@
 #include "CcKernel.h"
 #include "CcFile.h"
 #include "CcDirectory.h"
+#include "CcStringUtil.h"
 
 CTestClient::CTestClient(const CcString& sServerExePath, const CcString& sConfigDir) :
   m_sConfigDir(sConfigDir)
@@ -121,6 +122,12 @@ bool CTestClient::logout()
   return m_oClientProc.waitForExit(CcDateTimeFromSeconds(1));
 }
 
+bool CTestClient::sync()
+{
+  m_oClientProc.pipe().writeLine("sync");
+  return readUntilSucceeded(m_sUsername + "]:");
+}
+
 bool CTestClient::checkLogin(const CcString& sServerName, const CcString& sUsername)
 {
   CcStatus oStatus(EStatus::LoginFailed);
@@ -131,18 +138,42 @@ bool CTestClient::checkLogin(const CcString& sServerName, const CcString& sUsern
   return oStatus;
 }
 
-bool CTestClient::createDirectory(const CcString& sDirectoryPath)
+bool CTestClient::createSyncDirectory(const CcString& sDirectoryPath)
 {
   bool bSuccess = false;
   m_oClientProc.pipe().writeLine("create");
   m_oClientProc.pipe().writeLine("TestDir");
-  CcString sDir = m_sConfigDir.appendPath("CcSync").appendPath(sDirectoryPath);
-  m_oClientProc.pipe().writeLine(sDir);
+  m_sSyncDirs.append(m_sConfigDir.appendPath("CcSync").appendPath(sDirectoryPath));
+  m_oClientProc.pipe().writeLine(m_sSyncDirs.last());
   CcString sData = readUntil(m_sUsername + "]:");
 
-  if (CcDirectory::exists(sDir))
+  if (CcDirectory::exists(m_sSyncDirs.last()))
   {
     bSuccess = true;
+  }
+  return bSuccess;
+}
+
+bool CTestClient::createDirectory(const CcString & sDirectoryPath)
+{
+  CcString sDir = m_sSyncDirs.last();
+  sDir.appendPath(sDirectoryPath);
+  return CcDirectory::create(sDir, true, true);
+}
+
+bool CTestClient::createFile(const CcString & sPathInDir, const CcString &sContent)
+{
+  bool bSuccess = false;
+  CcString sDir = m_sSyncDirs.last();
+  sDir.appendPath(sPathInDir);
+  if (CcDirectory::create(CcStringUtil::getDirectoryFromPath(sDir), true, false))
+  {
+    CcFile oFile(sDir);
+    if (oFile.open(EOpenFlags::Write))
+    {
+      bSuccess = oFile.writeString(sContent);
+      oFile.close();
+    }
   }
   return bSuccess;
 }
@@ -163,4 +194,15 @@ CcString CTestClient::readUntil(const CcString& sStringEnd)
     }
   }
   return sData;
+}
+
+bool CTestClient::readUntilSucceeded(const CcString& sStringEnd)
+{
+  bool bSuccess = false;
+  CcString sData = readUntil(sStringEnd);
+  if (sData.endsWith(sStringEnd))
+  {
+    bSuccess = true;
+  }
+  return bSuccess;
 }
