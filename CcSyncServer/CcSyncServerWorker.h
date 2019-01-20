@@ -96,6 +96,8 @@ private:
   void doDirectoryRemoveFile();
   void doDirectoryDownloadFile();
 private:
+  void onStop() override;
+private:
   CcSyncServerWorkerPrivate* m_pPrivate;
   CcSyncServer*   m_oServer   = nullptr;
   CcSocket        m_oSocket;

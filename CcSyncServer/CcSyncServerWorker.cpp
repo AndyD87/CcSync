@@ -1144,3 +1144,8 @@ void CcSyncServerWorker::doDirectoryDownloadFile()
   }
   sendResponse();
 }
+
+void CcSyncServerWorker::onStop()
+{
+  m_oSocket.close();
+}
