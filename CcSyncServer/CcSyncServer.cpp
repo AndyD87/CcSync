@@ -226,6 +226,11 @@ void CcSyncServer::runServer()
   }
 }
 
+void CcSyncServer::onStop()
+{
+  m_oSocket.close();
+}
+
 CcSyncServer& CcSyncServer::operator=(const CcSyncServer& oToCopy)
 {
   m_oConfig     = oToCopy.m_oConfig;

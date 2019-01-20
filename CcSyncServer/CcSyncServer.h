@@ -71,6 +71,8 @@ public:
   void runHelp();
   void runServer();
 
+  void onStop() override;
+
   CcSyncServerConfig& config()
     { return m_oConfig; }
 
