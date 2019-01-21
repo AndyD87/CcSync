@@ -72,7 +72,18 @@ bool CcSyncClientServerApp::createAccount()
     CcSyncConsole::writeLine("Setup new Account");
     CcString sAccount = CcSyncConsole::query("Name");
     CcString sPassword = CcSyncConsole::queryHidden("Password");
-    bSuccess = m_poSyncClient->addRemoteAccount(sAccount, sPassword);
+    if (sAccount.length() == 3)
+    {
+      CcSyncConsole::writeLine("Account requires at least 3 signs");
+    }
+    else if (sPassword.length() < 8)
+    {
+      CcSyncConsole::writeLine("Password requires at least 8 signs");
+    }
+    else
+    {
+      bSuccess = m_poSyncClient->addRemoteAccount(sAccount, sPassword);
+    }
   }
   return bSuccess;
 }
