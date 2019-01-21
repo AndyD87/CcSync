@@ -5,8 +5,8 @@ set ( CURRENT_PROJECT CcSyncClient)
 # Add Source Files
 ########
 file (GLOB SOURCE_FILES
-      "src/*.c"
-      "src/*.cpp"
+      "*.c"
+      "*.cpp"
       "*.h")
       
 
@@ -31,5 +31,4 @@ target_link_libraries ( ${CURRENT_PROJECT} LINK_PUBLIC
 #################
 # Post configuration steps
 #################
-CcSyncTargetIncludeDirs( ${CURRENT_PROJECT} )
-CcSyncLibSettings(${CURRENT_PROJECT} TRUE TRUE ${SOURCE_FILES})
+CcSyncSetInstall( ${CURRENT_PROJECT} )

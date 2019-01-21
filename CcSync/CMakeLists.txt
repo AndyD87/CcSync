@@ -5,12 +5,17 @@ set ( CURRENT_PROJECT CcSync)
 # Add Source Files
 ########
 file (GLOB SOURCE_FILES
-      "src/*.c"
-      "src/*.cpp"
+      "*.c"
+      "*.cpp"
       "config/*.xml"
       "*.h")
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
+
+########
+# Update Version Info
+########
+configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/CcSyncVersion.h.in ${CMAKE_CURRENT_SOURCE_DIR}/CcSyncVersion.h @ONLY)
 
 if(WINDOWS)
   CcSyncGenerateRcFileToCurrentDir(${CURRENT_PROJECT} SOURCE_FILES )

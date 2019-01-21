@@ -3,7 +3,7 @@
 #
 # Main File to build CcSync
 #
-# To Generate a Solution execute the command:
+# To Generate a Solution execute a command like:
 #   cmake -G "Visual Studio 12"
 #
 ################################################################################
@@ -13,7 +13,7 @@ cmake_minimum_required (VERSION 3.0)
 # Setup Globals
 ################################################################################
 include( ${CMAKE_CURRENT_SOURCE_DIR}/VERSION.cmake )
-include( ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig/ProjectMacros.cmake)
+include( ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig/ProjectMacros.cmake )
 include( ${CMAKE_CURRENT_SOURCE_DIR}/CcOSImport.cmake )
 
 if(WINDOWS)
@@ -74,13 +74,13 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 CcOSLoadProjects()
 
 ################################################################################
-# Setup all projects
+# Setup CcSync Projects
 ################################################################################
-
 add_subdirectory(CcSync)
 add_subdirectory(CcSyncServer)
 add_subdirectory(CcSyncClient)
 add_subdirectory(CcSyncClientGui)
+add_subdirectory(CcSyncTest)
 
 ################################################################################
 # Update dokumentation

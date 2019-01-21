@@ -7,7 +7,7 @@ macro(CcOSLoad)
     execute_process(COMMAND git submodule update "${CCOS_DIR}"
                     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
   endif()
-  
+
   if(DEFINED CCOS_BOARD)
     CcOSLoadMacros()
     message("- Load Board")
@@ -26,5 +26,6 @@ macro(CcOSLoadProjects)
   set(CCOS_CCUTIL_CCSQL_ACTIVE 4)
   set(CCOS_CCNETWORK_CCSSL_ACTIVE 4)
   set(CCOS_THIRDPARTY_SQLITE3_ACTIVE 4)
+  set(CCOS_CCUTIL_CCTESTING_ACTIVE 4)
   include(${CCOS_DIR}/CcOS.cmake)
 endmacro()

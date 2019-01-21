@@ -1,18 +1,18 @@
 /*
- * This file is part of CcOS.
+ * This file is part of CcSync.
  *
- * CcOS is free software: you can redistribute it and/or modify
+ * CcSync is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * CcOS is distributed in the hope that it will be useful,
+ * CcSync is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with CcOS.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CcSync.  If not, see <http://www.gnu.org/licenses/>.
  **/
 /**
  * @page      CcSync
@@ -55,6 +55,10 @@ public:
 
   bool containsFile(const CcString& sFilename) const;
   bool containsFile(uint64 uiFileId) const;
+  inline bool containsDirectory(const CcString& sDirectoryName) const
+    { return containsFile(sDirectoryName); }
+  inline bool containsDirectory(uint64 uiDirId) const
+    { return containsFile(uiDirId); }
   CcSyncFileInfo& getFile(const CcString& sFilename);
   CcSyncFileInfo& getFile(uint64 uiFileId);
   const CcSyncFileInfo& getFile(const CcString& sFilename) const;
@@ -62,8 +66,6 @@ public:
   bool removeFile(const CcString& sFilename);
   bool removeFile(uint64 uiFileId);
 
-  inline bool containsDirectory(const CcString& sDirectoryName) const
-    { return containsFile(sDirectoryName);}
   inline const CcSyncFileInfo& getDirectory(const CcString& sDirectoryName) const
     { return getFile(sDirectoryName); }
 

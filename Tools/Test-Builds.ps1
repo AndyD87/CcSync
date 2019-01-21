@@ -83,18 +83,15 @@ function StartBuildProcess
         }
 
     }
-    finally
+    cd $CurrentDir
+    if((Test-Path $SolutionDir))
     {
-        cd $CurrentDir
-        if((Test-Path $SolutionDir))
-        {
-            Remove-Item $SolutionDir -Recurse -Force
-        }
-        # Fist Clean Solution if Existing
-        if((Test-Path $OutputDir))
-        {
-            Remove-Item $OutputDir -Recurse -Force
-        }
+        Remove-Item $SolutionDir -Recurse -Force
+    }
+    # Fist Clean Solution if Existing
+    if((Test-Path $OutputDir))
+    {
+        Remove-Item $OutputDir -Recurse -Force
     }
 }
 
@@ -114,7 +111,7 @@ if(Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.e
 }
 
 $Architectures  = @("win32", "x64")
-$Configurations = @("Release", "Debug") # Not required but possible to test : "RelWithDebInfo", "MinSizeRel")
+$Configurations = @("Release") # Not required but possible to test :, "Debug", "RelWithDebInfo", "MinSizeRel")
 $Statics = @("Static", "Shared")
     
 $CurrentDir  = (Get-Item .\).FullName
@@ -132,10 +129,10 @@ foreach($VisualStudio in $VisualStudios)
         {
             foreach($Static in $Statics)
             {
+                # ExampleCall StartBuildProcess "Visual Studio 12" "win32" "Release" "Shared"
+                # ExampleCall StartBuildProcess "Visual Studio 12" "x64" "Debug" "Static"
                 StartBuildProcess $VisualStudio $Architecture $Configuration $Static
             }
         }
     }
 }
-# ExampleCall StartBuildProcess "Visual Studio 12" "win32" "Release" "Shared"
-# ExampleCall StartBuildProcess "Visual Studio 12" "x64" "Debug" "Static"

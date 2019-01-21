@@ -1,18 +1,18 @@
 /*
- * This file is part of CcOS.
+ * This file is part of CcSync.
  *
- * CcOS is free software: you can redistribute it and/or modify
+ * CcSync is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * CcOS is distributed in the hope that it will be useful,
+ * CcSync is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with CcOS.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CcSync.  If not, see <http://www.gnu.org/licenses/>.
  **/
 /**
  * @page      CcSync
@@ -56,10 +56,6 @@ class CcFile;
 class CcSyncSHARED CcSyncClient 
 {
 public:
-  /**
-   * @brief Constructor
-   */
-  CcSyncClient();
   
   /**
    * @brief Constructor
@@ -113,7 +109,7 @@ public:
   void close();
   void reconnect();
   bool selectAccount(const CcString& sNewAccount);
-  bool createConfig();
+  bool createConfig(const CcString& sConfigDir);
   bool addAccount(const CcString& sUsername, const CcString& sPassword, const CcString& sServer, const CcString& sPort);
   bool addRemoteAccount(const CcString& sUsername, const CcString& sPassword);
   bool removeAccount(const CcString& sUsername);
@@ -131,7 +127,7 @@ public:
 
   bool changeHostname(const CcString& sHostName);
 
-  static CcSyncClient* create();
+  static CcSyncClient* create(const CcString& sConfigFilePath);
   static void remove(CcSyncClient* pToRemove);
 
 private: // Methods
@@ -155,8 +151,10 @@ private: // Methods
   bool doRemoveFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex);
   bool doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex);
   bool doDownloadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex);
+  static void setFileInfo(const CcString& sPathToFile, uint32 uiUserId, uint32 uiGroupId, int64 iModified);
 
 private: // Member
+  CcString                      m_sConfigPath;
   CcString                      m_sDatabaseFile;
   CcSyncClientConfig            m_oConfig;
   CcSyncAccountConfigHandle     m_pAccount    = nullptr;

@@ -1,18 +1,18 @@
 /*
- * This file is part of CcOS.
+ * This file is part of CcSync.
  *
- * CcOS is free software: you can redistribute it and/or modify
+ * CcSync is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
  *
- * CcOS is distributed in the hope that it will be useful,
+ * CcSync is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with CcOS.  If not, see <http://www.gnu.org/licenses/>.
+ * along with CcSync.  If not, see <http://www.gnu.org/licenses/>.
  **/
 /**
  * @page      CcApps
@@ -39,7 +39,8 @@
 
 enum class ESyncClientMode
 {
-  Cli = 0,
+  Unknown = 0,
+  Cli = 1,
   Once,
   Daemon,
   Help
@@ -51,19 +52,21 @@ public:
   CcSyncClientApp(const CcArguments& oArguments);
   virtual ~CcSyncClientApp();
 
+  virtual CcVersion getVersion() const override;
+
   void run() override;
   void runDaemon();
   void runCli();
   void runOnce();
   void runHelp();
-  bool createConfig();
+  bool createConfig(const CcString& sConfigDir);
   bool createAccount();
   bool editAccount(const CcString& sAccount);
-
 private:
   ESyncClientMode m_eMode = ESyncClientMode::Cli;
-  CcArguments m_oArguments;
-  CcSyncClient* m_poSyncClient = nullptr;
+  CcString        m_sConfigDir;
+  CcArguments     m_oArguments;
+  CcSyncClient*   m_poSyncClient = nullptr;
 };
 
 #endif /* _SyncClient_H_ */
