@@ -171,7 +171,7 @@ bool CcSyncDirectory::fileListUpdate(CcSyncFileInfo& oFileInfo, bool bMoveToHist
   if (bMoveToHistory)
   {
     getFullDirPathById(oFileInfo);
-    if (m_pDatabase->historyEnabled())
+    if (m_pDatabase->isHistoryEnabled())
     {
       CcDateTime oCurrentTime = CcKernel::getDateTime();
       CcString sPathInHistory = getHistoryDir();
@@ -216,30 +216,39 @@ bool CcSyncDirectory::fileListRemove(CcSyncFileInfo& oFileInfo, bool bDoUpdatePa
 {
   bool bRet = false;
   getFullDirPathById(oFileInfo);
-  if (m_pDatabase->historyEnabled())
+  if (m_pDatabase->isHistoryEnabled())
   {
-    CcDateTime oCurrentTime = CcKernel::getDateTime();
-    CcString sPathInHistory = getHistoryDir();
-    sPathInHistory.appendPath(oCurrentTime.getString("yyyy/MM/dd"));
-    if (CcDirectory::create(sPathInHistory, true))
+    if(CcFile::exists(oFileInfo.getSystemFullPath()))
     {
-      sPathInHistory.appendPath(oCurrentTime.getString("hh-mm-ss-zzzuuu."));
-      sPathInHistory.append(oFileInfo.getName());
-      if (CcFile::move(oFileInfo.getSystemFullPath(), sPathInHistory))
+      CcDateTime oCurrentTime = CcKernel::getDateTime();
+      CcString sPathInHistory = getHistoryDir();
+      sPathInHistory.appendPath(oCurrentTime.getString("yyyy/MM/dd"));
+      if (CcDirectory::create(sPathInHistory, true))
       {
-        // Securely update all values with database values
-        oFileInfo.changed() = oCurrentTime.getTimestampS();
-        historyInsert(EBackupQueueType::RemoveFile, oFileInfo);
-        bRet = m_pDatabase->fileListRemove(getName(), oFileInfo, bDoUpdateParents);
+        sPathInHistory.appendPath(oCurrentTime.getString("hh-mm-ss-zzzuuu."));
+        sPathInHistory.append(oFileInfo.getName());
+        if (CcFile::move(oFileInfo.getSystemFullPath(), sPathInHistory))
+        {
+          // Securely update all values with database values
+          oFileInfo.changed() = oCurrentTime.getTimestampS();
+          historyInsert(EBackupQueueType::RemoveFile, oFileInfo);
+          bRet = m_pDatabase->fileListRemove(getName(), oFileInfo, bDoUpdateParents);
+        }
+        else
+        {
+          CcSyncLog::writeError("CcSyncDirectory::fileListRemove Failed to move File");
+        }
       }
       else
       {
-        CCDEBUG("CcSyncDirectory::fileListRemove Failed to move File");
+        CcSyncLog::writeError("CcSyncDirectory::fileListRemove Failed to create Path in History");
       }
     }
     else
     {
-      CCDEBUG("CcSyncDirectory::fileListRemove Failed to create Path in History");
+      // File not found for history, mark as failed remove
+      historyInsert(EBackupQueueType::RemoveErrorFile, oFileInfo);
+      bRet = m_pDatabase->fileListRemove(getName(), oFileInfo, bDoUpdateParents);
     }
   }
   else
@@ -254,12 +263,12 @@ bool CcSyncDirectory::fileListRemove(CcSyncFileInfo& oFileInfo, bool bDoUpdatePa
       }
       else
       {
-        CCDEBUG("CcSyncDirectory::fileListRemove failed to remove file database");
+        CcSyncLog::writeError("CcSyncDirectory::fileListRemove failed to remove file database");
       }
     }
     else
     {
-      CCDEBUG("CcSyncDirectory::fileListRemove failed to remove file from disk");
+      CcSyncLog::writeError("CcSyncDirectory::fileListRemove failed to remove file from disk");
     }
   }
   return bRet;
@@ -575,12 +584,12 @@ bool CcSyncDirectory::directoryListRemove(CcSyncFileInfo& oFileInfo, bool bDoUpd
     }
     else
     {
-      CCDEBUG("CcSyncDirectory::directoryListRemove failed to remove dir database");
+      CcSyncLog::writeError("CcSyncDirectory::directoryListRemove failed to remove dir database");
     }
   }
   else
   {
-    CCDEBUG("CcSyncDirectory::directoryListRemove failed to remove dir from disk");
+    CcSyncLog::writeError("CcSyncDirectory::directoryListRemove failed to remove dir from disk");
   }
   return bRet;
 }

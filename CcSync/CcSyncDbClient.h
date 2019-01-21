@@ -59,6 +59,7 @@ enum class EBackupQueueType : uint16
   RemoveFile,
   UpdateFile,
   DownloadFile,
+  RemoveErrorFile,
 };
 
 /**
@@ -150,9 +151,9 @@ public:
   bool historyInsert(const CcString& sDirName, EBackupQueueType eQueueType, const CcSyncFileInfo& oFileInfo);
   inline void historyEnable()
     { m_bEnableHistory = true;}
-  inline void diableDisable()
+  inline void historyDisable()
     { m_bEnableHistory = false;}
-  inline bool historyEnabled()
+  inline bool isHistoryEnabled()
     { return m_bEnableHistory; }
 
 private: // Methods

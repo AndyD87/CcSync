@@ -821,7 +821,7 @@ bool CcSyncClient::setupDatabase()
   m_sDatabaseFile.appendPath(m_pAccount->getAccountDirName());
   m_sDatabaseFile.appendPath(m_pAccount->getDatabaseFilePath());
   m_pDatabase = new CcSyncDbClient();
-  m_pDatabase->diableDisable();
+  m_pDatabase->historyDisable();
   CCMONITORNEW(m_pDatabase.getPtr());
   if (m_pDatabase->openDatabase(m_sDatabaseFile))
   {
