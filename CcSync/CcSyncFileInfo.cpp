@@ -231,3 +231,10 @@ CcString CcSyncFileInfo::getSystemDirPath()
   sPath.appendPath(m_sDirPath);
   return sPath;
 }
+
+CcString CcSyncFileInfo::getRelativePath()
+{
+  CcString sPath = m_sDirPath;
+  sPath.appendPath(m_sFilename);
+  return sPath;
+}

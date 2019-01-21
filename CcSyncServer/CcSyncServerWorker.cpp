@@ -1134,7 +1134,7 @@ void CcSyncServerWorker::doDirectoryDownloadFile()
       }
       else
       {
-        m_oResponse.setError(EStatus::FSFileCrcFailed, "File not existing, but in database, Server requires maintainance");
+        m_oResponse.setError(EStatus::FSFileCrcFailed, oFileInfo.getRelativePath() + " not existing, but in database, Server requires maintainance");
       }
     }
     else

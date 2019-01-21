@@ -143,6 +143,7 @@ public:
     { return m_sDirPath; }
   const CcString& getSystemFullPath();
   CcString getSystemDirPath();
+  CcString getRelativePath();
 private:
   uint64 m_uiId         = 0;
   uint64 m_uiDirId      = 0;
