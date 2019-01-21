@@ -1291,7 +1291,7 @@ bool CcSyncClient::doRemoveDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDir
   {
     if (m_oResponse.hasError() == false)
     {
-      oDirectory.directoryListRemove(oDirInfo);
+      oDirectory.directoryListRemove(oDirInfo, true);
       // do not updated dependencies, use finalize file instead
       oDirectory.queueFinalizeFile(uiQueueIndex);
       bRet = true;
@@ -1305,13 +1305,13 @@ bool CcSyncClient::doRemoveDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDir
           // because we will get the new files from server on next sync
           // fall through
         case EStatus::FSDirNotFound:
-          oDirectory.directoryListRemove(oDirInfo);
+          oDirectory.directoryListRemove(oDirInfo, true);
           // do not updated dependencies, use finalize file instead
           oDirectory.queueFinalizeFile(uiQueueIndex);
           bRet = true;
           break;
         default:
-          CcSyncLog::writeError("Error on deleting Directory: " + oDirInfo.getName(), ESyncLogTarget::Client);
+          CcSyncLog::writeError("Error on deleting Directory: " + oDirInfo.getRelativePath(), ESyncLogTarget::Client);
           CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
           oDirectory.queueIncrementItem(uiQueueIndex);
       }
