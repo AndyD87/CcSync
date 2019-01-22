@@ -46,6 +46,7 @@ public:
   bool createDirectory();
   bool createAllDirectories();
   bool verify();
+  bool refresh();
 
   virtual void run() override;
 

@@ -52,8 +52,12 @@ namespace AccountStrings
   static const CcString AdminDesc("if you are admin on server, open admin console");
   static const CcString Sync("sync");
   static const CcString SyncDesc("synchronise all directories with server");
-  static const CcString Verify("verify");
-  static const CcString VerifyDesc("Verify database integrity for every directory");
+  static const CcString Database         ("database");
+  static const CcString DatabaseDesc     ("(refresh|verify)");
+  static const CcString DatabaseDesc1    ("  refresh: reload all hashes");
+  static const CcString DatabaseDesc2    ("  verify:  verify integrity");
+  static const CcString DatabaseRefresh("refresh");
+  static const CcString DatabaseVerify("verify");
   static const CcString Create("create");
   static const CcString CreateDesc("create new directory on server and local");
   static const CcString Del("del");
@@ -162,9 +166,27 @@ void CcSyncClientAccountApp::run()
       m_poSyncClient->doQueues();
       CcSyncConsole::writeLine("Local sync: done");
     }
-    else if (oArguments[0].compareInsensitve(AccountStrings::Verify))
+    else if (oArguments[0].compareInsensitve(AccountStrings::Database))
     {
-      verify();
+      if (oArguments.size() > 1)
+      {
+        if(oArguments[1] == AccountStrings::DatabaseVerify)
+        {
+          verify();
+        }
+        else if(oArguments[1] == AccountStrings::DatabaseRefresh)
+        {
+          refresh();
+        }
+        else
+        {
+          CcSyncConsole::writeLine("wrong argument specified: "+oArguments[1]);
+        }
+      }
+      else
+      {
+        CcSyncConsole::writeLine("not enough arguments");
+      }
     }
     else if (oArguments[0].compareInsensitve(AccountStrings::Create))
     {
@@ -203,7 +225,9 @@ void CcSyncClientAccountApp::run()
       CcSyncConsole::printHelpLine(AccountStrings::Rebuild, 20, AccountStrings::RebuildDesc);
       CcSyncConsole::printHelpLine(AccountStrings::Select, 20, AccountStrings::SelectDesc);
       CcSyncConsole::printHelpLine(AccountStrings::Sync, 20, AccountStrings::SyncDesc);
-      CcSyncConsole::printHelpLine(AccountStrings::Verify, 20, AccountStrings::VerifyDesc);
+      CcSyncConsole::printHelpLine(AccountStrings::Database,  20, AccountStrings::DatabaseDesc);
+      CcSyncConsole::printHelpLine("",                        20, AccountStrings::DatabaseDesc1);
+      CcSyncConsole::printHelpLine("",                        20, AccountStrings::DatabaseDesc2);
     }
     else
     {
@@ -262,6 +286,23 @@ bool CcSyncClientAccountApp::verify()
     if (!m_poSyncClient->verify(sDirName))
     {
       CcSyncConsole::writeLine("Verification failed for Directory: " + sDirName);
+      bSuccess = false;
+      break;
+    }
+  }
+  return bSuccess;
+}
+
+bool CcSyncClientAccountApp::refresh()
+{
+  bool bSuccess = true;
+  CcStringList oDirList = m_poSyncClient->getDirectoryList();
+  for (CcString& sDirName : oDirList)
+  {
+    CcSyncConsole::writeLine("Refresh Database for Directory: " + sDirName);
+    if (!m_poSyncClient->refresh(sDirName))
+    {
+      CcSyncConsole::writeLine("Refresh failed for Directory: " + sDirName);
       bSuccess = false;
       break;
     }

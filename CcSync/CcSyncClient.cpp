@@ -1391,6 +1391,21 @@ bool CcSyncClient::verify(const CcString& sDirname)
     return false;
 }
 
+bool CcSyncClient::refresh(const CcString& sDirname)
+{
+  bool bSuccess = false;
+  for (CcSyncDirectory& oDirectory : m_oBackupDirectories)
+  {
+    if(oDirectory.getName() == sDirname)
+    {
+      oDirectory.directoryListUpdateChanged(1);
+      bSuccess = true;
+      break;
+    }
+  }
+  return bSuccess;
+}
+
 bool CcSyncClient::updateDirectorySetUser(const CcString& sDirname, const CcString& sUser)
 {
   bool bSuccess = false;

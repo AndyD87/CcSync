@@ -100,6 +100,7 @@ public:
   bool updateDirectoryBackupCommand(const CcString& sDirname, const CcString& sBackupCommand);
   bool updateDirectoryRestoreCommand(const CcString& sDirname, const CcString& sBackupCommand);
   bool verify(const CcString& sDirname);
+  bool refresh(const CcString& sDirname);
   bool updateDirectorySetUser(const CcString& sDirname, const CcString& sUser);
   bool updateDirectorySetGroup(const CcString& sDirname, const CcString& sGroup);
   bool doAccountCreateDirectory(const CcString sDirectoryName, const CcString& sLocalDirectoryPath = "");
