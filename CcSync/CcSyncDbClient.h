@@ -141,7 +141,7 @@ public:
   void directoryListSearchTemporary(const CcString& sDirName);
 
   bool fileListInsert(const CcString& sDirName, CcSyncFileInfo& oFileInfo);
-  bool fileListUpdate(const CcString& sDirName, const CcSyncFileInfo& oFileInfo);
+  bool fileListUpdate(const CcString& sDirName, const CcSyncFileInfo& oFileInfo, bool bDoUpdateParents);
   bool fileListRemove(const CcString& sDirName, const CcSyncFileInfo& oFileInfo, bool bDoUpdateParents = true);
   bool fileListExists(const CcString& sDirName, uint64 uiFileId);
   bool fileListFileIdExists(const CcString& sDirName, uint64 uiDirId, const CcSyncFileInfo& oFileInfo);

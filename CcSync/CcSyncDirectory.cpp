@@ -165,7 +165,7 @@ bool CcSyncDirectory::fileListInsert(CcSyncFileInfo& oFileInfo)
   return m_pDatabase->fileListInsert(getName(), oFileInfo);
 }
 
-bool CcSyncDirectory::fileListUpdate(CcSyncFileInfo& oFileInfo, bool bMoveToHistory)
+bool CcSyncDirectory::fileListUpdate(CcSyncFileInfo& oFileInfo, bool bMoveToHistory, bool bDoUpdateParents)
 {
   bool bRet = false;
   if (bMoveToHistory)
@@ -183,7 +183,7 @@ bool CcSyncDirectory::fileListUpdate(CcSyncFileInfo& oFileInfo, bool bMoveToHist
         if (CcFile::move(oFileInfo.getSystemFullPath(), sPathInHistory))
         {
           oFileInfo.changed() = oCurrentTime.getTimestampS();
-          if(m_pDatabase->fileListUpdate(getName(), oFileInfo))
+          if(m_pDatabase->fileListUpdate(getName(), oFileInfo, bDoUpdateParents))
           {
             bRet = historyInsert(EBackupQueueType::UpdateFile, oFileInfo);
           }
@@ -192,7 +192,7 @@ bool CcSyncDirectory::fileListUpdate(CcSyncFileInfo& oFileInfo, bool bMoveToHist
         {
           oFileInfo.changed() = oCurrentTime.getTimestampS();
           CcSyncLog::writeWarning("File was not existing to move: "+oFileInfo.getSystemFullPath(), ESyncLogTarget::Common);
-          bRet = m_pDatabase->fileListUpdate(getName(), oFileInfo);
+          bRet = m_pDatabase->fileListUpdate(getName(), oFileInfo, bDoUpdateParents);
         }
         else
         {
@@ -207,7 +207,7 @@ bool CcSyncDirectory::fileListUpdate(CcSyncFileInfo& oFileInfo, bool bMoveToHist
   }
   else
   {
-    bRet = m_pDatabase->fileListUpdate(getName(), oFileInfo);
+    bRet = m_pDatabase->fileListUpdate(getName(), oFileInfo, bDoUpdateParents);
   }
   return bRet;
 }
@@ -253,6 +253,7 @@ bool CcSyncDirectory::fileListRemove(CcSyncFileInfo& oFileInfo, bool bDoUpdatePa
   }
   else
   {
+    getFullDirPathById(oFileInfo);
     if ( bKeepFile == true ||
          (CcFile::exists(oFileInfo.getSystemFullPath()) &&
           CcFile::remove(oFileInfo.getSystemFullPath())))

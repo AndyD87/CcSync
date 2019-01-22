@@ -892,7 +892,7 @@ void CcSyncServerWorker::doDirectoryUpdateFile()
               if (bSuccess)
               {
                 oFileInfo.changed() = CcKernel::getDateTime().getTimestampS();
-                if (m_pDirectory.fileListUpdate(oFileInfo, true))
+                if (m_pDirectory.fileListUpdate(oFileInfo, true, true))
                 {
                   bSuccess = CcFile::move(sTempFilePath, oFileInfo.getSystemFullPath());
                   if (!bSuccess)
@@ -1108,7 +1108,7 @@ void CcSyncServerWorker::doDirectoryDownloadFile()
         {
           // We have to update our file info in Database
           oFileInfo.fromSystemFile(true);
-          bSuccess = m_pDirectory.fileListUpdate(oFileInfo, false);
+          bSuccess = m_pDirectory.fileListUpdate(oFileInfo, false, true);
           if(bSuccess == false)
           {
             CcSyncLog::writeDebug("DirectoryDownloadFile send File failed:");

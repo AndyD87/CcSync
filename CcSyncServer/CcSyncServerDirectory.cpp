@@ -147,7 +147,7 @@ void CcSyncServerDirectory::doQueue(CcSyncDirectory& oCurrentDir)
       {
         oCurrentDir.getFullDirPathById(oFileInfo);
         oFileInfo.fromSystemFile(true);
-        if (oCurrentDir.fileListUpdate(oFileInfo, false))
+        if (oCurrentDir.fileListUpdate(oFileInfo, false, true))
         {
           oCurrentDir.queueFinalizeDirectory(oFileInfo, uiQueueIndex);
         }

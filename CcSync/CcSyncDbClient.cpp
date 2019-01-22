@@ -926,7 +926,7 @@ bool CcSyncDbClient::fileListInsert(const CcString& sDirName, CcSyncFileInfo& oF
   return bRet;
 }
 
-bool CcSyncDbClient::fileListUpdate(const CcString& sDirName, const CcSyncFileInfo& oFileInfo)
+bool CcSyncDbClient::fileListUpdate(const CcString& sDirName, const CcSyncFileInfo& oFileInfo, bool bDoUpdateParents)
 {
   bool bRet = false;
   CcString sQuery = getDbUpdateFileList(sDirName, oFileInfo);
@@ -934,7 +934,8 @@ bool CcSyncDbClient::fileListUpdate(const CcString& sDirName, const CcSyncFileIn
   if (oResult.error() == false)
   {
     historyInsert(sDirName, EBackupQueueType::UpdateFile, oFileInfo);
-    directoryListUpdateChanged(sDirName, oFileInfo.getDirId());
+    if(bDoUpdateParents)
+      directoryListUpdateChanged(sDirName, oFileInfo.getDirId());
     bRet = true;
   }
   else

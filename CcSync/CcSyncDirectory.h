@@ -105,7 +105,7 @@ public:
   bool getFullDirPathById(CcSyncFileInfo& oFileInfo);
 
   bool fileListInsert(CcSyncFileInfo& oFileInfo);
-  bool fileListUpdate(CcSyncFileInfo& oFileInfo, bool bMoveToHistory);
+  bool fileListUpdate(CcSyncFileInfo& oFileInfo, bool bMoveToHistory, bool bDoUpdateParents);
   bool fileListRemove(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents, bool bKeepFile);
   bool fileListCreate(CcSyncFileInfo& oFileInfo);
   bool fileListExists(uint64 uiFileId);

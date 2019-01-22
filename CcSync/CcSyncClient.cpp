@@ -1175,7 +1175,7 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
         if (oFileInfo != oServerFileInfo)
         {
           // @todo always downloading works, okay!
-          oDirectory.fileListUpdate(oServerFileInfo, false);
+          oDirectory.fileListUpdate(oServerFileInfo, false, false);
         }
         oClientFiles.removeFile(oServerFileInfo.getId());
       }
@@ -1630,7 +1630,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
           oClientFileInfo.getCrc() == oServerFileInfo.getCrc())
       {
         setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
-        if (oDirectory.fileListUpdate(oClientFileInfo, false))
+        if (oDirectory.fileListUpdate(oClientFileInfo, false, true))
         {
           bRet = true;
         }
@@ -1663,7 +1663,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
           {
             bDoRemoveUpload = true;
           }
-          else if (oDirectory.fileListUpdate(oServerFileInfo, false))
+          else if (oDirectory.fileListUpdate(oServerFileInfo, false, true))
           {
             setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
             oDirectory.queueFinalizeFile(uiQueueIndex);
@@ -1684,8 +1684,9 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
         if (oClientFileInfo.getFileSize() == oServerFileInfo.getFileSize() &&
             oClientFileInfo.getCrc() == oServerFileInfo.getCrc())
         {
-          if (oDirectory.fileListUpdate(oServerFileInfo, false))
+          if (oDirectory.fileListUpdate(oServerFileInfo, false, true))
           {
+            oDirectory.getFullDirPathById(oFileInfo);
             setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
             oDirectory.queueFinalizeFile(uiQueueIndex);
           }
@@ -1707,7 +1708,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
         if (oClientFileInfo.getFileSize() == oServerFileInfo.getFileSize() &&
             oClientFileInfo.getCrc() == oServerFileInfo.getCrc())
         {
-          if (oDirectory.fileListUpdate(oServerFileInfo, false))
+          if (oDirectory.fileListUpdate(oServerFileInfo, false, true))
           {
             setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
             oDirectory.queueFinalizeFile(uiQueueIndex);
@@ -1744,7 +1745,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
           if (sendFile(oFileInfo))
           {
             CcSyncFileInfo oResponseFileInfo = m_oResponse.getFileInfo();
-            if (oDirectory.fileListUpdate(oResponseFileInfo, false))
+            if (oDirectory.fileListUpdate(oResponseFileInfo, false, true))
             {
               oDirectory.queueFinalizeFile(uiQueueIndex);
               CcSyncLog::writeDebug("File Successfully updated: " + oFileInfo.getName(), ESyncLogTarget::Client);
