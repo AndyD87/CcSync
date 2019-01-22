@@ -987,7 +987,13 @@ void CcSyncClient::recursiveRemoveDirectory(CcSyncDirectory& oDirectory, CcSyncF
 
   for (CcSyncFileInfo& oClientFileInfo : oClientFiles)
   {
-    oDirectory.fileListRemove(oClientFileInfo, false, false);
+    oDirectory.getFullDirPathById(oClientFileInfo);
+    CcFileInfo oSystemFileInfo = CcFile::getInfo(oClientFileInfo.getSystemFullPath());
+    // Just delete if file is same as known
+    if (oClientFileInfo == oSystemFileInfo)
+    {
+      oDirectory.fileListRemove(oClientFileInfo, false, false);
+    }
   }
   for (CcSyncFileInfo& oClientDirInfo : oClientDirectories)
   {
@@ -997,7 +1003,8 @@ void CcSyncClient::recursiveRemoveDirectory(CcSyncDirectory& oDirectory, CcSyncF
   oDirectory.getFullDirPathById(oFileInfo);
   if (CcDirectory::exists(oFileInfo.getSystemFullPath()))
   {
-    CcDirectory::remove(oFileInfo.getSystemFullPath(), true);
+    //! let it fail if unregistered files are available
+    CcDirectory::remove(oFileInfo.getSystemFullPath(), false);
   }
 }
 
@@ -1185,17 +1192,17 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
         {
           CcSyncFileInfo& oClientFileInfo = oClientFiles.getFile(oServerFileInfo.getName());
           oDirectory.getFullDirPathById(oClientFileInfo);
-          if (CcFile::exists(oServerFileInfo.getSystemFullPath()))
+          if (CcFile::exists(oClientFileInfo.getSystemFullPath()))
           {
-            CcFileInfo oLocalFileInfo = CcFile::getInfo(oServerFileInfo.getSystemFullPath());
-            if (oLocalFileInfo.getModified().getTimestampS() <= oClientFileInfo.getModified())
+            CcFileInfo oLocalFileInfo = CcFile::getInfo(oClientFileInfo.getSystemFullPath());
+            if (oLocalFileInfo.getModified().getTimestampS() <= oServerFileInfo.getModified())
             {
               // Remove from database and disk
               oDirectory.fileListRemove(oClientFileInfo, false, false);
             }
             else
             {
-              // Remove from database
+              // Remove from only from database to add by local compare
               oDirectory.fileListRemove(oClientFileInfo, false, true);
             }
           }
@@ -1629,7 +1636,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
           oClientFileInfo.fromSystemFile(true) &&
           oClientFileInfo.getCrc() == oServerFileInfo.getCrc())
       {
-        setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
+        setFileInfo(oClientFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
         if (oDirectory.fileListUpdate(oClientFileInfo, false, true))
         {
           bRet = true;
@@ -1665,7 +1672,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
           }
           else if (oDirectory.fileListUpdate(oServerFileInfo, false, true))
           {
-            setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
+            setFileInfo(oClientFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
             oDirectory.queueFinalizeFile(uiQueueIndex);
           }
           else
@@ -1687,7 +1694,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
           if (oDirectory.fileListUpdate(oServerFileInfo, false, true))
           {
             oDirectory.getFullDirPathById(oFileInfo);
-            setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
+            setFileInfo(oClientFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
             oDirectory.queueFinalizeFile(uiQueueIndex);
           }
           else
@@ -1710,7 +1717,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
         {
           if (oDirectory.fileListUpdate(oServerFileInfo, false, true))
           {
-            setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
+            setFileInfo(oClientFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
             oDirectory.queueFinalizeFile(uiQueueIndex);
           }
           else
