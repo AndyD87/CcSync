@@ -1629,7 +1629,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
           oClientFileInfo.fromSystemFile(true) &&
           oClientFileInfo.getCrc() == oServerFileInfo.getCrc())
       {
-        setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
+        setFileInfo(oClientFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
         if (oDirectory.fileListUpdate(oClientFileInfo, false))
         {
           bRet = true;
@@ -1665,7 +1665,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
           }
           else if (oDirectory.fileListUpdate(oServerFileInfo, false))
           {
-            setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
+            setFileInfo(oClientFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
             oDirectory.queueFinalizeFile(uiQueueIndex);
           }
           else
@@ -1686,7 +1686,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
         {
           if (oDirectory.fileListUpdate(oServerFileInfo, false))
           {
-            setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
+            setFileInfo(oClientFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
             oDirectory.queueFinalizeFile(uiQueueIndex);
           }
           else
@@ -1709,7 +1709,7 @@ bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
         {
           if (oDirectory.fileListUpdate(oServerFileInfo, false))
           {
-            setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
+            setFileInfo(oClientFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
             oDirectory.queueFinalizeFile(uiQueueIndex);
           }
           else
