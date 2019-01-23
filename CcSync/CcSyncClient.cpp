@@ -1147,9 +1147,19 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
         if (oClientDirectories.containsDirectory(oServerDirInfo.getName()))
         {
           CcSyncDirInfo oDirInfo = oClientDirectories.getDirectory(oServerDirInfo.getName());
-          oDirectory.directoryListUpdateId(oDirInfo.getId(), oServerDirInfo);
-          doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
-          oClientDirectories.removeFile(oServerDirInfo.getName());
+          if(oDirectory.directoryListExists(oServerDirInfo.getId()))
+          {
+            oDirectory.directoryListRemove(oDirInfo, false);
+            oDirectory.directoryListUpdateId(oServerDirInfo.getId(), oServerDirInfo);
+            doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
+            oClientDirectories.removeFile(oServerDirInfo.getName());
+          }
+          else
+          {
+            oDirectory.directoryListUpdateId(oDirInfo.getId(), oServerDirInfo);
+            doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
+            oClientDirectories.removeFile(oServerDirInfo.getName());
+          }
         }
         else
         {
