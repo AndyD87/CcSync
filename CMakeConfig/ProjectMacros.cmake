@@ -1,5 +1,5 @@
 set(CCSYNC_CMAKECONFIG_DIR ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig)
-
+ 
 ################################################################################
 # Setup default installation targets for a project
 ################################################################################
