@@ -339,6 +339,10 @@ void CcSyncDirectory::scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool b
   CcSyncFileInfoList oDirectoryInfoList = getDirectoryInfoListById(uiDbIndex);
   CcSyncFileInfoList oFileInfoList = getFileInfoListById(uiDbIndex);
   CcFileInfoList oSystemFileList = CcDirectory::getFileList(sPath);
+  if(sPath.startsWith("/var/www/coolcow/content/projects/3/source"))
+  {
+    CCDEBUG("Test");
+  }
   for (size_t i=0; i < oSystemFileList.size(); i++)
   {
     const CcFileInfo& oSystemFileInfo = oSystemFileList[i];
@@ -383,10 +387,22 @@ void CcSyncDirectory::scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool b
       }
       else if (oFileInfoList.containsFile(oSystemFileInfo.getName()))
       {
-        const CcSyncFileInfo& oBackupFileInfo = oFileInfoList.getFile(oSystemFileInfo.getName());
+        CcSyncFileInfo oBackupFileInfo = oFileInfoList.getFile(oSystemFileInfo.getName());
         if (oBackupFileInfo != oSystemFileInfo)
         {
           queueUpdateFile(oBackupFileInfo);
+        }
+        else
+        {
+          if(bDeepSearch)
+          {
+            getFullDirPathById(oBackupFileInfo);
+            CcCrc32 oCrcValue = CcFile::getCrc32(oBackupFileInfo.getSystemFullPath());
+            if(oCrcValue != oBackupFileInfo.getCrc())
+            {
+              queueUpdateFile(oBackupFileInfo);
+            }
+          }
         }
         oFileInfoList.removeFile(oSystemFileInfo.getName());
       }

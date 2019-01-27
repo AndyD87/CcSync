@@ -51,7 +51,7 @@ namespace AccountStrings
   static const CcString Admin("admin");
   static const CcString AdminDesc("if you are admin on server, open admin console");
   static const CcString Sync("sync");
-  static const CcString SyncDesc("synchronise all directories with server");
+  static const CcString SyncDesc("[deep] synchronise all directories with server");
   static const CcString Database         ("database");
   static const CcString DatabaseDesc     ("(refresh|verify)");
   static const CcString DatabaseDesc1    ("  refresh: reload all hashes");
@@ -152,19 +152,35 @@ void CcSyncClientAccountApp::run()
     }
     else if (oArguments[0].compareInsensitve(AccountStrings::Sync))
     {
-      m_poSyncClient->updateFromRemoteAccount();
-      CcSyncConsole::writeLine("Reset Queue");
-      m_poSyncClient->resetQueues();
-      CcSyncConsole::writeLine("Remote sync: scan");
-      m_poSyncClient->doRemoteSyncAll();
-      CcSyncConsole::writeLine("Remote sync: do");
-      m_poSyncClient->doQueues();
-      CcSyncConsole::writeLine("Remote sync: done");
-      CcSyncConsole::writeLine("Local sync: scan");
-      m_poSyncClient->doLocalSyncAll();
-      CcSyncConsole::writeLine("Local sync: do");
-      m_poSyncClient->doQueues();
-      CcSyncConsole::writeLine("Local sync: done");
+      bool bDeep = false;
+      bool bSuccess = true;
+      if(oArguments.size() > 1)
+      {
+        if(oArguments[1] == "deep")
+        {
+          bDeep = true;
+        }
+        else
+        {
+          bSuccess = false;
+        }
+      }
+      if(bSuccess)
+      {
+        m_poSyncClient->updateFromRemoteAccount();
+        CcSyncConsole::writeLine("Reset Queue");
+        m_poSyncClient->resetQueues();
+        CcSyncConsole::writeLine("Remote sync: scan");
+        m_poSyncClient->doRemoteSyncAll();
+        CcSyncConsole::writeLine("Remote sync: do");
+        m_poSyncClient->doQueues();
+        CcSyncConsole::writeLine("Remote sync: done");
+        CcSyncConsole::writeLine("Local sync: scan");
+        m_poSyncClient->doLocalSyncAll(bDeep);
+        CcSyncConsole::writeLine("Local sync: do");
+        m_poSyncClient->doQueues();
+        CcSyncConsole::writeLine("Local sync: done");
+      }
     }
     else if (oArguments[0].compareInsensitve(AccountStrings::Database))
     {
