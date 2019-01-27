@@ -339,10 +339,6 @@ void CcSyncDirectory::scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool b
   CcSyncFileInfoList oDirectoryInfoList = getDirectoryInfoListById(uiDbIndex);
   CcSyncFileInfoList oFileInfoList = getFileInfoListById(uiDbIndex);
   CcFileInfoList oSystemFileList = CcDirectory::getFileList(sPath);
-  if(sPath.startsWith("/var/www/coolcow/content/projects/3/source"))
-  {
-    CCDEBUG("Test");
-  }
   for (size_t i=0; i < oSystemFileList.size(); i++)
   {
     const CcFileInfo& oSystemFileInfo = oSystemFileList[i];
