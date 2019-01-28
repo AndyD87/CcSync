@@ -323,9 +323,6 @@ void CcSyncClient::doQueue(const CcString& sDirectoryName)
             case EBackupQueueType::RemoveFile:
               doRemoveFile(oDirectory, oFileInfo, uiQueueIndex);
               break;
-            case EBackupQueueType::UpdateFile:
-              doUpdateFile(oDirectory, oFileInfo, uiQueueIndex);
-              break;
             case EBackupQueueType::DownloadFile:
               doDownloadFile(oDirectory, oFileInfo, uiQueueIndex);
               break;
@@ -1192,7 +1189,8 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
         if (oFileInfo != oServerFileInfo)
         {
           // @todo always downloading works, okay!
-          oDirectory.fileListUpdate(oServerFileInfo, false, false);
+          oDirectory.fileListRemove(oServerFileInfo, false, true);
+          oDirectory.fileListInsert(oServerFileInfo, false);
         }
         oClientFiles.removeFile(oServerFileInfo.getId());
       }
@@ -1227,7 +1225,7 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
         if (CcFile::exists(oServerFileInfo.getSystemFullPath()))
         {
           // File still existing, insert fileinfo and wait for local sync
-          oDirectory.fileListInsert(oServerFileInfo);
+          oDirectory.fileListInsert(oServerFileInfo, false);
         }
         else
         {
@@ -1534,7 +1532,12 @@ bool CcSyncClient::doUploadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
         if (sendFile(oFileInfo))
         {
           CcSyncFileInfo oResponseFileInfo = m_oResponse.getFileInfo();
-          if (oDirectory.fileListInsert(oResponseFileInfo))
+          if(oDirectory.fileNameInDirExists(oFileInfo.getDirId(), oFileInfo))
+          {
+            CcSyncFileInfo oFileToDelete = oDirectory.getFileInfoByFilename(oFileInfo.getDirId(), oFileInfo.getName());
+            oDirectory.fileListRemove(oFileToDelete, false, true);
+          }
+          if (oDirectory.fileListInsert(oResponseFileInfo, true))
           {
             oDirectory.queueFinalizeFile(uiQueueIndex);
             CcSyncLog::writeDebug("File Successfully uploaded: " + oFileInfo.getName(), ESyncLogTarget::Client);
@@ -1561,7 +1564,7 @@ bool CcSyncClient::doUploadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
             if (m_oResponse.data().contains(CcSyncGlobals::FileInfo::Id))
             {
               CcSyncFileInfo oResponseFileInfo = m_oResponse.getFileInfo();
-              oDirectory.fileListInsert(oResponseFileInfo);
+              oDirectory.fileListInsert(oResponseFileInfo, true);
               oDirectory.queueFinalizeFile(uiQueueIndex);
               CcSyncLog::writeDebug("File Successfully uploaded: " + oFileInfo.getName(), ESyncLogTarget::Client);
               bRet = true;
@@ -1641,200 +1644,6 @@ bool CcSyncClient::doRemoveFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
   return bRet;
 }
 
-bool CcSyncClient::doUpdateFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex)
-{
-  bool bRet = false;
-  bool bDoRemoveUpload = false;
-  m_oRequest.setDirectoryGetFileInfo(oDirectory.getName(), oFileInfo.getId());
-  if (sendRequestGetResponse() &&
-      m_oResponse.hasError() == false)
-  {
-    CcSyncFileInfo oServerFileInfo = m_oResponse.getFileInfo();
-    oDirectory.getFullDirPathById(oServerFileInfo);
-    // check if id exists in database
-    CcSyncFileInfo oClientFileInfo = oDirectory.getFileInfoById(oServerFileInfo.getId());
-    oDirectory.getFullDirPathById(oClientFileInfo);
-    if (oClientFileInfo.getId() == 0)
-    {
-      oClientFileInfo.fromSystemFile(false);
-      if (oClientFileInfo.getFileSize() == oServerFileInfo.getFileSize() &&
-          oClientFileInfo.fromSystemFile(true) &&
-          oClientFileInfo.getCrc() == oServerFileInfo.getCrc())
-      {
-        setFileInfo(oClientFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
-        if (oDirectory.fileListUpdate(oClientFileInfo, false, true))
-        {
-          bRet = true;
-        }
-        else
-        {
-          CcSyncLog::writeDebug("Update file, update in database failed: " + oServerFileInfo.getName(), ESyncLogTarget::Client);
-          oDirectory.queueIncrementItem(uiQueueIndex);
-        }
-      }
-      else
-      {
-        m_oRequest.init(ESyncCommandType::DirectoryDownloadFile);
-        bRet = doDownloadFile(oDirectory, oFileInfo, uiQueueIndex);
-      }
-      if (bRet == true)
-      {
-        oDirectory.queueFinalizeFile(uiQueueIndex);
-      }
-    }
-    else
-    {
-      oClientFileInfo.fromSystemFile(false);
-      if (oClientFileInfo.modified() > oServerFileInfo.modified())
-      {
-        if (oClientFileInfo.getFileSize() == oServerFileInfo.getFileSize() &&
-            oClientFileInfo.fromSystemFile(true) &&
-            oClientFileInfo.getCrc() == oServerFileInfo.getCrc())
-        {
-          if (oServerFileInfo.modified() < 0)
-          {
-            bDoRemoveUpload = true;
-          }
-          else if (oDirectory.fileListUpdate(oServerFileInfo, false, true))
-          {
-            setFileInfo(oClientFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
-            oDirectory.queueFinalizeFile(uiQueueIndex);
-          }
-          else
-          {
-            CcSyncLog::writeDebug("Update file, update in database failed: " + oServerFileInfo.getName(), ESyncLogTarget::Client);
-            oDirectory.queueIncrementItem(uiQueueIndex);
-          }
-        }
-        else
-        {
-          bDoRemoveUpload = true;
-        }
-      }
-      else if (oClientFileInfo.modified() < oServerFileInfo.modified())
-      {
-        if (oClientFileInfo.getFileSize() == oServerFileInfo.getFileSize() &&
-            oClientFileInfo.getCrc() == oServerFileInfo.getCrc())
-        {
-          if (oDirectory.fileListUpdate(oServerFileInfo, false, true))
-          {
-            oDirectory.getFullDirPathById(oFileInfo);
-            setFileInfo(oClientFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
-            oDirectory.queueFinalizeFile(uiQueueIndex);
-          }
-          else
-          {
-            CcSyncLog::writeDebug("Update file, update in database failed: " + oServerFileInfo.getName(), ESyncLogTarget::Client);
-            oDirectory.queueIncrementItem(uiQueueIndex);
-          }
-        }
-        else
-        {
-          oDirectory.fileListRemove(oClientFileInfo, false, false);
-          m_oRequest.init(ESyncCommandType::DirectoryDownloadFile);
-          bRet = doDownloadFile(oDirectory, oFileInfo, uiQueueIndex);
-        }
-      }
-      else
-      {
-        if (oClientFileInfo.getFileSize() == oServerFileInfo.getFileSize() &&
-            oClientFileInfo.getCrc() == oServerFileInfo.getCrc())
-        {
-          if (oDirectory.fileListUpdate(oServerFileInfo, false, true))
-          {
-            setFileInfo(oClientFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oServerFileInfo.getModified());
-            oDirectory.queueFinalizeFile(uiQueueIndex);
-          }
-          else
-          {
-            CcSyncLog::writeDebug("3 Update file, update in database failed: " + oServerFileInfo.getName(), ESyncLogTarget::Client);
-            oDirectory.queueIncrementItem(uiQueueIndex);
-          }
-        }
-        else
-        {
-          oDirectory.fileListRemove(oClientFileInfo, false, false);
-          m_oRequest.init(ESyncCommandType::DirectoryDownloadFile);
-          bRet = doDownloadFile(oDirectory, oFileInfo, uiQueueIndex);
-        }
-      }
-    }
-  }
-  else
-  {
-    bDoRemoveUpload = true;
-  }
-  if(bDoRemoveUpload)
-  {
-    oDirectory.getFullDirPathById(oFileInfo);
-    if (oFileInfo.fromSystemFile(false))
-    {
-      m_oRequest.setDirectoryUpdateFile(oDirectory.getName(), oFileInfo);
-      if (sendRequestGetResponse())
-      {
-        if (m_oResponse.hasError() == false)
-        {
-          if (sendFile(oFileInfo))
-          {
-            CcSyncFileInfo oResponseFileInfo = m_oResponse.getFileInfo();
-            if (oDirectory.fileListUpdate(oResponseFileInfo, false, true))
-            {
-              oDirectory.queueFinalizeFile(uiQueueIndex);
-              CcSyncLog::writeDebug("File Successfully updated: " + oFileInfo.getName(), ESyncLogTarget::Client);
-            }
-            else
-            {
-              oDirectory.queueIncrementItem(uiQueueIndex);
-              CcSyncLog::writeError("Updating in filelist failed: " + oFileInfo.getSystemFullPath(), ESyncLogTarget::Client);
-            }
-            bRet = true;
-          }
-          else
-          {
-            oDirectory.queueIncrementItem(uiQueueIndex);
-            CcSyncLog::writeError("Sending file for update failed: " + oFileInfo.getSystemFullPath(), ESyncLogTarget::Client);
-            CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
-          }
-        }
-        else
-        {
-          switch (m_oResponse.getError().getError())
-          {
-            case EStatus::FSFileAlreadyExisting:
-              if (m_oResponse.data().contains(CcSyncGlobals::FileInfo::Id))
-              {
-                CcSyncFileInfo oResponseFileInfo = m_oResponse.getFileInfo();
-                oDirectory.fileListInsert(oResponseFileInfo);
-                oDirectory.queueFinalizeFile(uiQueueIndex);
-                CcSyncLog::writeDebug("File Successfully updated: " + oFileInfo.getName(), ESyncLogTarget::Client);
-                bRet = true;
-                break;
-              }
-              // fall through
-            default:
-              oDirectory.queueIncrementItem(uiQueueIndex);
-              CcSyncLog::writeError("Sending file failed: " + oFileInfo.getSystemFullPath(), ESyncLogTarget::Client);
-              CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
-          }
-        }
-      }
-      else
-      {
-        CcSyncLog::writeError("Sending file failed: " + oFileInfo.getSystemFullPath(), ESyncLogTarget::Client);
-        CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
-        oDirectory.queueIncrementItem(uiQueueIndex);
-      }
-    }
-    else
-    {
-      oDirectory.queueIncrementItem(uiQueueIndex);
-      CcSyncLog::writeError("Queued Directory not found: " + oFileInfo.getDirPath(), ESyncLogTarget::Client);
-      CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
-    }
-  }
-  return bRet;
-}
-
 bool CcSyncClient::doDownloadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex)
 {
   bool bRet = false;
@@ -1877,7 +1686,7 @@ bool CcSyncClient::doDownloadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& o
           if (bSuccess)
           {
             setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oFileInfo.getModified());
-            if (oDirectory.fileListInsert(oFileInfo))
+            if (oDirectory.fileListInsert(oFileInfo, true))
             {
               CcSyncLog::writeDebug("File downloaded: " + oFileInfo.getName(), ESyncLogTarget::Client);
               bRet = true;

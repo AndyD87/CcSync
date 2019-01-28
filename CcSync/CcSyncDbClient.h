@@ -57,7 +57,6 @@ enum class EBackupQueueType : uint16
   DownloadDir,
   AddFile,
   RemoveFile,
-  UpdateFile,
   DownloadFile,
   RemoveErrorFile,
 };
@@ -125,7 +124,6 @@ public:
   void queueResetAttempts(const CcString& sDirName);
   void queueDownloadDirectory(const CcString& sDirName, const CcSyncFileInfo& oFileInfo);
   void queueDownloadFile(const CcString& sDirName, const CcSyncFileInfo& oFileInfo);
-  void queueUpdateFile(const CcString& sDirName, const CcSyncFileInfo& oFileInfo);
   uint64 queueInsert(const CcString& sDirName, uint64 uiParentId, EBackupQueueType eQueueType, uint64 uiFileId, uint64 uiDirectoryId, const CcString& sName);
 
   bool directoryListRemove(const CcString& sDirName, const CcSyncFileInfo& oFileInfo, bool bDoUpdateParents = true);
@@ -140,8 +138,7 @@ public:
   void directoryListSearchDouble(const CcString& sDirName, uint64 uiDirId = 1);
   void directoryListSearchTemporary(const CcString& sDirName);
 
-  bool fileListInsert(const CcString& sDirName, CcSyncFileInfo& oFileInfo);
-  bool fileListUpdate(const CcString& sDirName, const CcSyncFileInfo& oFileInfo, bool bDoUpdateParents);
+  bool fileListInsert(const CcString& sDirName, CcSyncFileInfo& oFileInfo, bool bDoUpdateParents);
   bool fileListRemove(const CcString& sDirName, const CcSyncFileInfo& oFileInfo, bool bDoUpdateParents = true);
   bool fileListExists(const CcString& sDirName, uint64 uiFileId);
   bool fileListFileIdExists(const CcString& sDirName, uint64 uiDirId, const CcSyncFileInfo& oFileInfo);
@@ -165,7 +162,6 @@ private: // Methods
   CcString getDbInsertFileList(const CcString& sDirName, const CcSyncFileInfo& oInfo);
   CcString getDbInsertQueue(const CcString& sDirName, uint64 uiParentId, EBackupQueueType eQueueType, uint64 uiFileId, uint64 uiDirectoryId, const CcString& sName);
   CcString getDbInsertHistory(const CcString& sDirName, EBackupQueueType eQueueType, const CcSyncFileInfo& oFileInfo);
-  CcString getDbUpdateFileList(const CcString& sDirName, const CcSyncFileInfo& oInfo);
 private:
   CcSharedPointer<CcSqlite> m_pDatabase;
   size_t m_uiTransactionCnt = 0;

@@ -92,7 +92,6 @@ private:
   void doDirectoryCreateDirectory();
   void doDirectoryRemoveDirectory();
   void doDirectoryUploadFile();
-  void doDirectoryUpdateFile();
   void doDirectoryRemoveFile();
   void doDirectoryDownloadFile();
 private:
@@ -104,7 +103,7 @@ private:
   CcSyncUser      m_oUser;
   CcSyncRequest   m_oRequest;
   CcSyncResponse  m_oResponse;
-  CcSyncDirectory m_pDirectory;
+  CcSyncDirectory m_oDirectory;
 };
 
 #endif /* _CcSyncServerWorker_H_ */

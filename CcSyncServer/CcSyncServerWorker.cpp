@@ -155,10 +155,6 @@ void CcSyncServerWorker::run()
           m_oResponse.init(eCommandType);
           doDirectoryUploadFile();
           break;
-        case ESyncCommandType::DirectoryUpdateFile:
-          m_oResponse.init(eCommandType);
-          doDirectoryUpdateFile();
-          break;
         case ESyncCommandType::DirectoryRemoveFile:
           m_oResponse.init(eCommandType);
           doDirectoryRemoveFile();
@@ -375,7 +371,7 @@ bool CcSyncServerWorker::loadDirectory()
   if (m_oRequest.data().contains(CcSyncGlobals::Commands::DirectoryGetFileList::DirectoryName))
   {
     CcString sDirectoryName = m_oRequest.data()[CcSyncGlobals::Commands::DirectoryGetFileList::DirectoryName].getValue().getString();
-    if (m_pDirectory.getName() == sDirectoryName)
+    if (m_oDirectory.getName() == sDirectoryName)
     {
       return true;
     }
@@ -384,7 +380,7 @@ bool CcSyncServerWorker::loadDirectory()
       CcSyncDirectoryConfig* pDirectory = m_oUser.getAccountConfig()->directoryList().getDirectoryByName(sDirectoryName);
       if (pDirectory != nullptr)
       {
-        m_pDirectory.init(m_oUser.getDatabase(), pDirectory);
+        m_oDirectory.init(m_oUser.getDatabase(), pDirectory);
         bRet = true;
       }
       else
@@ -708,8 +704,8 @@ void CcSyncServerWorker::doDirectoryGetFileList()
     if (m_oRequest.data().contains(CcSyncGlobals::Commands::DirectoryGetFileList::Id))
     {
       size_t uiId = m_oRequest.data()[CcSyncGlobals::Commands::DirectoryGetFileList::Id].getValue().getSize();
-      CcSyncFileInfoList oDirectoryInfos = m_pDirectory.getDirectoryInfoListById(uiId);
-      CcSyncFileInfoList oFileInfos      = m_pDirectory.getFileInfoListById(uiId);
+      CcSyncFileInfoList oDirectoryInfos = m_oDirectory.getDirectoryInfoListById(uiId);
+      CcSyncFileInfoList oFileInfos      = m_oDirectory.getFileInfoListById(uiId);
       //CcSyncLog::writeDebug("DirId: " + CcString::fromNumber(uiId) + " Dirs: " + CcString::fromNumber(oDirectoryInfos.size()) + " Files: " + CcString::fromNumber(oFileInfos.size()));
       m_oResponse.addDirectoryDirectoryInfoList(oDirectoryInfos, oFileInfos);
     }
@@ -737,7 +733,7 @@ void CcSyncServerWorker::doDirectoryGetFileInfo()
     if (m_oRequest.data().contains(CcSyncGlobals::Commands::DirectoryGetFileList::Id))
     {
       uint64 uiFileId = m_oRequest.data()[CcSyncGlobals::Commands::DirectoryGetFileInfo::Id].getValue().getUint64();
-      CcSyncFileInfo oDirInfo = m_pDirectory.getFileInfoById(uiFileId);
+      CcSyncFileInfo oDirInfo = m_oDirectory.getFileInfoById(uiFileId);
       m_oResponse.addFileInfo(oDirInfo);
     }
     else
@@ -756,7 +752,7 @@ void CcSyncServerWorker::doDirectoryGetDirectoryInfo()
     if (m_oRequest.data().contains(CcSyncGlobals::Commands::DirectoryGetDirectoryInfo::Id))
     {
       uint64 uiDirId = m_oRequest.data()[CcSyncGlobals::Commands::DirectoryGetDirectoryInfo::Id].getValue().getUint64();
-      CcSyncDirInfo oDirInfo = m_pDirectory.getDirectoryInfoById(uiDirId);
+      CcSyncDirInfo oDirInfo = m_oDirectory.getDirectoryInfoById(uiDirId);
       m_oResponse.addFileInfo(oDirInfo);
     }
     else
@@ -783,9 +779,9 @@ void CcSyncServerWorker::doDirectoryCreateDirectory()
         m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified))
     {
       CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
-      if (m_pDirectory.directoryListSubDirExists(oFileInfo.getDirId(), oFileInfo.getName()) == false)
+      if (m_oDirectory.directoryListSubDirExists(oFileInfo.getDirId(), oFileInfo.getName()) == false)
       {
-        if (m_pDirectory.directoryListCreate(oFileInfo))
+        if (m_oDirectory.directoryListCreate(oFileInfo))
         {
           m_oResponse.addFileInfo(oFileInfo);
         }
@@ -797,7 +793,7 @@ void CcSyncServerWorker::doDirectoryCreateDirectory()
       else
       {
         // Directory already exits, turn back Info
-        oFileInfo = m_pDirectory.getDirectoryInfoFromSubdir(oFileInfo.getDirId(), oFileInfo.getName());
+        oFileInfo = m_oDirectory.getDirectoryInfoFromSubdir(oFileInfo.getDirId(), oFileInfo.getName());
         if (oFileInfo.getName().length() > 0)
         {
           m_oResponse.addFileInfo(oFileInfo);
@@ -832,11 +828,11 @@ void CcSyncServerWorker::doDirectoryRemoveDirectory()
         m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name))
     {
       CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
-      if (m_pDirectory.directoryListExists(oFileInfo.getId()))
+      if (m_oDirectory.directoryListExists(oFileInfo.getId()))
       {
-        if (m_pDirectory.directoryListEmpty(oFileInfo.getId()))
+        if (m_oDirectory.directoryListEmpty(oFileInfo.getId()))
         {
-          m_pDirectory.directoryListRemove(oFileInfo);
+          m_oDirectory.directoryListRemove(oFileInfo, true);
         }
         else
         {
@@ -863,100 +859,6 @@ void CcSyncServerWorker::doDirectoryRemoveDirectory()
   sendResponse();
 }
 
-void CcSyncServerWorker::doDirectoryUpdateFile()
-{
-  if (loadConfigsBySessionRequest() &&
-      loadDirectory())
-  {
-    if (m_oRequest.data().contains(CcSyncGlobals::FileInfo::Id) &&
-        m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId) &&
-        m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name) &&
-        m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified))
-    {
-      CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
-      if (m_pDirectory.directoryListExists(oFileInfo.getDirId()))
-      {
-        if (m_pDirectory.fileIdInDirExists(oFileInfo.getDirId(), oFileInfo) == true)
-        {
-          m_pDirectory.getFullDirPathById(oFileInfo);
-          CcString sTempFilePath = oFileInfo.getSystemFullPath();
-          sTempFilePath.append(CcSyncGlobals::TemporaryExtension);
-          CcFile oFile(sTempFilePath);
-          if (oFile.open(EOpenFlags::Write))
-          {
-            sendResponse();
-            if (receiveFile(&oFile, oFileInfo))
-            {
-              oFile.close();
-              bool bSuccess = true;
-              if (bSuccess)
-              {
-                oFileInfo.changed() = CcKernel::getDateTime().getTimestampS();
-                if (m_pDirectory.fileListUpdate(oFileInfo, true, true))
-                {
-                  bSuccess = CcFile::move(sTempFilePath, oFileInfo.getSystemFullPath());
-                  if (!bSuccess)
-                  {
-                    m_oResponse.init(ESyncCommandType::Crc);
-                    m_oResponse.setError(EStatus::FSFileCreateFailed, "Failed to move temporary File");
-                    CcSyncLog::writeDebug("Failed to move temporary File: ");
-                    CcSyncLog::writeDebug("  " + sTempFilePath + " -> " + oFileInfo.getSystemFullPath());
-                  }
-                  else
-                  {
-                    CcFile::setModified(oFileInfo.getSystemFullPath(), CcDateTimeFromSeconds(oFileInfo.getModified()));
-                  }
-                  m_oResponse.init(ESyncCommandType::Crc);
-                  m_oResponse.addFileInfo(oFileInfo);
-                }
-                else
-                {
-                  m_oResponse.init(ESyncCommandType::Crc);
-                  m_oResponse.setError(EStatus::FSFileCreateFailed, "File add to database failed");
-                  CcFile::remove(sTempFilePath);
-                }
-              }
-            }
-            else
-            {
-              oFile.close();
-              CcFile::remove(oFileInfo.getSystemFullPath());
-              m_oResponse.init(ESyncCommandType::Crc);
-              m_oResponse.setError(EStatus::FileTransferFailed, "Crc comparision failed");
-            }
-          }
-          else
-          {
-            m_oResponse.setError(EStatus::FSFileCreateFailed, "Unable to create temporary file for upload.");
-          }
-        }
-        else
-        {
-          m_oResponse.setError(EStatus::FSFileAlreadyExisting, "No update, File not part of database");
-          oFileInfo = m_pDirectory.getFileInfoByFilename(oFileInfo.getDirId(), oFileInfo.getName());
-          // send back the file already stored in database
-          if(oFileInfo.getId() > 0)
-            m_oResponse.addFileInfo(oFileInfo);
-        }
-      }
-      else
-      {
-        m_oResponse.setError(EStatus::FSDirNotFound, "Parent Directory for file not existing: " + CcString::fromNumber( oFileInfo.getDirId()));
-      }
-    }
-    else
-    {
-      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId))
-        m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::DirId);
-      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name))
-        m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::Name);
-      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified))
-        m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::Modified);
-    }
-  }
-  sendResponse();
-}
-
 void CcSyncServerWorker::doDirectoryUploadFile()
 {
   if (loadConfigsBySessionRequest() &&
@@ -967,78 +869,72 @@ void CcSyncServerWorker::doDirectoryUploadFile()
         m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified))
     {
       CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
-      if (m_pDirectory.directoryListExists(oFileInfo.getDirId()))
+      if (m_oDirectory.directoryListExists(oFileInfo.getDirId()))
       {
-        if (m_pDirectory.fileNameInDirExists(oFileInfo.getDirId(), oFileInfo) == false)
+        m_oDirectory.getFullDirPathById(oFileInfo);
+        CcString sTempFilePath = oFileInfo.getSystemFullPath();
+        sTempFilePath.append(CcSyncGlobals::TemporaryExtension);
+        CcFile oFile(sTempFilePath);
+        if (oFile.open(EOpenFlags::Overwrite))
         {
-          m_pDirectory.getFullDirPathById(oFileInfo);
-          CcString sTempFilePath = oFileInfo.getSystemFullPath();
-          sTempFilePath.append(CcSyncGlobals::TemporaryExtension);
-          CcFile oFile(sTempFilePath);
-          if (oFile.open(EOpenFlags::Overwrite))
+          sendResponse();
+          if (receiveFile(&oFile, oFileInfo))
           {
-            sendResponse();
-            if (receiveFile(&oFile, oFileInfo))
+            oFile.close();
+            bool bSuccess = true;
+            if (m_oDirectory.fileNameInDirExists(oFileInfo.getDirId(), oFileInfo))
             {
-              oFile.close();
-              bool bSuccess = true;
-              if (CcFile::exists(oFileInfo.getSystemFullPath()))
+              CcSyncFileInfo oFileToDelete = m_oDirectory.getFileInfoByFilename(oFileInfo.getDirId(), oFileInfo.getName());
+              m_oDirectory.fileListRemove(oFileToDelete, false, true);
+            }
+            if (CcFile::exists(oFileInfo.getSystemFullPath()))
+            {
+              if (!CcFile::remove(oFileInfo.getSystemFullPath()))
               {
-                if (!CcFile::remove(oFileInfo.getSystemFullPath()))
+                bSuccess = CcFile::remove(sTempFilePath);
+                if(bSuccess == false)
                 {
-                  bSuccess = CcFile::remove(sTempFilePath);
-                  if(bSuccess == false)
-                  {
-                    CcSyncLog::writeDebug("Failed to remove original File: " + oFileInfo.getSystemFullPath());
-                  }
-                }
-              }
-              if (bSuccess)
-              {
-                bSuccess = CcFile::move(sTempFilePath, oFileInfo.getSystemFullPath());
-                if (!bSuccess)
-                {
-                  m_oResponse.init(ESyncCommandType::Crc);
-                  m_oResponse.setError(EStatus::FSFileCreateFailed, "Failed to move temporary File");
-                  CcSyncLog::writeDebug("Failed to move temporary File: ");
-                  CcSyncLog::writeDebug("  " + sTempFilePath + " -> " + oFileInfo.getSystemFullPath());
-                }
-              }
-              if (bSuccess)
-              {
-                if (m_pDirectory.fileListCreate(oFileInfo))
-                {
-                  m_oResponse.init(ESyncCommandType::Crc);
-                  m_oResponse.addFileInfo(oFileInfo);
-                }
-                else
-                {
-                  m_oResponse.init(ESyncCommandType::Crc);
-                  m_oResponse.setError(EStatus::FSFileCreateFailed, "File add to database failed");
-                  CcFile::remove(sTempFilePath);
+                  CcSyncLog::writeDebug("Failed to remove original File: " + oFileInfo.getSystemFullPath());
                 }
               }
             }
-            else
+            if (bSuccess)
             {
-              oFile.close();
-              CcFile::remove(oFileInfo.getSystemFullPath());
-              m_oResponse.init(ESyncCommandType::Crc);
-              m_oResponse.setError(EStatus::FileTransferFailed, "Crc comparision failed");
+              bSuccess = CcFile::move(sTempFilePath, oFileInfo.getSystemFullPath());
+              if (!bSuccess)
+              {
+                m_oResponse.init(ESyncCommandType::Crc);
+                m_oResponse.setError(EStatus::FSFileCreateFailed, "Failed to move temporary File");
+                CcSyncLog::writeDebug("Failed to move temporary File: ");
+                CcSyncLog::writeDebug("  " + sTempFilePath + " -> " + oFileInfo.getSystemFullPath());
+              }
+            }
+            if (bSuccess)
+            {
+              if (m_oDirectory.fileListCreate(oFileInfo, true))
+              {
+                m_oResponse.init(ESyncCommandType::Crc);
+                m_oResponse.addFileInfo(oFileInfo);
+              }
+              else
+              {
+                m_oResponse.init(ESyncCommandType::Crc);
+                m_oResponse.setError(EStatus::FSFileCreateFailed, "File add to database failed");
+                CcFile::remove(sTempFilePath);
+              }
             }
           }
           else
           {
-            m_oResponse.setError(EStatus::FSFileCreateFailed, "Unable to create temporary file for upload.");
+            oFile.close();
+            CcFile::remove(oFileInfo.getSystemFullPath());
+            m_oResponse.init(ESyncCommandType::Crc);
+            m_oResponse.setError(EStatus::FileTransferFailed, "Crc comparision failed");
           }
         }
         else
         {
-          m_oResponse.setError(EStatus::FSFileAlreadyExisting, "File already part of database");
-          oFileInfo = m_pDirectory.getFileInfoByFilename(oFileInfo.getDirId(), oFileInfo.getName());
-          // send back the file already stored in database
-          if(oFileInfo.getId() > 0)
-            m_oResponse.addFileInfo(oFileInfo);
+          m_oResponse.setError(EStatus::FSFileCreateFailed, "Unable to create temporary file for upload.");
         }
       }
       else
@@ -1068,17 +964,17 @@ void CcSyncServerWorker::doDirectoryRemoveFile()
         m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name))
     {
       CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
-      if (m_pDirectory.directoryListExists(oFileInfo.getDirId()) == false)
+      if (m_oDirectory.directoryListExists(oFileInfo.getDirId()) == false)
       {
         m_oResponse.setError(EStatus::FSDirNotFound, "Directory Not Found");
       }
-      else if(m_pDirectory.fileIdInDirExists(oFileInfo.getDirId(), oFileInfo) == false)
+      else if(m_oDirectory.fileIdInDirExists(oFileInfo.getDirId(), oFileInfo) == false)
       {
         m_oResponse.setError(EStatus::FSFileNotFound, "File Not Found");
       }
       else
       {
-        m_pDirectory.fileListRemove(oFileInfo, true, false);
+        m_oDirectory.fileListRemove(oFileInfo, true, false);
       }
     }
     else
@@ -1097,8 +993,8 @@ void CcSyncServerWorker::doDirectoryDownloadFile()
     if (m_oRequest.data().contains(CcSyncGlobals::FileInfo::Id))
     {
       uint64 uiFileId = m_oRequest.data()[CcSyncGlobals::FileInfo::Id].getValue().getUint64();
-      CcSyncFileInfo oFileInfo = m_pDirectory.getFileInfoById(uiFileId);
-      m_pDirectory.getFullDirPathById(oFileInfo);
+      CcSyncFileInfo oFileInfo = m_oDirectory.getFileInfoById(uiFileId);
+      m_oDirectory.getFullDirPathById(oFileInfo);
       if (CcFile::exists(oFileInfo.getSystemFullPath()))
       {
         bool bSuccess = true;
@@ -1108,7 +1004,8 @@ void CcSyncServerWorker::doDirectoryDownloadFile()
         {
           // We have to update our file info in Database
           oFileInfo.fromSystemFile(true);
-          bSuccess = m_pDirectory.fileListUpdate(oFileInfo, false, true);
+          bSuccess = m_oDirectory.fileListRemove(oFileInfo, false, true);
+          bSuccess = m_oDirectory.fileListCreate(oFileInfo, true);
           if(bSuccess == false)
           {
             CcSyncLog::writeDebug("DirectoryDownloadFile send File failed:");
@@ -1135,7 +1032,7 @@ void CcSyncServerWorker::doDirectoryDownloadFile()
       else
       {
         m_oResponse.setError(EStatus::FSFileCrcFailed, oFileInfo.getRelativePath() + " not existing, Server will delete file in list");
-        m_pDirectory.fileListRemove(oFileInfo, true, false);
+        m_oDirectory.fileListRemove(oFileInfo, true, false);
       }
     }
     else

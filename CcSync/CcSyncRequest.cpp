@@ -249,13 +249,6 @@ void CcSyncRequest::setDirectoryUploadFile(const CcString& sDirectoryName, const
   addFileInfo(oFileInfo);
 }
 
-void CcSyncRequest::setDirectoryUpdateFile(const CcString& sDirectoryName, const CcSyncFileInfo& oFileInfo)
-{
-  init(ESyncCommandType::DirectoryUpdateFile);
-  m_oData.add(CcJsonData(CcSyncGlobals::Commands::DirectoryUploadFile::DirectoryName, sDirectoryName));
-  addFileInfo(oFileInfo);
-}
-
 void CcSyncRequest::setDirectoryRemoveFile(const CcString& sDirectoryName, const CcSyncFileInfo& oFileInfo)
 {
   init(ESyncCommandType::DirectoryRemoveFile);

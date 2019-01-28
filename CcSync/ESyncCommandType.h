@@ -61,7 +61,7 @@ enum class ESyncCommandType : uint16
   DirectoryCreateDirectory        ,
   DirectoryRemoveDirectory        ,
   DirectoryUploadFile             ,
-  DirectoryUpdateFile             ,
+  CommandRemoved                  ,
   DirectoryDownloadFile           ,
   DirectoryRemoveFile             ,
   DirectoryUpdateFileInfo         ,

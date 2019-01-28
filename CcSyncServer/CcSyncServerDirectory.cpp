@@ -97,7 +97,7 @@ void CcSyncServerDirectory::doQueue(CcSyncDirectory& oCurrentDir)
         }
         break;
       case EBackupQueueType::RemoveDir:
-        if (oCurrentDir.directoryListRemove(oFileInfo))
+        if (oCurrentDir.directoryListRemove(oFileInfo, true))
         {
           oCurrentDir.queueFinalizeFile(uiQueueIndex);
         }
@@ -123,7 +123,7 @@ void CcSyncServerDirectory::doQueue(CcSyncDirectory& oCurrentDir)
       {
         oCurrentDir.getFullDirPathById(oFileInfo);
         oFileInfo.fromSystemFile(true);
-        if (oCurrentDir.fileListCreate(oFileInfo))
+        if (oCurrentDir.fileListCreate(oFileInfo, true))
         {
           oCurrentDir.queueFinalizeDirectory(oFileInfo, uiQueueIndex);
         }
@@ -143,20 +143,6 @@ void CcSyncServerDirectory::doQueue(CcSyncDirectory& oCurrentDir)
           oCurrentDir.queueIncrementItem(uiQueueIndex);
         }
         break;
-      case EBackupQueueType::UpdateFile:
-      {
-        oCurrentDir.getFullDirPathById(oFileInfo);
-        oFileInfo.fromSystemFile(true);
-        if (oCurrentDir.fileListUpdate(oFileInfo, false, true))
-        {
-          oCurrentDir.queueFinalizeDirectory(oFileInfo, uiQueueIndex);
-        }
-        else
-        {
-          oCurrentDir.queueIncrementItem(uiQueueIndex);
-        }
-        break;
-      }
       case EBackupQueueType::DownloadFile:
         CCDEBUG("DownloadFile should not happen on local sync");
         break;

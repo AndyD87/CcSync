@@ -98,22 +98,20 @@ public:
   void queueResetAttempts();
   void queueDownloadDirectory(const CcSyncFileInfo& oFileInfo);
   void queueDownloadFile(const CcSyncFileInfo& oFileInfo);
-  void queueUpdateFile(const CcSyncFileInfo& oFileInfo);
 
   const CcString& getName() const;
   bool getInnerPathById(CcSyncFileInfo& oFileInfo);
   bool getFullDirPathById(CcSyncFileInfo& oFileInfo);
 
-  bool fileListInsert(CcSyncFileInfo& oFileInfo);
-  bool fileListUpdate(CcSyncFileInfo& oFileInfo, bool bMoveToHistory, bool bDoUpdateParents);
+  bool fileListInsert(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents);
   bool fileListRemove(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents, bool bKeepFile);
-  bool fileListCreate(CcSyncFileInfo& oFileInfo);
+  bool fileListCreate(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents);
   bool fileListExists(uint64 uiFileId);
 
   bool directoryListCreate(CcSyncFileInfo& oFileInfo);
   bool directoryListUpdate(const CcSyncFileInfo& oFileInfo);
   bool directoryListUpdateId(uint64 uiDirectoryId, const CcSyncFileInfo& oFileInfo);
-  bool directoryListRemove(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents = true);
+  bool directoryListRemove(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents);
   bool directoryListExists(uint64 uiDirectoryId);
   bool directoryListSubDirExists(uint64 uiParentDirId, const CcString& sName);
   bool directoryListEmpty(uint64 uiDirectoryId);

@@ -160,56 +160,9 @@ bool CcSyncDirectory::getFullDirPathById(CcSyncFileInfo& oFileInfo)
   return true;
 }
 
-bool CcSyncDirectory::fileListInsert(CcSyncFileInfo& oFileInfo)
+bool CcSyncDirectory::fileListInsert(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents)
 {
-  return m_pDatabase->fileListInsert(getName(), oFileInfo);
-}
-
-bool CcSyncDirectory::fileListUpdate(CcSyncFileInfo& oFileInfo, bool bMoveToHistory, bool bDoUpdateParents)
-{
-  bool bRet = false;
-  if (bMoveToHistory)
-  {
-    getFullDirPathById(oFileInfo);
-    if (m_pDatabase->isHistoryEnabled())
-    {
-      CcDateTime oCurrentTime = CcKernel::getDateTime();
-      CcString sPathInHistory = getHistoryDir();
-      sPathInHistory.appendPath(oCurrentTime.getString("yyyy/MM/dd"));
-      if (CcDirectory::create(sPathInHistory, true))
-      {
-        sPathInHistory.appendPath(oCurrentTime.getString("hh-mm-ss-zzzuuu."));
-        sPathInHistory.append(oFileInfo.getName());
-        if (CcFile::move(oFileInfo.getSystemFullPath(), sPathInHistory))
-        {
-          oFileInfo.changed() = oCurrentTime.getTimestampS();
-          if(m_pDatabase->fileListUpdate(getName(), oFileInfo, bDoUpdateParents))
-          {
-            bRet = historyInsert(EBackupQueueType::UpdateFile, oFileInfo);
-          }
-        }
-        else if (!CcFile::exists(oFileInfo.getSystemFullPath()))
-        {
-          oFileInfo.changed() = oCurrentTime.getTimestampS();
-          CcSyncLog::writeWarning("File was not existing to move: "+oFileInfo.getSystemFullPath(), ESyncLogTarget::Common);
-          bRet = m_pDatabase->fileListUpdate(getName(), oFileInfo, bDoUpdateParents);
-        }
-        else
-        {
-          CcSyncLog::writeError("Moving File to History failed: "+sPathInHistory, ESyncLogTarget::Common);
-        }
-      }
-      else
-      {
-        CcSyncLog::writeError("Creating Path in History failed: "+sPathInHistory, ESyncLogTarget::Common);
-      }
-    }
-  }
-  else
-  {
-    bRet = m_pDatabase->fileListUpdate(getName(), oFileInfo, bDoUpdateParents);
-  }
-  return bRet;
+  return m_pDatabase->fileListInsert(getName(), oFileInfo, bDoUpdateParents);
 }
 
 bool CcSyncDirectory::fileListRemove(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents, bool bKeepFile)
@@ -275,6 +228,30 @@ bool CcSyncDirectory::fileListRemove(CcSyncFileInfo& oFileInfo, bool bDoUpdatePa
   return bRet;
 }
 
+bool CcSyncDirectory::fileListCreate(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents)
+{
+  bool bRet = false;
+  getFullDirPathById(oFileInfo);
+  CcFile oFile(oFileInfo.getSystemFullPath());
+  if (oFile.open(EOpenFlags::Write | EOpenFlags::Attributes))
+  {
+    if (oFile.setModified(CcDateTimeFromSeconds( oFileInfo.getModified())))
+    {
+      oFileInfo.changed() = CcKernel::getDateTime().getTimestampS();
+      // make sure that this file id is not already used!
+      if (fileListExists(oFileInfo.getId()))
+        fileListRemove(oFileInfo, true, false);
+
+      if (m_pDatabase->fileListInsert(getName(), oFileInfo, bDoUpdateParents))
+      {
+        bRet = true;
+      }
+    }
+    oFile.close();
+  }
+  return bRet;
+}
+
 CcSyncFileInfoList CcSyncDirectory::getDirectoryInfoListById(uint64 uiDirId)
 {
   return m_pDatabase->getDirectoryInfoListById(getName(), uiDirId);
@@ -303,30 +280,6 @@ CcSyncFileInfo CcSyncDirectory::getFileInfoById(uint64 uiFileId)
 CcSyncFileInfo CcSyncDirectory::getFileInfoByFilename(uint64 uiDirId, const CcString& sFileName)
 {
   return m_pDatabase->getFileInfoByFilename(getName(), uiDirId, sFileName);
-}
-
-bool CcSyncDirectory::fileListCreate(CcSyncFileInfo& oFileInfo)
-{
-  bool bRet = false;
-  getFullDirPathById(oFileInfo);
-  CcFile oFile(oFileInfo.getSystemFullPath());
-  if (oFile.open(EOpenFlags::Write | EOpenFlags::Attributes))
-  {
-    if (oFile.setModified(CcDateTimeFromSeconds( oFileInfo.getModified())))
-    {
-      oFileInfo.changed() = CcKernel::getDateTime().getTimestampS();
-      // make sure that this file id is not already used!
-      if (fileListExists(oFileInfo.getId()))
-        fileListRemove(oFileInfo, true, false);
-
-      if (m_pDatabase->fileListInsert(getName(), oFileInfo))
-      {
-        bRet = true;
-      }
-    }
-    oFile.close();
-  }
-  return bRet;
 }
 
 bool CcSyncDirectory::fileListExists(uint64 uiFileId)
@@ -386,7 +339,7 @@ void CcSyncDirectory::scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool b
         CcSyncFileInfo oBackupFileInfo = oFileInfoList.getFile(oSystemFileInfo.getName());
         if (oBackupFileInfo != oSystemFileInfo)
         {
-          queueUpdateFile(oBackupFileInfo);
+          queueAddFile(0, uiDbIndex, oSystemFileInfo);
         }
         else
         {
@@ -396,7 +349,7 @@ void CcSyncDirectory::scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool b
             CcCrc32 oCrcValue = CcFile::getCrc32(oBackupFileInfo.getSystemFullPath());
             if(oCrcValue != oBackupFileInfo.getCrc())
             {
-              queueUpdateFile(oBackupFileInfo);
+              queueAddFile(0, uiDbIndex, oSystemFileInfo);
             }
           }
         }
@@ -505,15 +458,6 @@ void CcSyncDirectory::queueAddFile(uint64 uiDependent, uint64 uiDirId, const CcF
   if (uiId == 0)
   {
     CcSyncLog::writeError("Adding file to queue");
-  }
-}
-
-void CcSyncDirectory::queueUpdateFile(const CcSyncFileInfo& oFileInfo)
-{
-  uint64 bSuccess = m_pDatabase->queueInsert(getName(), 0, EBackupQueueType::UpdateFile, oFileInfo.getId(), oFileInfo.getDirId(), oFileInfo.getName());
-  if (bSuccess == 0)
-  {
-    CcSyncLog::writeError("Adding Files to database");
   }
 }
 

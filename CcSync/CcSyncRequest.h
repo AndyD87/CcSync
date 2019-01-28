@@ -125,7 +125,6 @@ public:
   void setDirectoryCreateDirectory(const CcString& sDirectoryName, const CcSyncFileInfo& oFileInfo);
   void setDirectoryRemoveDirectory(const CcString& sDirectoryName, const CcSyncFileInfo& oFileInfo);
   void setDirectoryUploadFile(const CcString& sDirectoryName, const CcSyncFileInfo& oFileInfo);
-  void setDirectoryUpdateFile(const CcString& sDirectoryName, const CcSyncFileInfo& oFileInfo);
   void setDirectoryRemoveFile(const CcString& sDirectoryName, const CcSyncFileInfo& oFileInfo);
   void setDirectoryDownloadFile(const CcString& sDirectoryName, uint64 uiFileId);
   void setDirectoryGetDirectoryInfo(const CcString& sDirectoryName, uint64 uiDirId);

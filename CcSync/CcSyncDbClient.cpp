@@ -902,7 +902,7 @@ bool CcSyncDbClient::directoryListUpdateId(const CcString& sDirName, uint64 uiDi
   return oResult.ok();
 }
 
-bool CcSyncDbClient::fileListInsert(const CcString& sDirName, CcSyncFileInfo& oFileInfo)
+bool CcSyncDbClient::fileListInsert(const CcString& sDirName, CcSyncFileInfo& oFileInfo, bool bDoUpdateParents)
 {
   bool bRet = false;
   CcString sQuery = getDbInsertFileList(sDirName, oFileInfo);
@@ -915,32 +915,14 @@ bool CcSyncDbClient::fileListInsert(const CcString& sDirName, CcSyncFileInfo& oF
     {
       fileListRemove(sDirName, oFileInfo);
     }
-    directoryListUpdateChanged(sDirName, oFileInfo.getDirId());
+    if(bDoUpdateParents)
+    {
+      directoryListUpdateChanged(sDirName, oFileInfo.getDirId());
+    }
   }
   else
   {
     CcSyncLog::writeError("Insert to filelist failed:");
-    CcSyncLog::writeError("    File:   " + oFileInfo.getName());
-    CcSyncLog::writeError("    Reason: " + oResult.getErrorMessage());
-  }
-  return bRet;
-}
-
-bool CcSyncDbClient::fileListUpdate(const CcString& sDirName, const CcSyncFileInfo& oFileInfo, bool bDoUpdateParents)
-{
-  bool bRet = false;
-  CcString sQuery = getDbUpdateFileList(sDirName, oFileInfo);
-  CcSqlResult oResult = m_pDatabase->query(sQuery);
-  if (oResult.error() == false)
-  {
-    historyInsert(sDirName, EBackupQueueType::UpdateFile, oFileInfo);
-    if(bDoUpdateParents)
-      directoryListUpdateChanged(sDirName, oFileInfo.getDirId());
-    bRet = true;
-  }
-  else
-  {
-    CcSyncLog::writeError("Update filelist failed:");
     CcSyncLog::writeError("    File:   " + oFileInfo.getName());
     CcSyncLog::writeError("    Reason: " + oResult.getErrorMessage());
   }
@@ -1229,30 +1211,5 @@ CcString CcSyncDbClient::getDbInsertHistory(const CcString& sDirName, EBackupQue
   sRet << "'" << oFileInfo.getMd5().getHexString() << "',";
   sRet << CcString::fromNumber(oFileInfo.getChanged());
   sRet << ")";
-  return sRet;
-}
-
-CcString CcSyncDbClient::getDbUpdateFileList(const CcString& sDirName, const CcSyncFileInfo& oInfo)
-{
-  CcString sId = "NULL";
-  if (oInfo.getId() != 0)
-    sId = CcString::fromNumber(oInfo.getId());
-
-  CcString sRet(CcSyncGlobals::Database::Update);
-  sRet << sDirName + CcSyncGlobals::Database::FileListAppend;
-
-  // Columns
-  sRet << "` SET ";
-  //sRet << "`" << CcSyncGlobals::Database::FileList::Id       << "` = '" << sId +"',";
-  sRet << "`" << CcSyncGlobals::Database::FileList::DirId    << "` = '" << CcString::fromNumber(oInfo.getDirId()) << "',";
-  sRet << "`" << CcSyncGlobals::Database::FileList::Name     << "` = '" << CcSqlite::escapeString(oInfo.getName()) << "',";
-  sRet << "`" << CcSyncGlobals::Database::FileList::Size     << "` = '" << CcString::fromNumber(oInfo.getFileSize()) << "',";
-  sRet << "`" << CcSyncGlobals::Database::FileList::Modified << "` = '" << CcString::fromNumber(oInfo.getModified()) << "',";
-  sRet << "`" << CcSyncGlobals::Database::FileList::Attributes << "` = '" << CcSqlite::escapeString(oInfo.getAttributes()) << "',";
-  sRet << "`" << CcSyncGlobals::Database::FileList::CRC      << "` = '" << CcString::fromNumber(oInfo.getCrc()) << "',";
-  sRet << "`" << CcSyncGlobals::Database::FileList::MD5      << "` = '" << oInfo.getMd5().getHexString() << "',";
-  sRet << "`" << CcSyncGlobals::Database::FileList::Changed  << "` = '" << CcString::fromNumber(oInfo.getChanged()) << "' ";
-  sRet << "WHERE `" << CcSyncGlobals::Database::FileList::Id << "` = '" << CcString::fromNumber(oInfo.getId()) << "'";
-
   return sRet;
 }
