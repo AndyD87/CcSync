@@ -339,7 +339,7 @@ void CcSyncDirectory::scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool b
         CcSyncFileInfo oBackupFileInfo = oFileInfoList.getFile(oSystemFileInfo.getName());
         if (oBackupFileInfo != oSystemFileInfo)
         {
-          if(oBackupFileInfo.modified() < oSystemFileInfo.getModified())
+          if(CcDateTimeFromSeconds(oBackupFileInfo.modified()) < oSystemFileInfo.getModified())
           {
             queueUploadFile(0, uiDbIndex, oSystemFileInfo);
           }
