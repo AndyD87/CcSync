@@ -316,7 +316,7 @@ void CcSyncDirectory::scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool b
       }
       else
       {
-        queueAddDir(0, uiDbIndex, sPath, oSystemFileInfo);
+        queueCreateDir(0, uiDbIndex, sPath, oSystemFileInfo);
       }
     }
     else
@@ -339,7 +339,14 @@ void CcSyncDirectory::scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool b
         CcSyncFileInfo oBackupFileInfo = oFileInfoList.getFile(oSystemFileInfo.getName());
         if (oBackupFileInfo != oSystemFileInfo)
         {
-          queueAddFile(0, uiDbIndex, oSystemFileInfo);
+          if(oBackupFileInfo.modified() < oSystemFileInfo.getModified())
+          {
+            queueUploadFile(0, uiDbIndex, oSystemFileInfo);
+          }
+          else
+          {
+            queueDownloadFile(oBackupFileInfo);
+          }
         }
         else
         {
@@ -349,7 +356,7 @@ void CcSyncDirectory::scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool b
             CcCrc32 oCrcValue = CcFile::getCrc32(oBackupFileInfo.getSystemFullPath());
             if(oCrcValue != oBackupFileInfo.getCrc())
             {
-              queueAddFile(0, uiDbIndex, oSystemFileInfo);
+              queueUploadFile(0, uiDbIndex, oSystemFileInfo);
             }
           }
         }
@@ -357,7 +364,7 @@ void CcSyncDirectory::scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool b
       }
       else
       {
-        queueAddFile(0, uiDbIndex, oSystemFileInfo);
+        queueUploadFile(0, uiDbIndex, oSystemFileInfo);
       }
     }
   }
@@ -386,7 +393,7 @@ void CcSyncDirectory::scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool b
   }
 }
 
-void CcSyncDirectory::queueAddDir(uint64 uiDependent, uint64 uiDirId, const CcString& sParentPath, const CcFileInfo& oDirectoryInfo)
+void CcSyncDirectory::queueCreateDir(uint64 uiDependent, uint64 uiDirId, const CcString& sParentPath, const CcFileInfo& oDirectoryInfo)
 {
   CcString sRecursivePath(sParentPath);
   sRecursivePath.appendPath(oDirectoryInfo.getName());
@@ -398,11 +405,11 @@ void CcSyncDirectory::queueAddDir(uint64 uiDependent, uint64 uiDirId, const CcSt
     {
       if (oFileInfo.isDir())
       {
-        queueAddDir(uiNewQueueId, 0, sRecursivePath, oFileInfo);
+        queueCreateDir(uiNewQueueId, 0, sRecursivePath, oFileInfo);
       }
       else
       {
-        queueAddFile(uiNewQueueId, 0, oFileInfo);
+        queueUploadFile(uiNewQueueId, 0, oFileInfo);
       }
     }
   }
@@ -452,7 +459,7 @@ uint64 CcSyncDirectory::queueRemoveFile(uint64 uiDependent, const CcSyncFileInfo
   return uiId;
 }
 
-void CcSyncDirectory::queueAddFile(uint64 uiDependent, uint64 uiDirId, const CcFileInfo& oFileInfo)
+void CcSyncDirectory::queueUploadFile(uint64 uiDependent, uint64 uiDirId, const CcFileInfo& oFileInfo)
 {
   uint64 uiId = m_pDatabase->queueInsert(getName(), uiDependent, EBackupQueueType::AddFile, 0, uiDirId, oFileInfo.getName());
   if (uiId == 0)

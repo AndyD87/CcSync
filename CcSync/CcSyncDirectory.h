@@ -136,11 +136,11 @@ public:
 
 private: // methods
   void scanSubDir(uint64 uiDbIndex, const CcString& sPath, bool bDeepSearch);
-  void queueAddDir(uint64 uiDependent, uint64 uiQueueId, const CcString& sParentPath, const CcFileInfo& oFileInfo);
+  void queueCreateDir(uint64 uiDependent, uint64 uiQueueId, const CcString& sParentPath, const CcFileInfo& oFileInfo);
   void queueUpdateDir(const CcSyncFileInfo& oFileInfo);
   uint64 queueRemoveDir(uint64 uiDependent, const CcSyncFileInfo& oFileInfo);
   uint64 queueRemoveFile(uint64 uiDependent, const CcSyncFileInfo& oFileInfo);
-  void queueAddFile(uint64 uiDependent, uint64 uiDirectoryId, const CcFileInfo& oDirectoryInfo);
+  void queueUploadFile(uint64 uiDependent, uint64 uiDirectoryId, const CcFileInfo& oDirectoryInfo);
   bool historyInsert(EBackupQueueType eQueueType, const CcSyncFileInfo& oFileInfo);
 
 private:

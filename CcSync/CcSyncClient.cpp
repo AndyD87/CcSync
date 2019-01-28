@@ -1663,6 +1663,11 @@ bool CcSyncClient::doDownloadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& o
         if (receiveFile(&oFile, oFileInfo))
         {
           oFile.close();
+          if(oDirectory.fileNameInDirExists(oFileInfo.getDirId(), oFileInfo))
+          {
+            CcSyncFileInfo oFileToDelete = oDirectory.getFileInfoByFilename(oFileInfo.getDirId(), oFileInfo.getName());
+            oDirectory.fileListRemove(oFileToDelete, false, false);
+          }
           bool bSuccess = true;
           if (CcFile::exists(oFileInfo.getSystemFullPath()))
           {
