@@ -1131,11 +1131,27 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
         // Compare Server Directory with Client Directory
         if (oClientDirInfo != oServerDirInfo)
         {
-          // Update directory info in database
-          // @todo change attributes if required
-          oDirectory.directoryListUpdate(oServerDirInfo);
+          bool bDoUpdate=  false;
+          if(oClientDirInfo.getName() != oServerDirInfo.getName())
+          {
+            oDirectory.getFullDirPathById(oClientDirInfo);
+            oDirectory.getFullDirPathById(oServerDirInfo);
+            if(CcDirectory::exists(oClientDirInfo.getSystemFullPath()))
+            {
+              CcDirectory::move(oClientDirInfo.getSystemFullPath(), oServerDirInfo.getSystemFullPath());
+            }
+            bDoUpdate = true;
+          }
+          if(oClientDirInfo.getMd5() != oServerDirInfo.getMd5())
+          {
+            doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
+          }
+          if(bDoUpdate)
+          {
+            // Update directory info in database
+            oDirectory.directoryListUpdate(oServerDirInfo);
+          }
         }
-        doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
         // Remove Directory from current list
         oClientDirectories.removeFile(oServerDirInfo.getId());
       }
@@ -1148,15 +1164,13 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
           {
             oDirectory.directoryListRemove(oDirInfo, false);
             oDirectory.directoryListUpdateId(oServerDirInfo.getId(), oServerDirInfo);
-            doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
-            oClientDirectories.removeFile(oServerDirInfo.getName());
           }
           else
           {
             oDirectory.directoryListUpdateId(oDirInfo.getId(), oServerDirInfo);
-            doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
-            oClientDirectories.removeFile(oServerDirInfo.getName());
           }
+          doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
+          oClientDirectories.removeFile(oServerDirInfo.getName());
         }
         else
         {
