@@ -781,7 +781,7 @@ void CcSyncServerWorker::doDirectoryCreateDirectory()
       CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
       if (m_oDirectory.directoryListSubDirExists(oFileInfo.getDirId(), oFileInfo.getName()) == false)
       {
-        if (m_oDirectory.directoryListCreate(oFileInfo))
+        if (m_oDirectory.directoryListCreate(oFileInfo, true))
         {
           m_oResponse.addFileInfo(oFileInfo);
         }

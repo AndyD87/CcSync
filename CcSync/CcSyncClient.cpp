@@ -305,8 +305,8 @@ void CcSyncClient::doQueue(const CcString& sDirectoryName)
           EBackupQueueType eQueueType = oDirectory.queueGetNext(oFileInfo, uiQueueIndex);
           switch (eQueueType)
           {
-            case EBackupQueueType::AddDir:
-              doAddDir(oDirectory, oFileInfo, uiQueueIndex);
+            case EBackupQueueType::CreateDir:
+              doCreateDir(oDirectory, oFileInfo, uiQueueIndex);
               break;
             case EBackupQueueType::RemoveDir:
               doRemoveDir(oDirectory, oFileInfo, uiQueueIndex);
@@ -1177,7 +1177,7 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
           oDirectory.getFullDirPathById(oServerDirInfo);
           if (CcDirectory::exists(oServerDirInfo.getSystemFullPath()))
           {
-            if (oDirectory.directoryListInsert(oServerDirInfo))
+            if (oDirectory.directoryListInsert(oServerDirInfo, false))
             {
               doRemoteSyncDir(oDirectory, oServerDirInfo.getId());
             }
@@ -1279,7 +1279,7 @@ bool CcSyncClient::serverDirectoryEqual(CcSyncDirectory& oDirectory, uint64 uiDi
   return bRet;
 }
 
-bool CcSyncClient::doAddDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDirInfo, uint64 uiQueueIndex)
+bool CcSyncClient::doCreateDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDirInfo, uint64 uiQueueIndex)
 {
   bool bRet = false;
   oDirectory.getFullDirPathById(oDirInfo);
@@ -1291,7 +1291,7 @@ bool CcSyncClient::doAddDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDirInf
     {
       bRet = true;
       CcSyncFileInfo oResponseFileInfo = m_oResponse.getFileInfo();
-      oDirectory.directoryListInsert(oResponseFileInfo);
+      oDirectory.directoryListInsert(oResponseFileInfo, true);
       oDirectory.queueFinalizeDirectory(oResponseFileInfo, uiQueueIndex);
       CcSyncLog::writeDebug("Directory successfully added: " + oDirInfo.getName());
     }
@@ -1503,7 +1503,7 @@ bool CcSyncClient::doDownloadDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oF
         CcFile::setUserId(oDirInfo.getSystemFullPath(), oDirectory.getUserId());
       }
 #endif
-      if (oDirectory.directoryListInsert(oDirInfo))
+      if (oDirectory.directoryListInsert(oDirInfo, true))
       {
         CcSyncLog::writeDebug("Directory Added: " + oDirInfo.getName(), ESyncLogTarget::Client);
         bRet = true;

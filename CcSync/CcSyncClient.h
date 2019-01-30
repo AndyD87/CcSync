@@ -144,7 +144,7 @@ private: // Methods
   bool receiveFile(CcFile* pFile, CcSyncFileInfo& oFileInfo);
   bool doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId);
   bool serverDirectoryEqual(CcSyncDirectory& oDirectory, uint64 uiDirId);
-  bool doAddDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex);
+  bool doCreateDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex);
   bool doRemoveDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex);
   bool doUpdateDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex);
   bool doDownloadDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDirInfo, uint64 uiQueueIndex);

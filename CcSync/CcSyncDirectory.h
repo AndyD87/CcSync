@@ -108,14 +108,14 @@ public:
   bool fileListCreate(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents);
   bool fileListExists(uint64 uiFileId);
 
-  bool directoryListCreate(CcSyncFileInfo& oFileInfo);
+  bool directoryListCreate(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents);
   bool directoryListUpdate(const CcSyncFileInfo& oFileInfo);
   bool directoryListUpdateId(uint64 uiDirectoryId, const CcSyncFileInfo& oFileInfo);
   bool directoryListRemove(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents);
   bool directoryListExists(uint64 uiDirectoryId);
   bool directoryListSubDirExists(uint64 uiParentDirId, const CcString& sName);
   bool directoryListEmpty(uint64 uiDirectoryId);
-  bool directoryListInsert(CcSyncFileInfo& oFileInfo);
+  bool directoryListInsert(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents);
   void directoryListUpdateChanged(uint64 uiDirId);
 
   bool fileIdInDirExists(uint64 uiDirectoryId, const CcSyncFileInfo& oFileInfo);

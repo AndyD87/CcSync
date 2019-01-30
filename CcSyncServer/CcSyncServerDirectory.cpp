@@ -86,8 +86,8 @@ void CcSyncServerDirectory::doQueue(CcSyncDirectory& oCurrentDir)
     EBackupQueueType eQueueType = oCurrentDir.queueGetNext(oFileInfo, uiQueueIndex);
     switch (eQueueType)
     {
-      case EBackupQueueType::AddDir:
-        if (oCurrentDir.directoryListCreate(oFileInfo))
+      case EBackupQueueType::CreateDir:
+        if (oCurrentDir.directoryListCreate(oFileInfo, true))
         {
           oCurrentDir.queueFinalizeDirectory(oFileInfo, uiQueueIndex);
         }

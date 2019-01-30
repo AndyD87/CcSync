@@ -164,7 +164,7 @@ bool CcSyncDbClient::setupDirectory(const CcString& sDirName)
     oFile.id() = 1;
     oFile.name() = "root";
     oFile.changed() = CcKernel::getDateTime().getTimestampS();
-    directoryListInsert(sDirName, oFile);
+    directoryListInsert(sDirName, oFile, true);
   }
   else
   {
@@ -853,7 +853,7 @@ bool CcSyncDbClient::directoryListEmpty(const CcString& sDirName, uint64 uiDirId
   return bRet;
 }
 
-bool CcSyncDbClient::directoryListInsert(const CcString& sDirName, CcSyncFileInfo& oFileInfo)
+bool CcSyncDbClient::directoryListInsert(const CcString& sDirName, CcSyncFileInfo& oFileInfo, bool bDoUpdateParents)
 {
   bool bRet = false;
   CcString sQuery = getDbInsertDirectoryList(sDirName, oFileInfo);
@@ -861,12 +861,12 @@ bool CcSyncDbClient::directoryListInsert(const CcString& sDirName, CcSyncFileInf
   if (oResult.ok())
   {
     oFileInfo.id() = oResult.getLastInsertId();
-    bRet = historyInsert(sDirName, EBackupQueueType::AddDir, oFileInfo);
+    bRet = historyInsert(sDirName, EBackupQueueType::CreateDir, oFileInfo);
     if (bRet == false)
     {
       fileListRemove(sDirName, oFileInfo);
     }
-    else
+    else if(bDoUpdateParents)
     {
       directoryListUpdateChanged(sDirName, oFileInfo.id());
     }

@@ -399,7 +399,7 @@ void CcSyncDirectory::queueCreateDir(uint64 uiDependent, uint64 uiDirId, const C
 {
   CcString sRecursivePath(sParentPath);
   sRecursivePath.appendPath(oDirectoryInfo.getName());
-  uint64 uiNewQueueId = m_pDatabase->queueInsert(getName(), uiDependent, EBackupQueueType::AddDir, 0, uiDirId, oDirectoryInfo.getName());
+  uint64 uiNewQueueId = m_pDatabase->queueInsert(getName(), uiDependent, EBackupQueueType::CreateDir, 0, uiDirId, oDirectoryInfo.getName());
   if (uiNewQueueId > 0)
   {
     CcFileInfoList oFileInfoList = CcDirectory::getFileList(sRecursivePath);
@@ -470,7 +470,7 @@ void CcSyncDirectory::queueUploadFile(uint64 uiDependent, uint64 uiDirId, const 
   }
 }
 
-bool CcSyncDirectory::directoryListCreate(CcSyncFileInfo& oFileInfo)
+bool CcSyncDirectory::directoryListCreate(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents)
 {
   getFullDirPathById(oFileInfo);
   CcDirectory oNewDirectory(oFileInfo.getSystemFullPath());
@@ -482,7 +482,7 @@ bool CcSyncDirectory::directoryListCreate(CcSyncFileInfo& oFileInfo)
       oFileInfo.modified() = oTempFile.getCreated().getTimestampS();
       oTempFile.close();
       oFileInfo.changed() = CcKernel::getDateTime().getTimestampS();
-      if (m_pDatabase->directoryListInsert(getName(), oFileInfo))
+      if (m_pDatabase->directoryListInsert(getName(), oFileInfo, bDoUpdateParents))
       {
         return true;
       }
@@ -575,9 +575,9 @@ bool CcSyncDirectory::directoryListEmpty(uint64 uiDirId)
   return m_pDatabase->directoryListEmpty(getName(), uiDirId);
 }
 
-bool CcSyncDirectory::directoryListInsert(CcSyncFileInfo& oFileInfo)
+bool CcSyncDirectory::directoryListInsert(CcSyncFileInfo& oFileInfo, bool bDoUpdateParents)
 {
-  return m_pDatabase->directoryListInsert(getName(), oFileInfo);
+  return m_pDatabase->directoryListInsert(getName(), oFileInfo, bDoUpdateParents);
 }
 
 void CcSyncDirectory::directoryListUpdateChanged(uint64 uiDirId)

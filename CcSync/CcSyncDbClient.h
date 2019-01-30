@@ -51,7 +51,7 @@ typedef class CcSyncSHARED CcSharedPointer<CcSyncDbClient> CcSyncDbClientPointer
 enum class EBackupQueueType : uint16
 {
   Unknown = 0,
-  AddDir,
+  CreateDir,
   RemoveDir,
   UpdateDir,
   DownloadDir,
@@ -126,13 +126,13 @@ public:
   void queueDownloadFile(const CcString& sDirName, const CcSyncFileInfo& oFileInfo);
   uint64 queueInsert(const CcString& sDirName, uint64 uiParentId, EBackupQueueType eQueueType, uint64 uiFileId, uint64 uiDirectoryId, const CcString& sName);
 
-  bool directoryListRemove(const CcString& sDirName, const CcSyncFileInfo& oFileInfo, bool bDoUpdateParents = true);
+  bool directoryListRemove(const CcString& sDirName, const CcSyncFileInfo& oFileInfo, bool bDoUpdateParents);
   bool directoryListUpdate(const CcString& sDirName, const CcSyncFileInfo& oFileInfo);
   bool directoryListUpdateId(const CcString& sDirName, uint64 uiDirectoryId, const CcSyncFileInfo& oFileInfo);
   bool directoryListExists(const CcString& sDirName, uint64 uiDirectoryId);
   bool directoryListSubDirExists(const CcString& sDirName, uint64 uiParentDirId, const CcString& sName);
   bool directoryListEmpty(const CcString& sDirName, uint64 uiDirectoryId);
-  bool directoryListInsert(const CcString& sDirName, CcSyncFileInfo& oFileInfo);
+  bool directoryListInsert(const CcString& sDirName, CcSyncFileInfo& oFileInfo, bool bDoUpdateParents);
   void directoryListUpdateChanged(const CcString& sDirName, uint64 uiDirId);
   void directoryListUpdateChangedAll(const CcString& sDirName, uint64 uiDirId = 1);
   void directoryListSearchDouble(const CcString& sDirName, uint64 uiDirId = 1);
