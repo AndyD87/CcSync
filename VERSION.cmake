@@ -1,8 +1,8 @@
 set( CCSYNC_VERSION_MAJOR   0   )
 set( CCSYNC_VERSION_MINOR   1   )
-set( CCSYNC_VERSION_PATCH   3   )
+set( CCSYNC_VERSION_PATCH   4   )
 set( CCSYNC_VERSION_BUILD   0   )
 
 set( CCSYNC_VERSION_CMAKE ${CCSYNC_VERSION_MAJOR}.${CCSYNC_VERSION_MINOR}.${CCSYNC_VERSION_PATCH})
 
-set( PROJECT_DESCRIPTION    "Platform independant framework." )
+set( PROJECT_DESCRIPTION    "Synchronize directories with a storage server." )
