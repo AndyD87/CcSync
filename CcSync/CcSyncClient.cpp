@@ -1217,7 +1217,9 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
           if (CcFile::exists(oClientFileInfo.getSystemFullPath()))
           {
             CcFileInfo oLocalFileInfo = CcFile::getInfo(oClientFileInfo.getSystemFullPath());
-            if (oLocalFileInfo.getModified().getTimestampS() <= oServerFileInfo.getModified())
+            // Remove from database if local timestamp is older or if known file was removed
+            if (oLocalFileInfo.getModified().getTimestampS() <= oServerFileInfo.getModified() ||
+                oLocalFileInfo.getModified().getTimestampS() == oClientFileInfo.getModified())
             {
               // Remove from database and disk
               oDirectory.fileListRemove(oClientFileInfo, false, false);

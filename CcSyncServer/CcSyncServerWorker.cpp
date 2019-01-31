@@ -885,7 +885,7 @@ void CcSyncServerWorker::doDirectoryUploadFile()
             if (m_oDirectory.fileNameInDirExists(oFileInfo.getDirId(), oFileInfo))
             {
               CcSyncFileInfo oFileToDelete = m_oDirectory.getFileInfoByFilename(oFileInfo.getDirId(), oFileInfo.getName());
-              m_oDirectory.fileListRemove(oFileToDelete, false, true);
+              m_oDirectory.fileListRemove(oFileToDelete, false, false);
             }
             if (CcFile::exists(oFileInfo.getSystemFullPath()))
             {
