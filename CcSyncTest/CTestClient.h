@@ -69,7 +69,6 @@ private:
   CcString  m_sConfigDir;
   CcStringList m_sSyncDirs;
   CcString  m_sUsername;
-  bool m_bLogin = false;
 };
 
 #endif /* _CTestClient_H_ */
