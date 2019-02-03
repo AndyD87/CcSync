@@ -12,8 +12,13 @@ install:
   - sudo apt-get install libssl-dev
   - sudo apt-get install libx11-dev
 
+# No submodules, script will do it.
+git:
+  submodules: false
+
 # Build steps
 script:
+  - git config --global http.sslVerify false
   - mkdir build
   - cd build
   - cmake ../
