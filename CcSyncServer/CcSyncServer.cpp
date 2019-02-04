@@ -201,11 +201,17 @@ void CcSyncServer::runServer()
   m_oSocket = new CcSslSocket();
   static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->initServer();
   int iTrue = 1;
-  if (m_oSocket.bind(m_oConfig.getPort())                   &&
+
+  CcSocketAddressInfo oAddrInfo;
+  oAddrInfo.init(ESocketType::TCP);
+  oAddrInfo.setPort(m_oConfig.getPort());
+  m_oSocket.setAddressInfo(oAddrInfo);
+
+  m_oSocket.setOption(ESocketOption::Reuse, &iTrue, sizeof(iTrue));
+  if (m_oSocket.bind()                   &&
       static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->loadKey(m_oConfig.getSslKeyFile()) &&
       static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->loadCertificate(m_oConfig.getSslCertFile()))
   {
-    m_oSocket.setOption(ESocketOption::Reuse, &iTrue, sizeof(iTrue));
     CcSyncLog::writeDebug("Server is listening on: " + CcString::fromNumber(m_oConfig.getPort()));
     while (getThreadState() == EThreadState::Running &&
            m_bStopInProgress == false)

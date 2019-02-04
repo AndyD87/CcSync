@@ -185,12 +185,10 @@ bool CTestClient::serverShutdown()
   CcString sData = readUntil("[Admin]:");
   if(sData.length() > 0)
   {
-    CcTestFramework::writeDebug(sData);
     m_oClientProc.pipe().writeLine("stop");
     sData = readUntil("/"+m_sUsername + "]:");
     if(sData.endsWith("/"+m_sUsername + "]:"))
     {
-      CcTestFramework::writeDebug(sData);
       m_oClientProc.pipe().writeLine("exit");
       m_oClientProc.pipe().readAll();
       bSuccess = true;
