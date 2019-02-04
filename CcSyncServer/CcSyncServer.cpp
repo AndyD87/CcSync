@@ -59,7 +59,11 @@ CcSyncServer::CcSyncServer(CcSyncServer&& oToMove)
 
 CcSyncServer::~CcSyncServer(void)
 {
-  onStop();
+  while(m_pWorkerList.size() > 0)
+  {
+    delete m_pWorkerList.at(0);
+    m_pWorkerList.remove(0);
+  }
 }
 
 void CcSyncServer::run()
@@ -192,11 +196,12 @@ void CcSyncServer::runServer()
   }
   m_oSocket = new CcSslSocket();
   static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->initServer();
+  int iTrue = 1;
   if (m_oSocket.bind(m_oConfig.getPort())                   &&
       static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->loadKey(m_oConfig.getSslKeyFile()) &&
       static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->loadCertificate(m_oConfig.getSslCertFile()))
   {
-    m_oSocket.setOption(ESocketOption::Reuse);
+    m_oSocket.setOption(ESocketOption::Reuse, &iTrue, sizeof(iTrue));
     CcSyncLog::writeDebug("Server is listening on: " + CcString::fromNumber(m_oConfig.getPort()));
     while (getThreadState() == EThreadState::Running &&
            m_bStopInProgress == false)
@@ -214,7 +219,8 @@ void CcSyncServer::runServer()
         }
         else
         {
-          CcSyncLog::writeError("Error on accepting connection");
+          if(!m_bStopInProgress)
+            CcSyncLog::writeError("Error on accepting connection");
         }
       }
       else
@@ -223,6 +229,7 @@ void CcSyncServer::runServer()
       }
     }
     CcSyncLog::writeDebug("Server is going down");
+    m_oSocket.close();
   }
   else
   {
@@ -234,11 +241,6 @@ void CcSyncServer::onStop()
 {
   shutdown();
   CcSyncLog::writeDebug("Stop received");
-  while(m_pWorkerList.size() > 0)
-  {
-    delete m_pWorkerList.at(0);
-    m_pWorkerList.remove(0);
-  }
 }
 
 CcSyncServer& CcSyncServer::operator=(const CcSyncServer& oToCopy)

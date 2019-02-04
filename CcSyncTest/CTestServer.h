@@ -58,6 +58,8 @@ public:
   bool start();
   bool stop();
 
+  CcString readAllData();
+
 private:
   CcProcess m_oServerProc;
   CcString  m_sConfigDir;

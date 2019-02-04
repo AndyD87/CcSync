@@ -180,12 +180,23 @@ bool CTestClient::createFile(const CcString & sPathInDir, const CcString &sConte
 
 bool CTestClient::serverShutdown()
 {
+  bool bSuccess = false;
   m_oClientProc.pipe().writeLine("admin");
-  m_oClientProc.pipe().writeLine("stop");
-  m_oClientProc.pipe().writeLine("exit");
-  m_oClientProc.pipe().writeLine("exit");
-  m_oClientProc.pipe().writeLine("exit");
-  return true;
+  CcString sData = readUntil("[Admin]:");
+  if(sData.length() > 0)
+  {
+    CcTestFramework::writeDebug(sData);
+    m_oClientProc.pipe().writeLine("stop");
+    sData = readUntil("/"+m_sUsername + "]:");
+    if(sData.endsWith("/"+m_sUsername + "]:"))
+    {
+      CcTestFramework::writeDebug(sData);
+      m_oClientProc.pipe().writeLine("exit");
+      m_oClientProc.pipe().readAll();
+      bSuccess = true;
+    }
+  }
+  return bSuccess;
 }
 
 CcString CTestClient::readUntil(const CcString& sStringEnd)

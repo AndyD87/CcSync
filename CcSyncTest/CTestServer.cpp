@@ -132,3 +132,8 @@ bool CTestServer::stop()
   m_oServerProc.stop();
   return m_oServerProc.waitForState(EThreadState::Stopped, CcDateTimeFromSeconds(1));
 }
+
+CcString CTestServer::readAllData()
+{
+  return m_oServerProc.pipe().readAll();
+}
