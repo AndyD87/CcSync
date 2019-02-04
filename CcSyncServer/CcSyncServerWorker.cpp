@@ -45,6 +45,7 @@ public:
     oRescanWorker(oServer)
   { }
   CcSyncServerRescanWorker oRescanWorker;
+  bool  m_bStopCalled = false;
 };
 
 CcSyncServerWorker::CcSyncServerWorker(CcSyncServer* oServer, CcSocket oSocket) :
@@ -57,13 +58,13 @@ CcSyncServerWorker::CcSyncServerWorker(CcSyncServer* oServer, CcSocket oSocket) 
 
 CcSyncServerWorker::~CcSyncServerWorker(void)
 {
-  m_oSocket.close();
   CCDELETE(m_pPrivate);
 }
 
 void CcSyncServerWorker::run()
 {
-  while (getThreadState() == EThreadState::Running)
+  while (getThreadState() == EThreadState::Running &&
+         m_pPrivate->m_bStopCalled == false)
   {
     if (getRequest())
     {
@@ -74,7 +75,7 @@ void CcSyncServerWorker::run()
       {
         case ESyncCommandType::Close:
           m_oSocket.close();
-          stop();
+          enterState(EThreadState::Stopping);
           break;
         case ESyncCommandType::ServerGetInfo:
           m_oResponse.init(eCommandType);
@@ -183,10 +184,12 @@ void CcSyncServerWorker::run()
       m_oResponse.setError(EStatus::CommandError, "Request malformed. Connection will get closed.");
       sendResponse();
       m_oSocket.close();
-      stop();
+      enterState(EThreadState::Stopping);
     }
   }
-  m_oServer->workerDone(this);
+
+  if(m_pPrivate->m_bStopCalled == false)
+    m_oServer->workerDone(this);
 }
 
 bool CcSyncServerWorker::getRequest()
@@ -1067,4 +1070,10 @@ void CcSyncServerWorker::doDirectoryDownloadFile()
 
 void CcSyncServerWorker::onStop()
 {
+  m_pPrivate->m_bStopCalled = true;
+  if(getThreadState() == EThreadState::Running)
+  {
+    enterState(EThreadState::Stopping);
+  }
+  m_oSocket.close();
 }

@@ -256,7 +256,5 @@ bool CSyncTest::testStopServerClient1()
 {
   bool bSuccess = true;
   bSuccess = m_pPrivate->pClient1->serverShutdown();
-  CcTestFramework::writeDebug(m_pPrivate->pServer->readAllData());
-  CcKernel::delayS(20);
   return bSuccess;
 }

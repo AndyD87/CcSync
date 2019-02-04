@@ -61,8 +61,12 @@ CcSyncServer::~CcSyncServer(void)
 {
   while(m_pWorkerList.size() > 0)
   {
-    delete m_pWorkerList.at(0);
-    m_pWorkerList.remove(0);
+    CcSyncServerWorker* pWorker = m_pWorkerList.at(0);
+    m_pWorkerList.at(0)->stop();
+    if(pWorker == m_pWorkerList.at(0))
+    {
+      m_pWorkerList.remove(0);
+    }
   }
 }
 
