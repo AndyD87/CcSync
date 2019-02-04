@@ -290,6 +290,11 @@ void CcSyncRequest::setServerRescan(bool bDeep)
   m_oData.add(CcJsonData(CcSyncGlobals::Commands::ServerAccountRescan::Deep, bDeep));
 }
 
+void CcSyncRequest::setServerStop()
+{
+  init(ESyncCommandType::ServerStop);
+}
+
 bool CcSyncRequest::getTypeFromData()
 {
   CcJsonData& oValue = m_oData[CcSyncGlobals::Commands::Command];

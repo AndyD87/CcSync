@@ -84,6 +84,8 @@ CSyncTest::CSyncTest( void ) :
   appendTestMethod("Write testdata to client 1", &CSyncTest::testWriteTestDataClient1);
   appendTestMethod("Sync TestClient1", &CSyncTest::testSyncClient1);
   appendTestMethod("Sync TestClient2", &CSyncTest::testSyncClient2);
+  appendTestMethod("Stop TestServer with client", &CSyncTest::testStopServerClient1);
+  appendTestMethod("Start TestServer", &CSyncTest::testStartServer);
   appendTestMethod("Stop TestServer", &CSyncTest::testStopServer);
 }
 
@@ -247,5 +249,12 @@ bool CSyncTest::testWriteTestDataClient1()
   {
     bSuccess = m_pPrivate->pClient1->createFile("TestDir2/File.test", "TestContent");
   }
+  return bSuccess;
+}
+
+bool CSyncTest::testStopServerClient1()
+{
+  bool bSuccess = true;
+  bSuccess = m_pPrivate->pClient1->serverShutdown();
   return bSuccess;
 }

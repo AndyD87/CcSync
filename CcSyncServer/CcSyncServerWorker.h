@@ -75,6 +75,7 @@ private:
   void doServerGetInfo(); 
   void doServerAccountCreate();
   void doServerAccountRemove();
+  void doServerStop();
   void doServerRescan();
   void doAccountCreate();
   void doAccountLogin();

@@ -85,6 +85,7 @@ public:
   void logout();
   bool isAdmin();
   bool serverRescan(bool bDeep=false);
+  bool serverStop();
   void cleanDatabase();
   void doRemoteSync(const CcString& sDirectoryName);
   void doRemoteSyncAll();

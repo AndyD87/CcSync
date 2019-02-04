@@ -44,6 +44,8 @@ namespace ServerStrings
   static const CcString NewDesc("Create new Account on Server");
   static const CcString Del("del");
   static const CcString DelDesc("[Username] delete an account from server");
+  static const CcString Stop("stop");
+  static const CcString StopDesc("Stop current server");
 }
 
 CcSyncClientServerApp::CcSyncClientServerApp(CcSyncClient* pSyncClient) :
@@ -62,6 +64,7 @@ void CcSyncClientServerApp::help()
   CcSyncConsole::printHelpLine(ServerStrings::Rescan, iSize, ServerStrings::RescanDesc);
   CcSyncConsole::printHelpLine(ServerStrings::New, iSize, ServerStrings::NewDesc);
   CcSyncConsole::printHelpLine(ServerStrings::Del, iSize, ServerStrings::DelDesc);
+  CcSyncConsole::printHelpLine(ServerStrings::Stop, iSize, ServerStrings::StopDesc);
 }
 
 bool CcSyncClientServerApp::createAccount()
@@ -141,6 +144,13 @@ void CcSyncClientServerApp::run()
     else if (oArguments[0].compareInsensitve(ServerStrings::Rescan))
     {
       m_poSyncClient->serverRescan();
+    }
+    else if (oArguments[0].compareInsensitve(ServerStrings::Stop))
+    {
+      if (m_poSyncClient->serverStop())
+      {
+        bCommandlineLoop = false;
+      }
     }
     else if (oArguments[0].compareInsensitve(ServerStrings::Help))
     {

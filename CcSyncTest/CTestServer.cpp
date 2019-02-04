@@ -81,7 +81,7 @@ bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUs
   resetArguments();
   addArgument("configure");
   m_oServerProc.start();
-  if (m_oServerProc.waitForRunning(CcDateTimeFromSeconds(1)))
+  if (m_oServerProc.waitForRunning(CcDateTimeFromSeconds(10)))
   {
     CcString sAllData;
     do
@@ -93,11 +93,20 @@ bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUs
     m_oServerProc.pipe().writeLine(sPassword);
     m_oServerProc.pipe().writeLine(sPort);
     m_oServerProc.pipe().writeLine(sPath);
-    if (m_oServerProc.waitForExit(CcDateTimeFromSeconds(1)))
+    if (m_oServerProc.waitForExit(CcSyncTestGlobals::DefaultSyncTimeout))
     {
-      CcString sNewData = m_oServerProc.pipe().readAll();
       bSuccess = m_oServerProc.getExitCode();
     }
+    else
+    {
+      CcTestFramework::writeError("Server didn't stop as expected:");
+      CcTestFramework::writeError(m_oServerProc.pipe().readAll());
+    }
+  }
+  else
+  {
+    CcTestFramework::writeError("Server didn't stop as expected:");
+    CcTestFramework::writeError(m_oServerProc.pipe().readAll());
   }
   return bSuccess;
 }

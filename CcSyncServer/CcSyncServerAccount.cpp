@@ -165,7 +165,7 @@ bool CcSyncServerAccount::writeConfig(CcXmlNode& oNode)
   CcXmlNode oAccountNode(CcSyncGlobals::Server::ConfigTags::Account);
   CcXmlNode oAccountNodeName(CcSyncGlobals::Server::ConfigTags::AccountName, m_sName);
   CcXmlNode oAccountNodePassword(CcSyncGlobals::Server::ConfigTags::AccountPassword, m_oPassword.getString());
-  CcXmlNode oAccountNodeAdmin(CcSyncGlobals::Server::ConfigTags::AccountAdmin, CcXmlUtil::getStringFromBool(m_bIsValid));
+  CcXmlNode oAccountNodeAdmin(CcSyncGlobals::Server::ConfigTags::AccountAdmin, CcXmlUtil::getStringFromBool(m_bIsAdmin));
   oAccountNode.append(std::move(oAccountNodeName));
   oAccountNode.append(std::move(oAccountNodePassword));
   oAccountNode.append(std::move(oAccountNodeAdmin));

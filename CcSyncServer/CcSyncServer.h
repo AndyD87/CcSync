@@ -40,6 +40,9 @@
 #include "CcSslSocket.h"
 #include "Network/CcSocket.h"
 #include "CcArguments.h"
+#include "CcList.h"
+
+class CcSyncServerWorker;
 
 /**
  * @brief Class impelmentation
@@ -91,22 +94,26 @@ public:
 
   virtual CcVersion getVersion() const override;
 
+  void workerDone(CcSyncServerWorker* pWorker);
+  void shutdown();
+
   bool createConfig();
   bool createAccount(const CcString& sUsername, const CcString& sPassword, bool bAdmin);
   bool removeAccount(const CcString& sUsername);
-
 
 private:
   bool setupDatabase();
 
 private:
-  CcArguments           m_oArguments;
-  CcString              m_sConfigDir;
-  bool                  m_bOverwriteDefaultDirs = false;
-  CcString              m_sDatabaseFile;
-  CcSyncServerConfig    m_oConfig;
-  CcSyncDbServer        m_oDatabase;
-  CcSocket              m_oSocket;
+  CcArguments                 m_oArguments;
+  CcString                    m_sConfigDir;
+  bool                        m_bOverwriteDefaultDirs = false;
+  CcString                    m_sDatabaseFile;
+  CcSyncServerConfig          m_oConfig;
+  CcSyncDbServer              m_oDatabase;
+  CcSocket                    m_oSocket;
+  CcList<CcSyncServerWorker*> m_pWorkerList;
+  bool                        m_bStopInProgress = false;
 };
 
 #endif /* _CcSyncServer_H_ */

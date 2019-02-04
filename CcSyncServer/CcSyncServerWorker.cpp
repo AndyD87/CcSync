@@ -57,6 +57,7 @@ CcSyncServerWorker::CcSyncServerWorker(CcSyncServer* oServer, CcSocket oSocket) 
 
 CcSyncServerWorker::~CcSyncServerWorker(void)
 {
+  m_oSocket.close();
   CCDELETE(m_pPrivate);
 }
 
@@ -90,6 +91,11 @@ void CcSyncServerWorker::run()
         case ESyncCommandType::ServerAccountRemove:
           m_oResponse.init(eCommandType);
           doServerAccountRemove();
+          break;
+        case ESyncCommandType::ServerStop:
+          m_oResponse.init(eCommandType);
+          doServerStop();
+          enterState(EThreadState::Stopping);
           break;
         case ESyncCommandType::AccountCreate:
           m_oResponse.init(eCommandType);
@@ -180,6 +186,7 @@ void CcSyncServerWorker::run()
       stop();
     }
   }
+  m_oServer->workerDone(this);
 }
 
 bool CcSyncServerWorker::getRequest()
@@ -468,6 +475,21 @@ void CcSyncServerWorker::doServerAccountRemove()
   else
   {
     m_oResponse.setError(EStatus::UserAccessDenied, "No permission to create Account");
+  }
+  sendResponse();
+}
+
+void CcSyncServerWorker::doServerStop()
+{
+  if (loadConfigsBySessionRequest() &&
+      m_oUser.getRights() >= ESyncRights::Admin)
+  {
+    m_oServer->workerDone(this);
+    m_oServer->shutdown();
+  }
+  else
+  {
+    m_oResponse.setError(EStatus::UserAccessDenied, "No permission to stop Server");
   }
   sendResponse();
 }
@@ -1045,5 +1067,4 @@ void CcSyncServerWorker::doDirectoryDownloadFile()
 
 void CcSyncServerWorker::onStop()
 {
-  m_oSocket.close();
 }

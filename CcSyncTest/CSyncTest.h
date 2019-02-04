@@ -65,6 +65,7 @@ private:
   bool testSyncClient2();
   bool testCreateTestDir();
   bool testWriteTestDataClient1();
+  bool testStopServerClient1();
 
 private: // Member
   CSyncTestPrivate* m_pPrivate = nullptr;

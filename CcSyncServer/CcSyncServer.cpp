@@ -59,6 +59,7 @@ CcSyncServer::CcSyncServer(CcSyncServer&& oToMove)
 
 CcSyncServer::~CcSyncServer(void)
 {
+  onStop();
 }
 
 void CcSyncServer::run()
@@ -195,8 +196,10 @@ void CcSyncServer::runServer()
       static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->loadKey(m_oConfig.getSslKeyFile()) &&
       static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->loadCertificate(m_oConfig.getSslCertFile()))
   {
+    m_oSocket.setOption(ESocketOption::Reuse);
     CcSyncLog::writeDebug("Server is listening on: " + CcString::fromNumber(m_oConfig.getPort()));
-    while (getThreadState() == EThreadState::Running)
+    while (getThreadState() == EThreadState::Running &&
+           m_bStopInProgress == false)
     {
       if (m_oSocket.listen())
       {
@@ -204,7 +207,8 @@ void CcSyncServer::runServer()
         if (oTemp != nullptr)
         {
           CcSyncLog::writeDebug("Server recognized an incomming connection, starting thread");
-          CcSyncServerWorker* oNewWorker = new CcSyncServerWorker(this, oTemp); 
+          CcSyncServerWorker* oNewWorker = new CcSyncServerWorker(this, oTemp);
+          m_pWorkerList.append(oNewWorker);
           CCMONITORNEW(oNewWorker);
           oNewWorker->start();
         }
@@ -228,7 +232,13 @@ void CcSyncServer::runServer()
 
 void CcSyncServer::onStop()
 {
-  m_oSocket.close();
+  shutdown();
+  CcSyncLog::writeDebug("Stop received");
+  while(m_pWorkerList.size() > 0)
+  {
+    delete m_pWorkerList.at(0);
+    m_pWorkerList.remove(0);
+  }
 }
 
 CcSyncServer& CcSyncServer::operator=(const CcSyncServer& oToCopy)
@@ -386,6 +396,18 @@ CcVersion CcSyncServer::getVersion() const
   return CcSyncGlobals::Version;
 }
 
+void CcSyncServer::workerDone(CcSyncServerWorker* pWorker)
+{
+  m_pWorkerList.removeItem(pWorker);
+}
+
+void CcSyncServer::shutdown()
+{
+  m_bStopInProgress = true;
+  CcSyncLog::writeDebug("CcSyncServer shutdown received");
+  m_oSocket.close();
+}
+
 bool CcSyncServer::createConfig()
 {
   bool bSuccess = true;
@@ -425,7 +447,11 @@ bool CcSyncServer::createConfig()
         sDefaultLocation = m_sConfigDir;
         sDefaultLocation.appendPath(CcSyncGlobals::ConfigDirName);
       }
-      sDefaultLocation.appendPath("CcSync/Server");
+      else
+      {
+        sDefaultLocation.appendPath("CcSync");
+      }
+      sDefaultLocation.appendPath("Server");
       m_oConfig.setLocation(sDefaultLocation);
       m_oConfig.setPort(CcCommonPorts::CcSync);
     }

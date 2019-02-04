@@ -193,6 +193,19 @@ bool CcSyncClient::serverRescan(bool bDeep)
   return false;
 }
 
+bool CcSyncClient::serverStop()
+{
+  if (m_pAccount != nullptr)
+  {
+    m_oRequest.setServerStop();
+    if (sendRequestGetResponse())
+    {
+      return true;
+    }
+  }
+  return false;
+}
+
 void CcSyncClient::cleanDatabase()
 {
   for (CcSyncDirectory& oDirectory : m_oBackupDirectories)

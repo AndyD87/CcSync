@@ -59,6 +59,7 @@ public:
   bool createSyncDirectory(const CcString & sDirectoryPath);
   bool createDirectory(const CcString & sDirectoryPath);
   bool createFile(const CcString & sPathInDir, const CcString &sContent);
+  bool serverShutdown();
 
 private:
   CcString readUntil(const CcString& sStringEnd);

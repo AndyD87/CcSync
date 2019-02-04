@@ -131,6 +131,7 @@ public:
   void setDirectoryGetFileInfo(const CcString& sDirectoryName, uint64 uiFileId);
   void setDirectoryGetFileList(const CcString& sDirectoryName, uint64 uiDirId);
   void setServerRescan(bool bDeep);
+  void setServerStop();
 private:
   bool getTypeFromData();
 private:

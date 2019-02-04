@@ -178,6 +178,16 @@ bool CTestClient::createFile(const CcString & sPathInDir, const CcString &sConte
   return bSuccess;
 }
 
+bool CTestClient::serverShutdown()
+{
+  m_oClientProc.pipe().writeLine("admin");
+  m_oClientProc.pipe().writeLine("stop");
+  m_oClientProc.pipe().writeLine("exit");
+  m_oClientProc.pipe().writeLine("exit");
+  m_oClientProc.pipe().writeLine("exit");
+  return true;
+}
+
 CcString CTestClient::readUntil(const CcString& sStringEnd)
 {
   CcString sData;
