@@ -19,7 +19,7 @@ git:
 # Environment Variables
 env: 
   # Print output on failed tests
-  CTEST_OUTPUT_ON_FAILURE=1
+  - CTEST_OUTPUT_ON_FAILURE=1
 
 # Build steps
 script:
