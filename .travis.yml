@@ -16,6 +16,11 @@ install:
 git:
   submodules: false
 
+# Environment Variables
+env: 
+  # Print output on failed tests
+  CTEST_OUTPUT_ON_FAILURE=1
+
 # Build steps
 script:
   - git config --global http.sslVerify false
