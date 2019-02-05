@@ -487,14 +487,15 @@ void CcSyncServerWorker::doServerStop()
   if (loadConfigsBySessionRequest() &&
       m_oUser.getRights() >= ESyncRights::Admin)
   {
+    sendResponse();
     m_oServer->workerDone(this);
     m_oServer->shutdown();
   }
   else
   {
     m_oResponse.setError(EStatus::UserAccessDenied, "No permission to stop Server");
+    sendResponse();
   }
-  sendResponse();
 }
 
 void CcSyncServerWorker::doAccountCreate()
