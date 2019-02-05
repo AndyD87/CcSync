@@ -31,6 +31,7 @@
 #include "CcBase.h"
 #include "CcProcess.h"
 #include "CcStringList.h"
+#include "CcSyncTestGlobals.h"
 
 /**
  * @brief Class impelmentation
@@ -62,7 +63,7 @@ public:
   bool serverShutdown();
 
 private:
-  CcString readUntil(const CcString& sStringEnd);
+  CcString readUntil(const CcString& sStringEnd, const CcDateTime &oTimeeout = CcSyncTestGlobals::DefaultSyncTimeout);
   bool readUntilSucceeded(const CcString& sStringEnd);
 
 private:

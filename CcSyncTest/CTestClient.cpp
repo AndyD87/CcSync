@@ -175,6 +175,10 @@ bool CTestClient::createFile(const CcString & sPathInDir, const CcString &sConte
       oFile.close();
     }
   }
+  else
+  {
+    CcTestFramework::writeError("Failed to create Directory: "+ sPathInDir);
+  }
   return bSuccess;
 }
 
@@ -186,24 +190,32 @@ bool CTestClient::serverShutdown()
   if(sData.length() > 0)
   {
     m_oClientProc.pipe().writeLine("stop");
-    sData = readUntil("/"+m_sUsername + "]:");
+    sData = readUntil("/"+m_sUsername + "]:", CcDateTimeFromSeconds(10));
     if(sData.endsWith("/"+m_sUsername + "]:"))
     {
       m_oClientProc.pipe().writeLine("exit");
       m_oClientProc.pipe().readAll();
       bSuccess = true;
     }
+    else
+    {
+      CcTestFramework::writeError("No response from server on exit");
+    }
+  }
+  else
+  {
+    CcTestFramework::writeError("Failed to login as admin");
   }
   return bSuccess;
 }
 
-CcString CTestClient::readUntil(const CcString& sStringEnd)
+CcString CTestClient::readUntil(const CcString& sStringEnd, const CcDateTime& oTimeout)
 {
   CcString sData;
-  CcDateTime oCountDown = CcDateTimeFromSeconds(5);
-  while (oCountDown.timestampUs() > 0)
+  CcDateTime oCoundDown = oTimeout;
+  while (oCoundDown.timestampUs() > 0)
   {
-    oCountDown.addSeconds(-1);
+    oCoundDown.addSeconds(-1);
     CcKernel::delayS(1);
     sData += m_oClientProc.pipe().readAll();
     sData.trim();

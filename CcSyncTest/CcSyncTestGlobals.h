@@ -33,7 +33,7 @@
 
 namespace CcSyncTestGlobals
 {
-  CcDateTime DefaultSyncTimeout = CcDateTimeFromSeconds(5);
+  extern CcDateTime DefaultSyncTimeout;
 }
 
 #endif /* _CcSyncTestGlobals_H_ */

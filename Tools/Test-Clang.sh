@@ -3,6 +3,10 @@ CPU=$(nproc)
 
 # Setup Clang
 CLANG_VERSION=-7
+if [ -z "$1" ]
+  then echo "Default clang version: $CLANG_VERSION"
+  else CLANG_VERSION=-$1
+fi
 export CC=clang$CLANG_VERSION
 export CXX=clang++$CLANG_VERSION
 
