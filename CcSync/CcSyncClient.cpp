@@ -1312,9 +1312,16 @@ bool CcSyncClient::doCreateDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDir
     }
     else
     {
-      oDirectory.queueIncrementItem(uiQueueIndex);
-      CcSyncLog::writeError("Directory failed to add:  " + oDirInfo.getName(), ESyncLogTarget::Client);
-      CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+      switch(m_oResponse.getError().getError())
+      {
+        case EStatus::FSDirNotFound:
+          // Parent direcotry not existing
+          CcSyncLog::writeError("Parent directory not existing:  " + oDirInfo.dirPath(), ESyncLogTarget::Client);
+        default:
+          oDirectory.queueIncrementItem(uiQueueIndex);
+          CcSyncLog::writeError("Directory failed to add:  " + oDirInfo.getName(), ESyncLogTarget::Client);
+          CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+      }
     }
   }
   else
