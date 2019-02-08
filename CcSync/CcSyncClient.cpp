@@ -1016,6 +1016,7 @@ void CcSyncClient::recursiveRemoveDirectory(CcSyncDirectory& oDirectory, CcSyncF
     //! let it fail if unregistered files are available
     CcDirectory::remove(oFileInfo.getSystemFullPath(), false);
   }
+  oDirectory.directoryListRemove(oFileInfo, false);
 }
 
 bool CcSyncClient::sendFile(CcSyncFileInfo& oFileInfo)
