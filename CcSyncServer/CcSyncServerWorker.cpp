@@ -805,7 +805,11 @@ void CcSyncServerWorker::doDirectoryCreateDirectory()
         m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified))
     {
       CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
-      if (m_oDirectory.directoryListSubDirExists(oFileInfo.getDirId(), oFileInfo.getName()) == false)
+      if(!m_oDirectory.directoryListExists(oFileInfo.getDirId()))
+      {
+        m_oResponse.setError(EStatus::FSDirCreateFailed, "Error parrent directory not existing.");
+      }
+      else if (m_oDirectory.directoryListSubDirExists(oFileInfo.getDirId(), oFileInfo.getName()) == false)
       {
         if (m_oDirectory.directoryListCreate(oFileInfo, true))
         {
