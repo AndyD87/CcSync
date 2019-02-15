@@ -213,6 +213,7 @@ void CcSyncServer::runServer()
       static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->loadCertificate(m_oConfig.getSslCertFile()))
   {
     CcSyncLog::writeDebug("Server is listening on: " + CcString::fromNumber(m_oConfig.getPort()));
+    CcSyncLog::writeMessage(CcSyncGlobals::Server::Output::Started);
     while (getThreadState() == EThreadState::Running &&
            m_bStopInProgress == false)
     {

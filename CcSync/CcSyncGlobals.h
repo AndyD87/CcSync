@@ -182,6 +182,10 @@ namespace CcSyncGlobals
       extern const CcSyncSHARED CcString LocationPath;
       extern const CcSyncSHARED CcString LocationType;
     }
+    namespace Output
+    {
+      extern const CcSyncSHARED CcString Started;
+    }
   }
 
   namespace Client

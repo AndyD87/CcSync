@@ -60,6 +60,9 @@ public:
 
   CcString readAllData();
 
+private: // Methods
+  CcString readUntil(const CcString& sStringEnd, const CcDateTime& oTimeout);
+
 private:
   CcProcess m_oServerProc;
   CcString  m_sConfigDir;

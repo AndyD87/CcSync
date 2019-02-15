@@ -162,6 +162,10 @@ namespace CcSyncGlobals
       const CcString LocationPath ("Path");
       const CcString LocationType ("Type");
     }
+    namespace Output
+    {
+      const CcString Started("CcSyncServer started");
+    }
   }
 
   namespace Client

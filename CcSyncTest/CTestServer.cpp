@@ -26,6 +26,7 @@
 #include "CcSyncTestGlobals.h"
 #include "CcIODevice.h"
 #include "CcTestFramework.h"
+#include "CcKernel.h"
 #include "CcByteArray.h"
 
 CTestServer::CTestServer(const CcString& sServerExePath, const CcString& sConfigDir) :
@@ -119,7 +120,8 @@ bool CTestServer::start()
   m_oServerProc.start();
   if(m_oServerProc.waitForState(EThreadState::Running, CcDateTimeFromSeconds(1)))
   {
-    if(m_oServerProc.waitForState(EThreadState::Stopped, CcDateTimeFromSeconds(1)) == EStatus::TimeoutReached)
+    CcString sData = readUntil(CcSyncTestGlobals::Server::ServerStarted, CcDateTimeFromSeconds(10));
+    if(sData.endsWith(CcSyncTestGlobals::Server::ServerStarted))
     {
       bStarted = true;
     }
@@ -136,4 +138,22 @@ bool CTestServer::stop()
 CcString CTestServer::readAllData()
 {
   return m_oServerProc.pipe().readAll();
+}
+
+CcString CTestServer::readUntil(const CcString& sStringEnd, const CcDateTime& oTimeout)
+{
+  CcString sData;
+  CcDateTime oCountDown = oTimeout;
+  while (oCountDown.timestampUs() > 0)
+  {
+    oCountDown.addMSeconds(-100);
+    CcKernel::delayMs(100);
+    sData += m_oServerProc.pipe().readAll();
+    sData.trim();
+    if (sData.endsWith(sStringEnd))
+    {
+      break;
+    }
+  }
+  return sData;
 }

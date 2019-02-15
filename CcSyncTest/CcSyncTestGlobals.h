@@ -34,6 +34,10 @@
 namespace CcSyncTestGlobals
 {
   extern CcDateTime DefaultSyncTimeout;
+  namespace Server
+  {
+    extern const CcString ServerStarted;
+  }
 }
 
 #endif /* _CcSyncTestGlobals_H_ */
