@@ -32,12 +32,12 @@
 
 #include "CcBase.h"
 #include "CcSync.h"
-#include "CcThreadObject.h"
+#include "IThread.h"
 #include "CcSyncServer.h"
 /**
  * @brief Class impelmentation
  */
-class CcSyncServerRescanWorker : public CcThreadObject
+class CcSyncServerRescanWorker : public IThread
 {
 public:
   /**

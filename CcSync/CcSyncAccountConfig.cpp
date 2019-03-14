@@ -113,12 +113,12 @@ CcXmlNode CcSyncAccountConfig::getXmlNode() const
   {
     CcXmlNode oAccountName(EXmlNodeType::Node);
     oAccountName.setName(CcSyncGlobals::Client::ConfigTags::UserName);
-    oAccountName.setValue(m_sName);
+    oAccountName.setInnerText(m_sName);
     oAccountNode.append(std::move(oAccountName));
 
     CcXmlNode oAccountPassword(EXmlNodeType::Node);
-    oAccountName.setName(CcSyncGlobals::Client::ConfigTags::UserPassword);
-    oAccountName.setValue(""); // Hide Password
+    oAccountPassword.setName(CcSyncGlobals::Client::ConfigTags::UserPassword);
+    oAccountPassword.setInnerText(""); // Hide Password
     oAccountNode.append(std::move(oAccountPassword));
 
     CcXmlNode oAccountServer(EXmlNodeType::Node);
@@ -126,19 +126,19 @@ CcXmlNode CcSyncAccountConfig::getXmlNode() const
     {
       CcXmlNode oAccountServerHost(EXmlNodeType::Node);
       oAccountServerHost.setName(CcSyncGlobals::Client::ConfigTags::ServerHost);
-      oAccountServerHost.setValue(m_oServer.getHostname());
+      oAccountServerHost.setInnerText(m_oServer.getHostname());
       oAccountServer.append(std::move(oAccountServerHost));
 
       CcXmlNode oAccountServerPort(EXmlNodeType::Node);
       oAccountServerPort.setName(CcSyncGlobals::Client::ConfigTags::ServerPort);
-      oAccountServerPort.setValue(m_oServer.getPortString());
+      oAccountServerPort.setInnerText(m_oServer.getPortString());
       oAccountServer.append(std::move(oAccountServerHost));
     }
     oAccountNode.append(std::move(oAccountServer));
 
     CcXmlNode oAccountDatabaseFile(EXmlNodeType::Node);
     oAccountDatabaseFile.setName(CcSyncGlobals::Client::ConfigTags::Database);
-    oAccountDatabaseFile.setValue(m_sDatabaseFile); // Hide Password
+    oAccountDatabaseFile.setInnerText(m_sDatabaseFile); // Hide Password
     oAccountNode.append(std::move(oAccountDatabaseFile));
 
     for (CcSyncDirectoryConfig& oDirConfig : m_oDirectoryList)
@@ -222,11 +222,15 @@ bool CcSyncAccountConfig::parseJson(const CcJsonObject& pAccountNode)
 bool CcSyncAccountConfig::writeConfig(CcXmlNode& pParentNode)
 {
   CcXmlNode oAccountNode(CcSyncGlobals::Client::ConfigTags::Account);
-  CcXmlNode oAccountNodeName(CcSyncGlobals::Client::ConfigTags::Name, m_sName);
-  CcXmlNode oAccountNodePassword(CcSyncGlobals::Client::ConfigTags::UserPassword, m_oPassword.getString());
+  CcXmlNode oAccountNodeName(CcSyncGlobals::Client::ConfigTags::Name);
+  oAccountNodeName.setInnerText(m_sName);
+  CcXmlNode oAccountNodePassword(CcSyncGlobals::Client::ConfigTags::UserPassword);
+  oAccountNodePassword.setInnerText(m_oPassword.getString());
   CcXmlNode oAccountNodeServer(CcSyncGlobals::Client::ConfigTags::Server);
-  CcXmlNode oAccountNodeServerHost(CcSyncGlobals::Client::ConfigTags::ServerHost, m_oServer.getHostname());
-  CcXmlNode oAccountNodeServerPort(CcSyncGlobals::Client::ConfigTags::ServerPort, m_oServer.getPortString());
+  CcXmlNode oAccountNodeServerHost(CcSyncGlobals::Client::ConfigTags::ServerHost);
+  oAccountNodeServerHost.setInnerText(m_oServer.getHostname());
+  CcXmlNode oAccountNodeServerPort(CcSyncGlobals::Client::ConfigTags::ServerPort);
+  oAccountNodeServerPort.setInnerText(m_oServer.getPortString());
   oAccountNodeServer.append(std::move(oAccountNodeServerHost));
   oAccountNodeServer.append(std::move(oAccountNodeServerPort));
   oAccountNode.append(std::move(oAccountNodeServer));
@@ -259,7 +263,7 @@ bool CcSyncAccountConfig::changePassword(const CcString& sPassword)
       CcString sPasswordCrypt = m_sName.getLower() + sPassword;
       sPasswordCrypt = CcSha256().generate(sPasswordCrypt.getByteArray()).getValue().getHexString();
       m_oPassword.setPassword(sPasswordCrypt, EHashType::Sha256);
-      rPasswordNode.setValue(sPasswordCrypt);
+      rPasswordNode.setInnerText(sPasswordCrypt);
       m_oPassword.setPassword(sPasswordCrypt);
       bRet = writeConfigFile();
     }
@@ -278,7 +282,7 @@ bool CcSyncAccountConfig::changeHostname(const CcString& sHostname)
       CcXmlNode& rHostnameNode = rServerNode.getNode(CcSyncGlobals::Client::ConfigTags::ServerHost);
       if (rHostnameNode.isNotNull())
       {
-        rHostnameNode.setValue(sHostname);
+        rHostnameNode.setInnerText(sHostname);
         m_oServer.setHostname(sHostname);
         bRet = writeConfigFile();
       }
@@ -298,7 +302,7 @@ bool CcSyncAccountConfig::changePort(const CcString& sPort)
       CcXmlNode& rPortNode = rServerNode.getNode(CcSyncGlobals::Client::ConfigTags::ServerPort);
       if (rPortNode.isNotNull())
       {
-        rPortNode.setValue(sPort);
+        rPortNode.setInnerText(sPort);
         m_oServer.setPort(sPort);
         bRet = writeConfigFile();
       }
@@ -348,7 +352,7 @@ bool CcSyncAccountConfig::removeAccountDirectory(const CcString& sDirectoryName)
       {
         CcXmlNode rNameNode = rDirNode.getNode(CcSyncGlobals::Client::ConfigTags::DirectoryName);
         if (rNameNode.isNotNull()  &&
-            rNameNode.getValue().compareInsensitve(sDirectoryName))
+            rNameNode.innerText().compareInsensitve(sDirectoryName))
         {
           break;
         }
@@ -394,8 +398,8 @@ bool CcSyncAccountConfig::xmlFindServerConfig(CcXmlNode& pNode)
       !pPortNode.isNull())
     {
       bRet = true;
-      m_oServer.setHostname(pHostNode.getValue());
-      m_oServer.setPort(pPortNode.getValue());
+      m_oServer.setHostname(pHostNode.innerText());
+      m_oServer.setPort(pPortNode.innerText());
     }
     else
     {
@@ -418,8 +422,8 @@ bool CcSyncAccountConfig::xmlFindUserConfig(CcXmlNode& pNode)
       pPassword.isNotNull())
   {
     bRet = true;
-    m_sName = pNameNode.getValue();
-    m_oPassword.setPassword(pPassword.getValue(), EHashType::Sha256);
+    m_sName = pNameNode.innerText();
+    m_oPassword.setPassword(pPassword.innerText(), EHashType::Sha256);
   }
   return bRet;
 }
@@ -444,9 +448,9 @@ bool CcSyncAccountConfig::xmlFindDatabaseConfig(CcXmlNode& pNode)
 {
   bool bRet = true;
   CcXmlNode& pCommandsNode = pNode.getNode(CcSyncGlobals::Client::ConfigTags::Database);
-  if (pCommandsNode.isNotNull() && pCommandsNode.getValue() != "")
+  if (pCommandsNode.isNotNull() && pCommandsNode.innerText() != "")
   {
-    m_sDatabaseFile = pCommandsNode.getValue();
+    m_sDatabaseFile = pCommandsNode.innerText();
   }
   return bRet;
 }

@@ -61,7 +61,7 @@ bool CcSyncServerLocationConfig::readConfig(CcXmlNode& pLocationNode)
   CcXmlNode& pTempNode = pLocationNode.getNode(CcSyncGlobals::Server::ConfigTags::LocationPath);
   if (pTempNode.isNotNull())
   {
-    m_sPath = pTempNode.getValue();
+    m_sPath = pTempNode.innerText();
     bRet = true;
   }
   m_pLocationNode = &pLocationNode;
@@ -71,7 +71,8 @@ bool CcSyncServerLocationConfig::readConfig(CcXmlNode& pLocationNode)
 bool CcSyncServerLocationConfig::writeConfig(CcXmlNode& rParentNode)
 {
   CcXmlNode oLocationNode("Location");
-  CcXmlNode oLocationNodeName("Path", m_sPath);
+  CcXmlNode oLocationNodeName("Path");
+  oLocationNodeName.setInnerText(m_sPath);
   oLocationNode.append(std::move(oLocationNodeName));
   rParentNode.append(std::move(oLocationNode));
   m_pLocationNode = &rParentNode.getLastAddedNode();

@@ -219,7 +219,7 @@ void CcSyncServer::runServer()
     {
       if (m_oSocket.listen())
       {
-        CcSocketAbstract* oTemp = m_oSocket.accept();
+        ISocket* oTemp = m_oSocket.accept();
         if (oTemp != nullptr)
         {
           CcSyncLog::writeDebug("Server recognized an incomming connection, starting thread");

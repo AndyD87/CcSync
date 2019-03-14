@@ -53,7 +53,7 @@ CcSyncServerAccount::CcSyncServerAccount(CcXmlNode& pAccountNode)
   CcXmlNode& pTempNode = pAccountNode.getNode(CcSyncGlobals::Server::ConfigTags::AccountName);
   if (pTempNode.isNotNull())
   {
-    m_sName = pTempNode.getValue();
+    m_sName = pTempNode.innerText();
     CcXmlNode& pAdmin = pAccountNode.getNode(CcSyncGlobals::Client::ConfigTags::Admin);
     if (pAdmin.isNotNull())
     {
@@ -63,7 +63,7 @@ CcSyncServerAccount::CcSyncServerAccount(CcXmlNode& pAccountNode)
     if (pPasswordNode.isNotNull())
     {
       m_bIsValid = true;
-      m_oPassword.setPassword(pPasswordNode.getValue());
+      m_oPassword.setPassword(pPasswordNode.innerText());
     }
   }
 }
@@ -163,9 +163,12 @@ CcSyncDbClientPointer CcSyncServerAccount::database(const CcString& sClientLocat
 bool CcSyncServerAccount::writeConfig(CcXmlNode& oNode)
 {
   CcXmlNode oAccountNode(CcSyncGlobals::Server::ConfigTags::Account);
-  CcXmlNode oAccountNodeName(CcSyncGlobals::Server::ConfigTags::AccountName, m_sName);
-  CcXmlNode oAccountNodePassword(CcSyncGlobals::Server::ConfigTags::AccountPassword, m_oPassword.getString());
-  CcXmlNode oAccountNodeAdmin(CcSyncGlobals::Server::ConfigTags::AccountAdmin, CcXmlUtil::getStringFromBool(m_bIsAdmin));
+  CcXmlNode oAccountNodeName(CcSyncGlobals::Server::ConfigTags::AccountName);
+  oAccountNodeName.setInnerText(m_sName);
+  CcXmlNode oAccountNodePassword(CcSyncGlobals::Server::ConfigTags::AccountPassword);
+  oAccountNodePassword.setInnerText(m_oPassword.getString());
+  CcXmlNode oAccountNodeAdmin(CcSyncGlobals::Server::ConfigTags::AccountAdmin);
+  oAccountNodeAdmin.setInnerText(CcXmlUtil::getStringFromBool(m_bIsAdmin));
   oAccountNode.append(std::move(oAccountNodeName));
   oAccountNode.append(std::move(oAccountNodePassword));
   oAccountNode.append(std::move(oAccountNodeAdmin));

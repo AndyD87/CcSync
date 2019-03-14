@@ -33,13 +33,13 @@
 //! Major Version for CcSync
 #define CCSYNC_VERSION_MAJOR  0
 //! Minor Version for CcSync
-#define CCSYNC_VERSION_MINOR  1
+#define CCSYNC_VERSION_MINOR  2
 //! Patch Version for CcSync
-#define CCSYNC_VERSION_PATCH  4
+#define CCSYNC_VERSION_PATCH  0
 //! Build Version for CcSync
 #define CCSYNC_VERSION_BUILD  0
 
 //! Version-String of CcSync
-#define CCSYNC_VERSION_STRING "0.1.4.0"
+#define CCSYNC_VERSION_STRING "0.2.0.0"
 
 #endif /* CcSyncVersion_H_ */

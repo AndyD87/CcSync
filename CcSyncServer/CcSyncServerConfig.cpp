@@ -69,8 +69,10 @@ void CcSyncServerConfig::addAccount(const CcString& sName, const CcString& sPass
   if (oRootNode.isNotNull())
   {
     CcXmlNode oAccountNode(CcSyncGlobals::Server::ConfigTags::Account);
-    CcXmlNode oAccountUsernameNode(CcSyncGlobals::Server::ConfigTags::AccountName, sName);
-    CcXmlNode oAccountPasswordNode(CcSyncGlobals::Server::ConfigTags::AccountPassword, oAccount.getPassword().getString());
+    CcXmlNode oAccountUsernameNode(CcSyncGlobals::Server::ConfigTags::AccountName);
+    oAccountUsernameNode.setInnerText(sName);
+    CcXmlNode oAccountPasswordNode(CcSyncGlobals::Server::ConfigTags::AccountPassword);
+    oAccountPasswordNode.setInnerText(oAccount.getPassword().getString());
     oAccountNode.append(oAccountUsernameNode);
     oAccountNode.append(oAccountPasswordNode);
     oRootNode.append(oAccountNode);
@@ -100,7 +102,7 @@ bool CcSyncServerConfig::readConfig(const CcString& sConfigFile)
       CcXmlNode& pPassword = oRootNode.getNode(CcSyncGlobals::Client::ConfigTags::UserPassword);
       if ( pPassword.isNotNull())
       {
-        m_oRootPassword = pPassword.getValue();
+        m_oRootPassword = pPassword.innerText();
       }
       m_bValid = true;
     }
@@ -120,16 +122,20 @@ bool CcSyncServerConfig::writeConfig(const CcString& sConfigFile)
 {
   m_oXmlFile.setFile(sConfigFile);
   CcXmlNode oRootNode(CcSyncGlobals::Server::ConfigTags::Root);
-  CcXmlNode oPortNode(CcSyncGlobals::Server::ConfigTags::Port, CcString::fromNumber(m_uiPort));
+  CcXmlNode oPortNode(CcSyncGlobals::Server::ConfigTags::Port);
+  oPortNode.setInnerText( CcString::fromNumber(m_uiPort));
   oRootNode.append(std::move(oPortNode));
   if (m_bSsl)
   {
-    CcXmlNode oSslNode(CcSyncGlobals::Server::ConfigTags::Ssl, CcGlobalStrings::True);
+    CcXmlNode oSslNode(CcSyncGlobals::Server::ConfigTags::Ssl);
+    // Force Ssl
+    oSslNode.setInnerText(CcGlobalStrings::True);
     oRootNode.append(std::move(oSslNode));
   }
   else
   {
-    CcXmlNode oSslNode(CcSyncGlobals::Server::ConfigTags::Ssl, CcGlobalStrings::True);
+    CcXmlNode oSslNode(CcSyncGlobals::Server::ConfigTags::Ssl);
+    oSslNode.setInnerText(CcGlobalStrings::True);
     oRootNode.append(std::move(oSslNode));
   }
   for (CcSyncServerAccount& oAccountConfig : m_oAccountList)
@@ -180,7 +186,7 @@ bool CcSyncServerConfig::removeAccount(const CcString& sAccountName)
         {
           CcXmlNode& rNameNode = rAccountNode.getNode(CcSyncGlobals::Server::ConfigTags::AccountName);
           if (rNameNode.isNotNull() &&
-              rNameNode.getValue().compareInsensitve(sAccountName))
+              rNameNode.innerText().compareInsensitve(sAccountName))
           {
             break;
           }
@@ -225,26 +231,26 @@ bool CcSyncServerConfig::findServerConfig(CcXmlNode& pNode)
   CcXmlNode& pTempNode = pNode.getNode(CcSyncGlobals::Server::ConfigTags::Port);
   if (pTempNode.isNotNull())
   {
-    m_uiPort = pTempNode.getValue().toUint16(&bRet);
+    m_uiPort = pTempNode.innerText().toUint16(&bRet);
     CcXmlNode& pTempNode1 = pNode.getNode(CcSyncGlobals::Server::ConfigTags::Ssl);
     if (pTempNode1.isNotNull())
     {
-      m_bSsl = CcStringUtil::getBoolFromStirng(pTempNode1.getValue());
+      m_bSsl = CcStringUtil::getBoolFromStirng(pTempNode1.innerText());
     }
     CcXmlNode& pTempNode2 = pNode.getNode(CcSyncGlobals::Server::ConfigTags::SslRequired);
     if (pTempNode2.isNotNull())
     {
-      m_bSslRequired = CcStringUtil::getBoolFromStirng(pTempNode2.getValue());
+      m_bSslRequired = CcStringUtil::getBoolFromStirng(pTempNode2.innerText());
     }
     CcXmlNode& pTempNode3 = pNode.getNode(CcSyncGlobals::Server::ConfigTags::SslCert);
     if (pTempNode3.isNotNull())
     {
-      m_sSslCertFile = pTempNode3.getValue();
+      m_sSslCertFile = pTempNode3.innerText();
     }
     CcXmlNode& pTempNode4 = pNode.getNode(CcSyncGlobals::Server::ConfigTags::SslKey);
     if (pTempNode4.isNotNull())
     {
-      m_sSslKeyFile = pTempNode4.getValue();
+      m_sSslKeyFile = pTempNode4.innerText();
     }
   }
   else

@@ -63,6 +63,9 @@ public:
   CcSyncServerAccount& operator=(const CcSyncServerAccount& oToCopy);
   CcSyncServerAccount& operator=(CcSyncServerAccount&& oToMove);
 
+  bool operator==(const CcSyncServerAccount&) const
+    {return false;}
+
   inline bool isValid() const
     { return m_bIsValid; }
   inline bool isAdmin()const

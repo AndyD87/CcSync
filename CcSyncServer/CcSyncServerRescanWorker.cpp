@@ -43,7 +43,7 @@ bool CcSyncServerRescanWorker::start(bool bDeep)
   {
     bRet = true;
     m_bDeep = bDeep;
-    CcThreadObject::start();
+    IThread::start();
   }
   return bRet;
 }

@@ -1,8 +1,5 @@
+
 CLANG_VERSION=-7
-if [ -z "$1" ]
-  then echo "Default clang version: $CLANG_VERSION"
-  else CLANG_VERSION=-$1
-fi
 cd ..
 mkdir Solution-Clang
 cd Solution-Clang

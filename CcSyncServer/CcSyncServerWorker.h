@@ -32,7 +32,7 @@
 
 #include "CcBase.h"
 #include "CcSync.h"
-#include "CcWorker.h"
+#include "IWorker.h"
 #include "CcSyncRequest.h"
 #include "CcSyncResponse.h"
 #include "CcSyncUser.h"
@@ -50,7 +50,7 @@ class CcSyncServerWorkerPrivate;
 /**
  * @brief Class impelmentation
  */
-class CcSyncServerWorker : public CcWorker
+class CcSyncServerWorker : public IWorker
 {
 public:
   /**

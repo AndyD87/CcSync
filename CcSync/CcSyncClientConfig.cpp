@@ -116,7 +116,7 @@ bool CcSyncClientConfig::removeAccount(const CcString & sAccount)
       if (rAccountNode.getName() == CcSyncGlobals::Client::ConfigTags::Account)
       {
         CcXmlNode& rNameNode = rAccountNode[CcSyncGlobals::Client::ConfigTags::Name];
-        if (rNameNode.isNotNull() && rNameNode.getValue() == m_oAccounts[uiIndex].getName())
+        if (rNameNode.isNotNull() && rNameNode.innerText() == m_oAccounts[uiIndex].getName())
         {
           rAccountsNodes.remove(j);
         }

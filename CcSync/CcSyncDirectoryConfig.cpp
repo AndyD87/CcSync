@@ -113,22 +113,22 @@ void CcSyncDirectoryConfig::parseXmlNode(CcXmlNode& pXmlNode)
   m_pDirectoryNode = &pXmlNode;
   CcXmlNode& rNameNode = pXmlNode[CcSyncGlobals::Client::ConfigTags::Name];
   if (rNameNode.isNotNull())
-    m_sName = rNameNode.getValue();
+    m_sName = rNameNode.innerText();
   CcXmlNode& rLocationNode = pXmlNode[CcSyncGlobals::Client::ConfigTags::DirectoryLocation];
   if (rLocationNode.isNotNull())
-    m_sLocation.setOsPath(rLocationNode.getValue());
+    m_sLocation.setOsPath(rLocationNode.innerText());
   CcXmlNode& rBackupNode = pXmlNode[CcSyncGlobals::Client::ConfigTags::DirectoryBackupCommand];
   if (rBackupNode.isNotNull())
-    m_sBackupCommand = rBackupNode.getValue();
+    m_sBackupCommand = rBackupNode.innerText();
   CcXmlNode& rRestoreNode = pXmlNode[CcSyncGlobals::Client::ConfigTags::DirectoryRestoreCommand];
   if (rRestoreNode.isNotNull())
-    m_sRestoreCommand = rRestoreNode.getValue();
+    m_sRestoreCommand = rRestoreNode.innerText();
   CcXmlNode& rUserNode = pXmlNode[CcSyncGlobals::Client::ConfigTags::DirectoryUser];
   if (rUserNode.isNotNull())
-    m_uiUser = this->userIdFromString(rUserNode.getValue());
+    m_uiUser = this->userIdFromString(rUserNode.innerText());
   CcXmlNode& rGroupNode = pXmlNode[CcSyncGlobals::Client::ConfigTags::DirectoryGroup];
   if (rGroupNode.isNotNull())
-    m_uiGroup = this->groupIdFromString(rGroupNode.getValue());
+    m_uiGroup = this->groupIdFromString(rGroupNode.innerText());
 }
 
 void CcSyncDirectoryConfig::parseJsonNode(const CcJsonObject& rJsonNode)
@@ -152,14 +152,20 @@ void CcSyncDirectoryConfig::parseJsonNode(const CcJsonObject& rJsonNode)
 bool CcSyncDirectoryConfig::writeConfig(CcXmlNode& pXmlNode)
 {
   CcXmlNode oDirectoryNode(CcSyncGlobals::Client::ConfigTags::Directory);
-  CcXmlNode oDirectoryNameNode(CcSyncGlobals::Client::ConfigTags::DirectoryName, m_sName);
-  CcXmlNode oDirectoryLocationNode(CcSyncGlobals::Client::ConfigTags::DirectoryLocation, m_sLocation);
+  CcXmlNode oDirectoryNameNode(CcSyncGlobals::Client::ConfigTags::DirectoryName);
+  oDirectoryNameNode.setInnerText(m_sName);
+  CcXmlNode oDirectoryLocationNode(CcSyncGlobals::Client::ConfigTags::DirectoryLocation);
+  oDirectoryLocationNode.setInnerText(m_sLocation);
   oDirectoryNode.append(std::move(oDirectoryNameNode));
   oDirectoryNode.append(std::move(oDirectoryLocationNode));
-  CcXmlNode oBackupNode(CcSyncGlobals::Client::ConfigTags::DirectoryBackupCommand, m_sBackupCommand);
-  CcXmlNode oRestoreNode(CcSyncGlobals::Client::ConfigTags::DirectoryRestoreCommand, m_sRestoreCommand);
-  CcXmlNode oUserNode(CcSyncGlobals::Client::ConfigTags::DirectoryUser, CcString::fromNumber(m_uiUser));
-  CcXmlNode oGroupNode(CcSyncGlobals::Client::ConfigTags::DirectoryGroup, CcString::fromNumber(m_uiGroup));
+  CcXmlNode oBackupNode(CcSyncGlobals::Client::ConfigTags::DirectoryBackupCommand);
+  oBackupNode.setInnerText(m_sBackupCommand);
+  CcXmlNode oRestoreNode(CcSyncGlobals::Client::ConfigTags::DirectoryRestoreCommand);
+  oRestoreNode.setInnerText(m_sRestoreCommand);
+  CcXmlNode oUserNode(CcSyncGlobals::Client::ConfigTags::DirectoryUser);
+  oUserNode.setInnerText(CcString::fromNumber(m_uiUser));
+  CcXmlNode oGroupNode(CcSyncGlobals::Client::ConfigTags::DirectoryGroup);
+  oGroupNode.setInnerText(CcString::fromNumber(m_uiGroup));
   oDirectoryNode.append(std::move(oBackupNode));
   oDirectoryNode.append(std::move(oRestoreNode));
   oDirectoryNode.append(std::move(oUserNode));
@@ -185,7 +191,7 @@ bool CcSyncDirectoryConfig::setLocation(const CcString& sLocation)
   {
     CcXmlNode& rLocationNode = (*m_pDirectoryNode)[CcSyncGlobals::Client::ConfigTags::DirectoryLocation];
     if (rLocationNode.isNotNull())
-      rLocationNode.setValue(m_sLocation);
+      rLocationNode.setInnerText(m_sLocation);
   }
   return writeConfigFile();
 }
@@ -197,10 +203,11 @@ bool CcSyncDirectoryConfig::setBackupCommand(const CcString& sBackupCommand)
   {
     CcXmlNode& rBackupCommandNode = (*m_pDirectoryNode)[CcSyncGlobals::Client::ConfigTags::DirectoryBackupCommand];
     if (rBackupCommandNode.isNotNull())
-      rBackupCommandNode.setValue(m_sBackupCommand);
+      rBackupCommandNode.setInnerText(m_sBackupCommand);
     else
     {
-      CcXmlNode oNewBackupNode(CcSyncGlobals::Client::ConfigTags::DirectoryBackupCommand, sBackupCommand);
+      CcXmlNode oNewBackupNode(CcSyncGlobals::Client::ConfigTags::DirectoryBackupCommand);
+      oNewBackupNode.setInnerText(sBackupCommand);
       m_pDirectoryNode->append(oNewBackupNode);
     }
   }
@@ -214,10 +221,11 @@ bool CcSyncDirectoryConfig::setRestoreCommand(const CcString& sRestoreCommand)
   {
     CcXmlNode& rRestoreCommandNode = (*m_pDirectoryNode)[CcSyncGlobals::Client::ConfigTags::DirectoryRestoreCommand];
     if (rRestoreCommandNode.isNotNull())
-      rRestoreCommandNode.setValue(m_sRestoreCommand);
+      rRestoreCommandNode.setInnerText(m_sRestoreCommand);
     else
     {
-      CcXmlNode oNewRestoreNode(CcSyncGlobals::Client::ConfigTags::DirectoryRestoreCommand, sRestoreCommand);
+      CcXmlNode oNewRestoreNode(CcSyncGlobals::Client::ConfigTags::DirectoryRestoreCommand);
+      oNewRestoreNode.setInnerText(sRestoreCommand);
       m_pDirectoryNode->append(oNewRestoreNode);
     }
   }
@@ -233,10 +241,11 @@ bool CcSyncDirectoryConfig::setUser(const CcString& sUser)
     {
       CcXmlNode& rUserNode = (*m_pDirectoryNode)[CcSyncGlobals::Client::ConfigTags::DirectoryUser];
       if (rUserNode.isNotNull())
-        rUserNode.setValue(CcString::fromNumber(m_uiUser));
+        rUserNode.setInnerText(CcString::fromNumber(m_uiUser));
       else
       {
-        CcXmlNode oUserNode(CcSyncGlobals::Client::ConfigTags::DirectoryUser, CcString::fromNumber(m_uiUser));
+        CcXmlNode oUserNode(CcSyncGlobals::Client::ConfigTags::DirectoryUser);
+        oUserNode.setInnerText(CcString::fromNumber(m_uiUser));
         m_pDirectoryNode->append(oUserNode);
       }
     }
@@ -257,10 +266,11 @@ bool CcSyncDirectoryConfig::setGroup(const CcString& sGroup)
     {
       CcXmlNode& rGroupNode = (*m_pDirectoryNode)[CcSyncGlobals::Client::ConfigTags::DirectoryGroup];
       if (rGroupNode.isNotNull())
-        rGroupNode.setValue(CcString::fromNumber(m_uiGroup));
+        rGroupNode.setInnerText(CcString::fromNumber(m_uiGroup));
       else
       {
-        CcXmlNode oGroupNode(CcSyncGlobals::Client::ConfigTags::DirectoryGroup, CcString::fromNumber(m_uiGroup));
+        CcXmlNode oGroupNode(CcSyncGlobals::Client::ConfigTags::DirectoryGroup);
+        oGroupNode.setInnerText(CcString::fromNumber(m_uiGroup));
         m_pDirectoryNode->append(oGroupNode);
       }
     }
@@ -279,12 +289,12 @@ CcXmlNode CcSyncDirectoryConfig::getXmlNode()
   {
     CcXmlNode oDirectoryName(EXmlNodeType::Node);
     oDirectoryName.setName(CcSyncGlobals::Client::ConfigTags::DirectoryName);
-    oDirectoryName.setValue(m_sName);
+    oDirectoryName.setInnerText(m_sName);
     oDirectoryNode.append(std::move(oDirectoryName));
 
     CcXmlNode oDirectoryLocation(EXmlNodeType::Node);
     oDirectoryLocation.setName(CcSyncGlobals::Client::ConfigTags::DirectoryLocation);
-    oDirectoryLocation.setValue(m_sName);
+    oDirectoryLocation.setInnerText(m_sName);
     oDirectoryNode.append(std::move(oDirectoryLocation));
   }
   return oDirectoryNode;

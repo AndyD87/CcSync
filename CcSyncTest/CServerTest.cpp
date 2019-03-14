@@ -24,7 +24,7 @@
  */
 #include "CServerTest.h"
 #include "CcProcess.h"
-#include "CcIODevice.h"
+#include "IIoDevice.h"
 #include "CcByteArray.h"
 #include "CcKernel.h"
 #include "CcFileSystem.h"
