@@ -892,8 +892,9 @@ bool CcSyncClient::connect()
   }
   else
   {
-    m_oSocket = new CcSslSocket();
-    CCMONITORNEW(m_oSocket.getPtr());
+    ISocket* pSocket = new CcSslSocket();
+    CCMONITORNEW(pSocket);
+    m_oSocket = pSocket;
     if (static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->initClient())
     {
       if (m_oSocket.connect(m_pAccount->getServer().getHostname(), m_pAccount->getServer().getPortString()))

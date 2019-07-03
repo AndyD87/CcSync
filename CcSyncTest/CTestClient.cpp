@@ -235,5 +235,10 @@ bool CTestClient::readUntilSucceeded(const CcString& sStringEnd)
   {
     bSuccess = true;
   }
+  else
+  {
+    CcTestFramework::writeError("Last Output:");
+    CcTestFramework::writeError(sData);
+  }
   return bSuccess;
 }
