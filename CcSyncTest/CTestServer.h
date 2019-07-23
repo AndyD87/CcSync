@@ -62,6 +62,7 @@ public:
 
 private: // Methods
   CcString readUntil(const CcString& sStringEnd, const CcDateTime& oTimeout);
+  bool readUntilMatches(const CcString& sStringEnd, const CcDateTime& oTimeout);
 
 private:
   CcProcess m_oServerProc;

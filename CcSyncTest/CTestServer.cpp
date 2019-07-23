@@ -84,24 +84,35 @@ bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUs
   m_oServerProc.start();
   if (m_oServerProc.waitForRunning(CcDateTimeFromSeconds(10)))
   {
-    CcString sAllData;
-    do
+    if (readUntilMatches("Administrator:", CcSyncTestGlobals::DefaultSyncTimeout))
     {
-      sAllData += m_oServerProc.pipe().readAll();
-    } while(!sAllData.contains("Administrator"));
-    m_oServerProc.pipe().writeLine(sUsername);
-    m_oServerProc.pipe().writeLine(sPassword);
-    m_oServerProc.pipe().writeLine(sPassword);
-    m_oServerProc.pipe().writeLine(sPort);
-    m_oServerProc.pipe().writeLine(sPath);
-    if (m_oServerProc.waitForExit(CcSyncTestGlobals::DefaultSyncTimeout))
-    {
-      bSuccess = m_oServerProc.getExitCode();
-    }
-    else
-    {
-      CcTestFramework::writeError("Server didn't stop as expected:");
-      CcTestFramework::writeError(m_oServerProc.pipe().readAll());
+      m_oServerProc.pipe().writeLine(sUsername);
+      if (readUntilMatches(":", CcSyncTestGlobals::DefaultSyncTimeout))
+      {
+        m_oServerProc.pipe().writeLine(sPassword);
+        if (readUntilMatches(":", CcSyncTestGlobals::DefaultSyncTimeout))
+        {
+          m_oServerProc.pipe().writeLine(sPassword);
+          if (readUntilMatches(":", CcSyncTestGlobals::DefaultSyncTimeout))
+          {
+            m_oServerProc.pipe().writeLine(sPort);
+            if (readUntilMatches(":", CcSyncTestGlobals::DefaultSyncTimeout))
+            {
+              m_oServerProc.pipe().writeLine(sPath);
+              if (m_oServerProc.waitForExit(CcSyncTestGlobals::DefaultSyncTimeout))
+              {
+                bSuccess = m_oServerProc.getExitCode();
+              }
+              else
+              {
+                m_oServerProc.stop();
+                CcTestFramework::writeError("Server didn't stop as expected:");
+                CcTestFramework::writeError(m_oServerProc.pipe().readAll());
+              }
+            }
+          }
+        }
+      }
     }
   }
   else
@@ -156,4 +167,15 @@ CcString CTestServer::readUntil(const CcString& sStringEnd, const CcDateTime& oT
     }
   }
   return sData;
+}
+
+bool CTestServer::readUntilMatches(const CcString& sStringEnd, const CcDateTime& oTimeout)
+{
+  bool bSuccess = false;
+  CcString sRead = readUntil(sStringEnd, oTimeout);
+  if (sRead.endsWith(sStringEnd))
+  {
+    bSuccess = true;
+  }
+  return bSuccess;
 }
