@@ -37,9 +37,9 @@
 //! Patch Version for CcSync
 #define CCSYNC_VERSION_PATCH  0
 //! Build Version for CcSync
-#define CCSYNC_VERSION_BUILD  0
+#define CCSYNC_VERSION_BUILD  1
 
 //! Version-String of CcSync
-#define CCSYNC_VERSION_STRING "0.2.0.0"
+#define CCSYNC_VERSION_STRING "0.2.0.1"
 
 #endif /* CcSyncVersion_H_ */

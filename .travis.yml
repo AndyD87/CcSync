@@ -1,3 +1,7 @@
+###############################################################################
+# Common travis test-script for testing CcOS based Projects
+###############################################################################
+
 sudo: required
 # Enable C++ support
 language: cpp
@@ -11,6 +15,7 @@ compiler:
 install:
   - sudo apt-get install libssl-dev
   - sudo apt-get install libx11-dev
+  - sudo apt-get install mingw-w64
 
 # No submodules, script will do it.
 git:
