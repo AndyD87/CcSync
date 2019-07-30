@@ -37,7 +37,7 @@
 #include "CcSharedPointer.h"
 
 class CcSyncClientConfig;
-#if WIN32
+#ifdef _MSC_VER
 template class CcSharedPointer<CcSyncClientConfig>;
 #endif
 
@@ -70,7 +70,7 @@ public:
     {return m_oAccounts;}
 
   bool writeConfigFile();
-  
+
 private: // Methods
   size_t getAccountIndex(const CcString& sAccountname);
 private:

@@ -25,7 +25,7 @@
  * @par       Language   C++ ANSI V3
  */
 
-#ifdef WIN32
+#ifdef _MSC_VER
 # ifndef CcSyncSHARED
 #   ifdef CcSync_EXPORTS
  //    Cmake definition for shared build is set

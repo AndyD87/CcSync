@@ -41,7 +41,7 @@ class CcSyncFileInfo;
 class CcSyncFileInfoList;
 class CcSyncDbClient;
 
-#if WIN32
+#ifdef _MSC_VER
 template class CcSyncSHARED CcSharedPointer<CcSqlite>;
 template class CcSharedPointer<CcSyncDbClient>;
 #endif
@@ -64,7 +64,7 @@ enum class EBackupQueueType : uint16
 /**
  * @brief Class impelmentation
  */
-class CcSyncSHARED CcSyncDbClient 
+class CcSyncSHARED CcSyncDbClient
 {
 public:
   /**

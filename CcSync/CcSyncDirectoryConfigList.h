@@ -35,7 +35,7 @@
 #include "CcList.h"
 #include "CcSyncDirectoryConfig.h"
 
-#ifdef WIN32
+#ifdef _MSC_VER
 template class CcSyncSHARED CcList<CcSyncDirectoryConfig>;
 #endif
 

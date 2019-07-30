@@ -37,14 +37,14 @@
 
 class CcString;
 
-#ifdef WIN32
+#ifdef _MSC_VER
 template class CcSyncSHARED CcSharedPointer<CcSqlite>;
 #endif
 
 /**
  * @brief Class impelmentation
  */
-class CcSyncSHARED CcSyncDbServer 
+class CcSyncSHARED CcSyncDbServer
 {
 public:
   /**

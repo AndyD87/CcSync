@@ -42,7 +42,7 @@
 #include "CcSyncResponse.h"
 #include "CcSslSocket.h"
 
-#ifdef WIN32
+#ifdef _MSC_VER
 template class CcSyncSHARED CcList<CcSyncDirectory>;
 template class CcSyncSHARED CcSharedPointer<CcSslSocket>;
 #endif
@@ -53,10 +53,10 @@ class CcFile;
 /**
  * @brief Class impelmentation
  */
-class CcSyncSHARED CcSyncClient 
+class CcSyncSHARED CcSyncClient
 {
 public:
-  
+
   /**
    * @brief Constructor
    */

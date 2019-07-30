@@ -53,19 +53,19 @@ public:
    * @brief Constructor
    */
   CcSyncAccountConfig(CcSyncClientConfig* pClientConfig = nullptr);
-  
+
   /**
    * @brief Constructor
    */
   CcSyncAccountConfig(const CcSyncAccountConfig& oToCopy)
     { operator=(oToCopy);}
-  
+
   /**
    * @brief Constructor
    */
   CcSyncAccountConfig(CcSyncAccountConfig&& oToMove)
     { operator=(std::move(oToMove));}
-  
+
   /**
    * @brief Constructor
    */
@@ -103,20 +103,20 @@ public:
   bool addAccountDirectory(const CcString& sDirectoryName, const CcString& sDirectoryPath);
   bool removeAccountDirectory(const CcString& sDirectoryName);
   void overrideLocations(const CcString& sBasePath);
-  
+
   bool isValid()
     { return m_bValid; }
 
   const CcUrl& getServer() const
     { return m_oServer; }
-  
+
   CcSyncDirectoryConfigList& directoryList()
     { return m_oDirectoryList; }
 
-  
+
   void setDatabaseFilePath(const CcString& sFilePath)
     { m_sDatabaseFile = sFilePath; }
-  
+
   const CcString& getName() const
     { return m_sName; }
   CcString getAccountDirName();
@@ -154,7 +154,7 @@ private:
   CcSyncClientConfig*   m_pClientConfig = nullptr;
 };
 
-#ifdef WIN32
+#ifdef _MSC_VER
 template class CcSyncSHARED CcList<CcSyncAccountConfig>;
 template class CcSyncSHARED CcHandle<CcSyncAccountConfig>;
 #endif
