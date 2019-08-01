@@ -63,7 +63,7 @@ public:
   bool serverShutdown();
 
 private:
-  CcString readUntil(const CcString& sStringEnd, const CcDateTime &oTimeeout = CcSyncTestGlobals::DefaultSyncTimeout);
+  CcString readWithTimeout(const CcString& sStringEnd, const CcDateTime &oTimeeout = CcSyncTestGlobals::DefaultSyncTimeout);
   bool readUntilSucceeded(const CcString& sStringEnd);
 
 private:

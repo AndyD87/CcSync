@@ -102,13 +102,13 @@ bool CTestClient::login(const CcString& sServerName, const CcString& sUsername)
   if (oStatus)
   {
     m_oClientProc.pipe().writeLine("login "+sUsername+"@"+sServerName);
-    CcString sData = readUntil(sUsername + "]:");
-    // Wait for input
-    oStatus = EStatus::UserLoginFailed;
-
-    if(sData.endsWith(sUsername+"]:"))
+    if(readUntilSucceeded(sUsername+"]:"))
     {
       oStatus = EStatus::AllOk;
+    }
+    else
+    {
+      oStatus = EStatus::UserLoginFailed;
     }
     // test if a wrong parameter would faild server
   }
@@ -145,11 +145,12 @@ bool CTestClient::createSyncDirectory(const CcString& sDirectoryPath)
   m_oClientProc.pipe().writeLine("TestDir");
   m_sSyncDirs.append(m_sConfigDir.appendPath("CcSync").appendPath(sDirectoryPath));
   m_oClientProc.pipe().writeLine(m_sSyncDirs.last());
-  CcString sData = readUntil(m_sUsername + "]:");
-
+  if (readUntilSucceeded(m_sUsername + "]:"))
+  {
   if (CcDirectory::exists(m_sSyncDirs.last()))
   {
     bSuccess = true;
+  }
   }
   return bSuccess;
 }
@@ -186,12 +187,10 @@ bool CTestClient::serverShutdown()
 {
   bool bSuccess = false;
   m_oClientProc.pipe().writeLine("admin");
-  CcString sData = readUntil("[Admin]:");
-  if(sData.length() > 0)
+  if(readUntilSucceeded("[Admin]:"))
   {
     m_oClientProc.pipe().writeLine("stop");
-    sData = readUntil("/"+m_sUsername + "]:", CcDateTimeFromSeconds(10));
-    if(sData.endsWith("/"+m_sUsername + "]:"))
+  if (readUntilSucceeded("/" + m_sUsername + "]:"))
     {
       m_oClientProc.pipe().writeLine("exit");
       m_oClientProc.pipe().readAll();
@@ -209,11 +208,14 @@ bool CTestClient::serverShutdown()
   return bSuccess;
 }
 
-CcString CTestClient::readUntil(const CcString& sStringEnd, const CcDateTime& oTimeout)
+CcString CTestClient::readWithTimeout(const CcString& sStringEnd, const CcDateTime& oTimeout)
 {
   CcString sData;
   CcDateTime oCoundDown = oTimeout;
-  while (oCoundDown.timestampUs() > 0)
+  CcString sWaitForever = CcKernel::getEnvironmentVariable("WAIT_FOREVER");
+
+  while (oCoundDown.timestampUs() > 0 ||
+         sWaitForever.length())
   {
     oCoundDown.addSeconds(-1);
     CcKernel::delayS(1);
@@ -230,7 +232,7 @@ CcString CTestClient::readUntil(const CcString& sStringEnd, const CcDateTime& oT
 bool CTestClient::readUntilSucceeded(const CcString& sStringEnd)
 {
   bool bSuccess = false;
-  CcString sData = readUntil(sStringEnd);
+  CcString sData = readWithTimeout(sStringEnd);
   if (sData.endsWith(sStringEnd))
   {
     bSuccess = true;

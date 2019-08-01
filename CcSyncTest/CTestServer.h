@@ -30,6 +30,7 @@
 
 #include "CcBase.h"
 #include "CcProcess.h"
+#include "CcSyncTestGlobals.h"
 
 /**
  * @brief Class impelmentation
@@ -61,8 +62,8 @@ public:
   CcString readAllData();
 
 private: // Methods
-  CcString readUntil(const CcString& sStringEnd, const CcDateTime& oTimeout);
-  bool readUntilMatches(const CcString& sStringEnd, const CcDateTime& oTimeout);
+  CcString readWithTimeout(const CcString& sStringEnd, const CcDateTime& oTimeout = CcSyncTestGlobals::DefaultSyncTimeout);
+  bool readUntilSucceeded(const CcString& sStringEnd);
 
 private:
   CcProcess m_oServerProc;

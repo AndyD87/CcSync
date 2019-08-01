@@ -24,7 +24,7 @@ SOURCE_GROUP( ""        FILES ${SOURCE_FILES})
 target_link_libraries ( ${CURRENT_PROJECT} LINK_PUBLIC
                               CcKernel
                               CcSync
-							                CcSql )
+                              CcSql )
 
 #################
 # Post configuration steps

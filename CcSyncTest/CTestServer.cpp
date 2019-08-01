@@ -84,19 +84,19 @@ bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUs
   m_oServerProc.start();
   if (m_oServerProc.waitForRunning(CcDateTimeFromSeconds(10)))
   {
-    if (readUntilMatches("Administrator:", CcSyncTestGlobals::DefaultSyncTimeout))
+    if (readUntilSucceeded("Administrator:"))
     {
       m_oServerProc.pipe().writeLine(sUsername);
-      if (readUntilMatches(":", CcSyncTestGlobals::DefaultSyncTimeout))
+      if (readUntilSucceeded(":"))
       {
         m_oServerProc.pipe().writeLine(sPassword);
-        if (readUntilMatches(":", CcSyncTestGlobals::DefaultSyncTimeout))
+        if (readUntilSucceeded(":"))
         {
           m_oServerProc.pipe().writeLine(sPassword);
-          if (readUntilMatches(":", CcSyncTestGlobals::DefaultSyncTimeout))
+          if (readUntilSucceeded(":"))
           {
             m_oServerProc.pipe().writeLine(sPort);
-            if (readUntilMatches(":", CcSyncTestGlobals::DefaultSyncTimeout))
+            if (readUntilSucceeded(":"))
             {
               m_oServerProc.pipe().writeLine(sPath);
               if (m_oServerProc.waitForExit(CcSyncTestGlobals::DefaultSyncTimeout))
@@ -129,10 +129,9 @@ bool CTestServer::start()
   resetArguments();
   addArgument("start");
   m_oServerProc.start();
-  if(m_oServerProc.waitForState(EThreadState::Running, CcDateTimeFromSeconds(1)))
+  if(m_oServerProc.waitForState(EThreadState::Running))
   {
-    CcString sData = readUntil(CcSyncTestGlobals::Server::ServerStarted, CcDateTimeFromSeconds(10));
-    if(sData.endsWith(CcSyncTestGlobals::Server::ServerStarted))
+    if(readUntilSucceeded(CcSyncTestGlobals::Server::ServerStarted))
     {
       bStarted = true;
     }
@@ -143,7 +142,7 @@ bool CTestServer::start()
 bool CTestServer::stop()
 {
   m_oServerProc.stop();
-  return m_oServerProc.waitForState(EThreadState::Stopped, CcDateTimeFromSeconds(1));
+  return m_oServerProc.waitForState(EThreadState::Stopped);
 }
 
 CcString CTestServer::readAllData()
@@ -151,7 +150,7 @@ CcString CTestServer::readAllData()
   return m_oServerProc.pipe().readAll();
 }
 
-CcString CTestServer::readUntil(const CcString& sStringEnd, const CcDateTime& oTimeout)
+CcString CTestServer::readWithTimeout(const CcString& sStringEnd, const CcDateTime& oTimeout)
 {
   CcString sData;
   CcDateTime oCountDown = oTimeout;
@@ -169,10 +168,10 @@ CcString CTestServer::readUntil(const CcString& sStringEnd, const CcDateTime& oT
   return sData;
 }
 
-bool CTestServer::readUntilMatches(const CcString& sStringEnd, const CcDateTime& oTimeout)
+bool CTestServer::readUntilSucceeded(const CcString& sStringEnd)
 {
   bool bSuccess = false;
-  CcString sRead = readUntil(sStringEnd, oTimeout);
+  CcString sRead = readWithTimeout(sStringEnd);
   if (sRead.endsWith(sStringEnd))
   {
     bSuccess = true;

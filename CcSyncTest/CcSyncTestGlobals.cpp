@@ -30,7 +30,7 @@
 
 namespace CcSyncTestGlobals
 {
-  CcDateTime DefaultSyncTimeout = CcDateTimeFromSeconds(5);
+  CcDateTime DefaultSyncTimeout = CcDateTimeFromSeconds(10);
   namespace Server
   {
     const CcString ServerStarted("CcSyncServer started");

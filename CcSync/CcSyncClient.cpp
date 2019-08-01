@@ -1319,7 +1319,7 @@ bool CcSyncClient::doCreateDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDir
         case EStatus::FSDirNotFound:
           // Parent direcotry not existing
           CcSyncLog::writeError("Parent directory not existing:  " + oDirInfo.dirPath(), ESyncLogTarget::Client);
-	  CCFALLTHROUGH;
+    CCFALLTHROUGH;
         default:
           oDirectory.queueIncrementItem(uiQueueIndex);
           CcSyncLog::writeError("Directory failed to add:  " + oDirInfo.getName(), ESyncLogTarget::Client);
