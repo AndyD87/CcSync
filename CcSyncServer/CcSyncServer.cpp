@@ -59,15 +59,12 @@ CcSyncServer::CcSyncServer(CcSyncServer&& oToMove)
 
 CcSyncServer::~CcSyncServer(void)
 {
-  while(m_pWorkerList.size() > 0)
+  m_oWorkerListLock.lock();
+  for (CcSyncServerWorker* pWorker : m_oWorkerList)
   {
-    CcSyncServerWorker* pWorker = m_pWorkerList.at(0);
-    m_pWorkerList.at(0)->stop();
-    if(pWorker == m_pWorkerList.at(0))
-    {
-      m_pWorkerList.remove(0);
-    }
+    pWorker->stop();
   }
+  m_oWorkerListLock.unlock();
 }
 
 void CcSyncServer::run()
@@ -214,8 +211,7 @@ void CcSyncServer::runServer()
   {
     CcSyncLog::writeDebug("Server is listening on: " + CcString::fromNumber(m_oConfig.getPort()));
     CcSyncLog::writeMessage(CcSyncGlobals::Server::Output::Started);
-    while (getThreadState() == EThreadState::Running &&
-           m_bStopInProgress == false)
+    while (getThreadState() == EThreadState::Running)
     {
       if (m_oSocket.listen())
       {
@@ -224,14 +220,11 @@ void CcSyncServer::runServer()
         {
           CcSyncLog::writeDebug("Server recognized an incomming connection, starting thread");
           CcSyncServerWorker* oNewWorker = new CcSyncServerWorker(this, oTemp);
-          m_pWorkerList.append(oNewWorker);
+          m_oWorkerListLock.lock();
+          m_oWorkerList.append(oNewWorker);
+          m_oWorkerListLock.unlock();
           CCMONITORNEW(oNewWorker);
           oNewWorker->start();
-        }
-        else
-        {
-          if(!m_bStopInProgress)
-            CcSyncLog::writeError("Error on accepting connection");
         }
       }
       else
@@ -411,14 +404,15 @@ CcVersion CcSyncServer::getVersion() const
 
 void CcSyncServer::workerDone(CcSyncServerWorker* pWorker)
 {
-  m_pWorkerList.removeItem(pWorker);
+  m_oWorkerListLock.lock();
+  m_oWorkerList.removeItem(pWorker);
+  m_oWorkerListLock.unlock();
 }
 
 void CcSyncServer::shutdown()
 {
-  m_bStopInProgress = true;
   CcSyncLog::writeDebug("CcSyncServer shutdown received");
-  m_oSocket.close();
+  stop();
 }
 
 bool CcSyncServer::createConfig()

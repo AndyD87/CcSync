@@ -99,7 +99,7 @@ private:
   void onStop() override;
 private:
   CcSyncServerWorkerPrivate* m_pPrivate;
-  CcSyncServer*   m_oServer   = nullptr;
+  CcSyncServer*   m_pServer   = nullptr;
   CcSocket        m_oSocket;
   CcSyncUser      m_oUser;
   CcSyncRequest   m_oRequest;

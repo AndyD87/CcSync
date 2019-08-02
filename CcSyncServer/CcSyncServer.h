@@ -41,6 +41,7 @@
 #include "Network/CcSocket.h"
 #include "CcArguments.h"
 #include "CcList.h"
+#include "CcMutex.h"
 
 class CcSyncServerWorker;
 
@@ -112,8 +113,8 @@ private:
   CcSyncServerConfig          m_oConfig;
   CcSyncDbServer              m_oDatabase;
   CcSocket                    m_oSocket;
-  CcList<CcSyncServerWorker*> m_pWorkerList;
-  bool                        m_bStopInProgress = false;
+  CcList<CcSyncServerWorker*> m_oWorkerList;
+  CcMutex                     m_oWorkerListLock;
 };
 
 #endif /* _CcSyncServer_H_ */

@@ -45,11 +45,10 @@ public:
     oRescanWorker(oServer)
   { }
   CcSyncServerRescanWorker oRescanWorker;
-  bool  m_bStopCalled = false;
 };
 
 CcSyncServerWorker::CcSyncServerWorker(CcSyncServer* oServer, CcSocket oSocket) :
-  m_oServer(oServer),
+  m_pServer(oServer),
   m_oSocket(oSocket)
 {
   m_pPrivate = new CcSyncServerWorkerPrivate(oServer);
@@ -63,8 +62,7 @@ CcSyncServerWorker::~CcSyncServerWorker(void)
 
 void CcSyncServerWorker::run()
 {
-  while (getThreadState() == EThreadState::Running &&
-         m_pPrivate->m_bStopCalled == false)
+  while (getThreadState() == EThreadState::Running)
   {
     if (getRequest())
     {
@@ -183,13 +181,9 @@ void CcSyncServerWorker::run()
     {
       m_oResponse.setError(EStatus::CommandError, "Request malformed. Connection will get closed.");
       sendResponse();
-      m_oSocket.close();
-      enterState(EThreadState::Stopping);
+      stop();
     }
   }
-
-  if(m_pPrivate->m_bStopCalled == false)
-    m_oServer->workerDone(this);
 }
 
 bool CcSyncServerWorker::getRequest()
@@ -244,7 +238,7 @@ bool CcSyncServerWorker::loadConfigsBySessionRequest()
 bool CcSyncServerWorker::loadConfigsBySession(const CcString& sSession)
 {
   bool bRet = false;
-  m_oUser = m_oServer->getUserByToken(sSession);
+  m_oUser = m_pServer->getUserByToken(sSession);
   if (m_oUser.isValid())
   {
     bRet = true;
@@ -440,7 +434,7 @@ void CcSyncServerWorker::doServerAccountCreate()
     CcString sPassword = m_oRequest.getPassword();
     if (sName.length() > 0 && sPassword.length() > 0)
     {
-      if(!m_oServer->createAccount(sName, sPassword, false))
+      if(!m_pServer->createAccount(sName, sPassword, false))
       {
         m_oResponse.setError(EStatus::UserError, "Failed to create User");
       }
@@ -465,7 +459,7 @@ void CcSyncServerWorker::doServerAccountRemove()
     CcString sName = m_oRequest.getName();
     if (sName.length() > 0)
     {
-      if (!m_oServer->removeAccount(sName))
+      if (!m_pServer->removeAccount(sName))
       {
         m_oResponse.setError(EStatus::UserError, "Failed to remove Account");
       }
@@ -488,8 +482,8 @@ void CcSyncServerWorker::doServerStop()
       m_oUser.getRights() >= ESyncRights::Admin)
   {
     sendResponse();
-    m_oServer->workerDone(this);
-    m_oServer->shutdown();
+    m_pServer->shutdown();
+    stop();
   }
   else
   {
@@ -514,7 +508,7 @@ void CcSyncServerWorker::doAccountLogin()
     CcString sAccount = m_oRequest.data()[CcSyncGlobals::Commands::AccountLogin::Account].getValue().getString();
     CcString sUserName = m_oRequest.data()[CcSyncGlobals::Commands::AccountLogin::Username].getValue().getString();
     CcString sPassword = m_oRequest.data()[CcSyncGlobals::Commands::AccountLogin::Password].getValue().getString();
-    CcSyncUser oUser = m_oServer->loginUser(sAccount, sUserName, sPassword);
+    CcSyncUser oUser = m_pServer->loginUser(sAccount, sUserName, sPassword);
     if (oUser.isValid())
     {
       m_oUser = oUser;
@@ -607,7 +601,7 @@ void CcSyncServerWorker::doAccountCreateDirectory()
         }
         else
         {
-          CcString sDirectoryPath = m_oServer->config().getLocation().getPath();
+          CcString sDirectoryPath = m_pServer->config().getLocation().getPath();
           sDirectoryPath.appendPath(m_oUser.getAccountConfig()->getName());
           sDirectoryPath.appendPath(sName);
           if (CcDirectory::exists(sDirectoryPath) ||
@@ -1075,10 +1069,9 @@ void CcSyncServerWorker::doDirectoryDownloadFile()
 
 void CcSyncServerWorker::onStop()
 {
-  m_pPrivate->m_bStopCalled = true;
-  if(getThreadState() == EThreadState::Running)
-  {
-    enterState(EThreadState::Stopping);
-  }
   m_oSocket.close();
+  if (m_pServer != nullptr)
+  {
+    m_pServer->workerDone(this);
+  }
 }
