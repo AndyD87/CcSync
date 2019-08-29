@@ -1,4 +1,5 @@
 cd ..
+cd ..
 mkdir Solution
 cd Solution
 copy ..\Tools\BuildAndPackage.bat .\

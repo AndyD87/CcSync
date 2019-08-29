@@ -5,6 +5,8 @@ PARAM(
     [bool]$KeepOutput = $false
 )
 
+$env:CTEST_OUTPUT_ON_FAILURE=1
+
 $Global:KeepOutput = $KeepOutput
 
 Function RemoveDirs
@@ -17,7 +19,7 @@ Function RemoveDirs
         Remove-Item $SolutionDir -Recurse -Force
     }
     # Fist Clean Solution if Existing
-    if( (Test-Path $OutputDir) -eq $true -and 
+    if( (Test-Path $OutputDir) -eq $true -and
         $Global:KeepOutput -eq $false)
     {
         Remove-Item $OutputDir -Recurse -Force
@@ -49,12 +51,12 @@ function StartBuildProcess
     $ENV:CL="/MP"
 
     $CurrentDir  = (Get-Item .\).FullName
-    $TestLog     = $CurrentDir+"\Test.log" 
+    $TestLog     = $CurrentDir+"\Test.log"
     $CcOSRootDir = $PSScriptRoot+"\.."
     $SolutionDir = $PSScriptRoot+"\Solution"
     $OutputDir   = $PSScriptRoot+"\Output"
     ResetDirs
-    
+
     cd $SolutionDir
 
     $VisualStudioString = $VisualStudio
@@ -122,8 +124,8 @@ function StartBuildProcess
     {
         cd $CurrentDir
         if($StopOnError)
-        { 
-            throw $Msg 
+        {
+            throw $Msg
         }
 
     }
@@ -153,7 +155,7 @@ Function Test-VisualStudio()
     $Architectures  = @("win32", "x64")
     $Configurations = @("Release", "Debug") # Not required but possible to test : "RelWithDebInfo", "MinSizeRel")
     $Statics = @("Static", "Shared")
-    
+
     $CurrentDir  = (Get-Item .\).FullName
     $TestLog     = $CurrentDir+"\Test.log" 
     if((Test-Path $TestLog))
@@ -186,14 +188,14 @@ Function Test-MinGW()
     {
         $iCores = $oProcInfo.NumberOfCores
     }
-    
+
     $CurrentDir  = (Get-Item .\).FullName
-    $TestLog     = $CurrentDir+"\Test.log" 
+    $TestLog     = $CurrentDir+"\Test.log"
     $CcOSRootDir = $PSScriptRoot+"\.."
     $SolutionDir = $PSScriptRoot+"\Solution"
     $OutputDir   = $PSScriptRoot+"\Output"
     ResetDirs
-        
+
     $Versions  = @("6") # "4.8.2"
     $Architectures  = @("x86", "x64")
     $Configurations = @("Debug", "Release")
