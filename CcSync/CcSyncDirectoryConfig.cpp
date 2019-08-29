@@ -133,18 +133,18 @@ void CcSyncDirectoryConfig::parseXmlNode(CcXmlNode& pXmlNode)
 
 void CcSyncDirectoryConfig::parseJsonNode(const CcJsonObject& rJsonNode)
 {
-  const CcJsonData& pTempNode = rJsonNode[CcSyncGlobals::Client::ConfigTags::Name];
+  const CcJsonNode& pTempNode = rJsonNode[CcSyncGlobals::Client::ConfigTags::Name];
   if (pTempNode.isValue())
       m_sName = pTempNode.getValue().getString();
-  const CcJsonData& pLocationNode = rJsonNode[CcSyncGlobals::Client::ConfigTags::DirectoryLocation];
+  const CcJsonNode& pLocationNode = rJsonNode[CcSyncGlobals::Client::ConfigTags::DirectoryLocation];
   if (pLocationNode.isValue())
   {
     m_sLocation.setOsPath(pLocationNode.getValue().getString());
   }
-  const CcJsonData& pBCNode = rJsonNode[CcSyncGlobals::Client::ConfigTags::DirectoryBackupCommand];
+  const CcJsonNode& pBCNode = rJsonNode[CcSyncGlobals::Client::ConfigTags::DirectoryBackupCommand];
   if (pBCNode.isValue())
     m_sBackupCommand = pBCNode.getValue().getString();
-  const CcJsonData& pRCNode = rJsonNode[CcSyncGlobals::Client::ConfigTags::DirectoryRestoreCommand];
+  const CcJsonNode& pRCNode = rJsonNode[CcSyncGlobals::Client::ConfigTags::DirectoryRestoreCommand];
   if (pRCNode.isValue())
     m_sRestoreCommand = pRCNode.getValue().getString();
 }

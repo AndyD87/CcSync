@@ -26,7 +26,7 @@
  */
 #include "CcSyncResponse.h"
 #include "CcJson/CcJsonDocument.h"
-#include "CcJson/CcJsonData.h"
+#include "CcJson/CcJsonNode.h"
 #include "CcJson/CcJsonArray.h"
 #include "CcJson/CcJsonObject.h"
 #include "CcSyncGlobals.h"
@@ -99,14 +99,14 @@ void CcSyncResponse::init(ESyncCommandType eCommandType)
 {
   m_oData.clear();
   m_bHasAdditionalData = false;
-  m_oData.add(CcJsonData("Command", (uint16) eCommandType));
+  m_oData.add(CcJsonNode("Command", (uint16) eCommandType));
   m_eType = eCommandType;
 }
 
 bool CcSyncResponse::hasError()
 {
   bool bRet = false;
-  CcJsonData& rErrorValue = m_oData[CcSyncGlobals::Commands::ErrorCode];
+  CcJsonNode& rErrorValue = m_oData[CcSyncGlobals::Commands::ErrorCode];
   if (rErrorValue.isValue() &&
       rErrorValue.getValue().isInt())
   {
@@ -124,7 +124,7 @@ CcStatus CcSyncResponse::getError()
 
 CcString CcSyncResponse::getErrorMsg()
 {
-  CcJsonData& oErrorMsg = m_oData[CcSyncGlobals::Commands::ErrorMsg];
+  CcJsonNode& oErrorMsg = m_oData[CcSyncGlobals::Commands::ErrorMsg];
   CcString sError;
   if (oErrorMsg.isValue())
     sError = oErrorMsg.getValue().getString();
@@ -140,19 +140,19 @@ CcByteArray CcSyncResponse::getBinary()
 
 void CcSyncResponse::setLogin(const CcString& sUserToken)
 {
-  m_oData.add(CcJsonData(CcSyncGlobals::Commands::AccountLogin::Session, sUserToken));
+  m_oData.add(CcJsonNode(CcSyncGlobals::Commands::AccountLogin::Session, sUserToken));
 }
 
 void CcSyncResponse::setAccountRight(ESyncRights eRights)
 {
   init(ESyncCommandType::AccountRights);
-  m_oData.add(CcJsonData(CcSyncGlobals::Commands::AccountRights::Right, static_cast<int>(eRights)));
+  m_oData.add(CcJsonNode(CcSyncGlobals::Commands::AccountRights::Right, static_cast<int>(eRights)));
 }
 
 ESyncRights CcSyncResponse::getAccountRight() const
 {
   ESyncRights eRights = ESyncRights::None;
-  CcJsonData oJsonData = m_oData[CcSyncGlobals::Commands::AccountRights::Right];
+  CcJsonNode oJsonData = m_oData[CcSyncGlobals::Commands::AccountRights::Right];
   if (oJsonData.isValue())
   {
     eRights = static_cast<ESyncRights>(oJsonData.getValue().getInt());
@@ -162,24 +162,24 @@ ESyncRights CcSyncResponse::getAccountRight() const
 
 void CcSyncResponse::setResult(bool uiResult)
 {
-  m_oData.add(CcJsonData(CcSyncGlobals::Commands::Result, uiResult));
+  m_oData.add(CcJsonNode(CcSyncGlobals::Commands::Result, uiResult));
 }
 
 void CcSyncResponse::setError(CcStatus uiErrorCode, const CcString& sErrorMsg)
 {
-  m_oData.add(CcJsonData(CcSyncGlobals::Commands::ErrorCode, uiErrorCode.getErrorUint()));
-  m_oData.add(CcJsonData(CcSyncGlobals::Commands::ErrorMsg, sErrorMsg));
+  m_oData.add(CcJsonNode(CcSyncGlobals::Commands::ErrorCode, uiErrorCode.getErrorUint()));
+  m_oData.add(CcJsonNode(CcSyncGlobals::Commands::ErrorMsg, sErrorMsg));
 }
 
 void CcSyncResponse::addAccountInfo(const CcSyncAccountConfig& oAccountConfig)
 {
-  m_oData.add(CcJsonData(oAccountConfig.getJsonNode(), CcSyncGlobals::Commands::AccountGetData::Account));
+  m_oData.add(CcJsonNode(oAccountConfig.getJsonNode(), CcSyncGlobals::Commands::AccountGetData::Account));
 }
 
 CcSyncAccountConfig CcSyncResponse::getAccountConfig()
 {
   CcSyncAccountConfig oAccountConfig;
-  CcJsonData& rAccountNode = m_oData[CcSyncGlobals::Commands::AccountGetData::Account];
+  CcJsonNode& rAccountNode = m_oData[CcSyncGlobals::Commands::AccountGetData::Account];
   if (rAccountNode.isObject())
   {
     oAccountConfig.parseJson(rAccountNode.getJsonObject());
@@ -199,19 +199,19 @@ CcString CcSyncResponse::getSession()
 
 void CcSyncResponse::addDirectoryDirectoryInfoList(const CcSyncFileInfoList& oDirectoryInfoList, const CcSyncFileInfoList& oFileInfoList)
 {
-  CcJsonData oDirectoriesNode(CcSyncGlobals::Commands::DirectoryGetFileList::DirsNode);
+  CcJsonNode oDirectoriesNode(CcSyncGlobals::Commands::DirectoryGetFileList::DirsNode);
   oDirectoriesNode.setJsonArray();
   for (CcSyncFileInfo& oFileInfo : oDirectoryInfoList)
   {
-    oDirectoriesNode.array().add(CcJsonData( oFileInfo.getJsonObject(), ""));
+    oDirectoriesNode.array().add(CcJsonNode( oFileInfo.getJsonObject(), ""));
   }
   m_oData.append(std::move(oDirectoriesNode));
 
-  CcJsonData oFilesNode(CcSyncGlobals::Commands::DirectoryGetFileList::FilesNode);
+  CcJsonNode oFilesNode(CcSyncGlobals::Commands::DirectoryGetFileList::FilesNode);
   oFilesNode.setJsonArray();
   for (CcSyncFileInfo& oFileInfo : oFileInfoList)
   {
-    oFilesNode.array().add(CcJsonData(oFileInfo.getJsonObject(),""));
+    oFilesNode.array().add(CcJsonNode(oFileInfo.getJsonObject(),""));
   }
   m_oData.append(std::move(oFilesNode));
 }
@@ -239,7 +239,7 @@ bool CcSyncResponse::getDirectoryDirectoryInfoList(CcSyncFileInfoList& oDirector
   if (m_oData.contains(CcSyncGlobals::Commands::DirectoryGetFileList::DirsNode))
   {
     CcJsonArray& oJsonArray = m_oData[CcSyncGlobals::Commands::DirectoryGetFileList::DirsNode].array();
-    for (CcJsonData& oJsonData : oJsonArray)
+    for (CcJsonNode& oJsonData : oJsonArray)
     {
       CcJsonObject& oJsonFileArray = oJsonData.object();
       CcSyncFileInfo oFileInfo;
@@ -250,7 +250,7 @@ bool CcSyncResponse::getDirectoryDirectoryInfoList(CcSyncFileInfoList& oDirector
   if (m_oData.contains(CcSyncGlobals::Commands::DirectoryGetFileList::FilesNode))
   {
     CcJsonArray& oJsonArray = m_oData[CcSyncGlobals::Commands::DirectoryGetFileList::FilesNode].array();
-    for (CcJsonData& oJsonData : oJsonArray)
+    for (CcJsonNode& oJsonData : oJsonArray)
     {
       CcJsonObject& oJsonFileArray = oJsonData.object();
       CcSyncFileInfo oFileInfo;
@@ -263,7 +263,7 @@ bool CcSyncResponse::getDirectoryDirectoryInfoList(CcSyncFileInfoList& oDirector
 
 bool CcSyncResponse::getTypeFromData()
 {
-  CcJsonData& oValue = m_oData[CcSyncGlobals::Commands::Command];
+  CcJsonNode& oValue = m_oData[CcSyncGlobals::Commands::Command];
   if (oValue.isValue())
   {
     m_eType = (ESyncCommandType) oValue.value().getUint16();

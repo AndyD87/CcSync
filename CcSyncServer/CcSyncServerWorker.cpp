@@ -583,7 +583,7 @@ void CcSyncServerWorker::doAccountCreateDirectory()
   {
     if (m_oUser.getRights() >= ESyncRights::Account)
     {
-      CcJsonData oDirname = m_oRequest.getData()[CcSyncGlobals::Commands::AccountCreateDirectory::DirectoryName];
+      CcJsonNode oDirname = m_oRequest.getData()[CcSyncGlobals::Commands::AccountCreateDirectory::DirectoryName];
       if (oDirname.isNotNull() && oDirname.isValue())
       {
         CcString sName = oDirname.getValue().getString();
@@ -640,7 +640,7 @@ void CcSyncServerWorker::doAccountRemoveDirectory()
   {
     if (m_oUser.getRights() >= ESyncRights::Account)
     {
-      CcJsonData oDirname = m_oRequest.getData()[CcSyncGlobals::Commands::AccountCreateDirectory::DirectoryName];
+      CcJsonNode oDirname = m_oRequest.getData()[CcSyncGlobals::Commands::AccountCreateDirectory::DirectoryName];
       if (oDirname.isNotNull() && oDirname.isValue())
       {
         CcString sName = oDirname.getValue().getString();

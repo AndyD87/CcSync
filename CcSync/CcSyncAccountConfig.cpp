@@ -152,26 +152,26 @@ CcXmlNode CcSyncAccountConfig::getXmlNode() const
 CcJsonObject CcSyncAccountConfig::getJsonNode() const
 {
   CcJsonObject oAccountNode;
-  oAccountNode.add(CcJsonData(CcSyncGlobals::Commands::AccountGetData::Name, getName()));
-  oAccountNode.add(CcJsonData(CcSyncGlobals::Commands::AccountGetData::Password, ""));
-  oAccountNode.add(CcJsonData(CcSyncGlobals::Commands::AccountGetData::Database, getDatabaseFilePath()));
+  oAccountNode.add(CcJsonNode(CcSyncGlobals::Commands::AccountGetData::Name, getName()));
+  oAccountNode.add(CcJsonNode(CcSyncGlobals::Commands::AccountGetData::Password, ""));
+  oAccountNode.add(CcJsonNode(CcSyncGlobals::Commands::AccountGetData::Database, getDatabaseFilePath()));
 
   CcJsonObject oServer;
-  oServer.add(CcJsonData(CcSyncGlobals::Commands::AccountGetData::ServerHost, getServer().getHostname()));
-  oServer.add(CcJsonData(CcSyncGlobals::Commands::AccountGetData::ServerPort, getServer().getPort()));
-  oAccountNode.add(CcJsonData(oServer, CcSyncGlobals::Commands::AccountGetData::Server));
+  oServer.add(CcJsonNode(CcSyncGlobals::Commands::AccountGetData::ServerHost, getServer().getHostname()));
+  oServer.add(CcJsonNode(CcSyncGlobals::Commands::AccountGetData::ServerPort, getServer().getPort()));
+  oAccountNode.add(CcJsonNode(oServer, CcSyncGlobals::Commands::AccountGetData::Server));
 
   CcJsonArray oDirArray;
   for (CcSyncDirectoryConfig& oDirConfig : getDirectoryList())
   {
     CcJsonObject oDirInfo;
-    oDirInfo.add(CcJsonData(CcSyncGlobals::Commands::AccountGetData::DirName, oDirConfig.getName()));
-    oDirInfo.add(CcJsonData(CcSyncGlobals::Commands::AccountGetData::DirLocation, ""));
-    oDirInfo.add(CcJsonData(CcSyncGlobals::Commands::AccountGetData::DirBCommand, oDirConfig.getBackupCommand()));
-    oDirInfo.add(CcJsonData(CcSyncGlobals::Commands::AccountGetData::DirRCommand, oDirConfig.getRestoreCommand()));
-    oDirArray.add(CcJsonData(oDirInfo, ""));
+    oDirInfo.add(CcJsonNode(CcSyncGlobals::Commands::AccountGetData::DirName, oDirConfig.getName()));
+    oDirInfo.add(CcJsonNode(CcSyncGlobals::Commands::AccountGetData::DirLocation, ""));
+    oDirInfo.add(CcJsonNode(CcSyncGlobals::Commands::AccountGetData::DirBCommand, oDirConfig.getBackupCommand()));
+    oDirInfo.add(CcJsonNode(CcSyncGlobals::Commands::AccountGetData::DirRCommand, oDirConfig.getRestoreCommand()));
+    oDirArray.add(CcJsonNode(oDirInfo, ""));
   }
-  oAccountNode.add(CcJsonData(oDirArray, CcSyncGlobals::Commands::AccountGetData::Directories));
+  oAccountNode.add(CcJsonNode(oDirArray, CcSyncGlobals::Commands::AccountGetData::Directories));
   return oAccountNode;
 }
 
@@ -458,11 +458,11 @@ bool CcSyncAccountConfig::xmlFindDatabaseConfig(CcXmlNode& pNode)
 bool CcSyncAccountConfig::jsonFindServerConfig(const CcJsonObject& pNode)
 {
   bool bRet = false;
-  const CcJsonData& pServerNode = pNode[CcSyncGlobals::Client::ConfigTags::Server];
+  const CcJsonNode& pServerNode = pNode[CcSyncGlobals::Client::ConfigTags::Server];
   if (pServerNode.isObject())
   {
-    const CcJsonData& pHostNode = pServerNode[CcSyncGlobals::Client::ConfigTags::ServerHost];
-    const CcJsonData& pPortNode = pServerNode[CcSyncGlobals::Client::ConfigTags::ServerPort];
+    const CcJsonNode& pHostNode = pServerNode[CcSyncGlobals::Client::ConfigTags::ServerHost];
+    const CcJsonNode& pPortNode = pServerNode[CcSyncGlobals::Client::ConfigTags::ServerPort];
     if (pHostNode.isValue() &&
         pPortNode.isValue())
     {
@@ -485,8 +485,8 @@ bool CcSyncAccountConfig::jsonFindServerConfig(const CcJsonObject& pNode)
 bool CcSyncAccountConfig::jsonFindUserConfig(const CcJsonObject& pNode)
 {
   bool bRet = true;
-  const CcJsonData& pNameNode = pNode[CcSyncGlobals::Client::ConfigTags::UserName];
-  const CcJsonData& pPassword = pNode[CcSyncGlobals::Client::ConfigTags::UserPassword];
+  const CcJsonNode& pNameNode = pNode[CcSyncGlobals::Client::ConfigTags::UserName];
+  const CcJsonNode& pPassword = pNode[CcSyncGlobals::Client::ConfigTags::UserPassword];
   if (pNameNode.isValue() &&
       pPassword.isValue())
   {
@@ -503,10 +503,10 @@ bool CcSyncAccountConfig::jsonFindUserConfig(const CcJsonObject& pNode)
 bool CcSyncAccountConfig::jsonFindDirectoriesConfig(const CcJsonObject& pNode)
 {
   bool bRet = false;
-  const CcJsonData& oDirectoryNodes = pNode[CcSyncGlobals::Client::ConfigTags::Directory];
+  const CcJsonNode& oDirectoryNodes = pNode[CcSyncGlobals::Client::ConfigTags::Directory];
   if (oDirectoryNodes.isArray())
   {
-    for (const CcJsonData& pDirectoryNode : oDirectoryNodes.getJsonArray())
+    for (const CcJsonNode& pDirectoryNode : oDirectoryNodes.getJsonArray())
     {
       bRet = true;
       CcSyncDirectoryConfig oDirectory(pDirectoryNode.getJsonObject());
@@ -527,7 +527,7 @@ bool CcSyncAccountConfig::jsonFindCommandsConfig(const CcJsonObject& pNode)
 bool CcSyncAccountConfig::jsonFindDatabaseConfig(const CcJsonObject& pNode)
 {
   bool bRet = true;
-  const CcJsonData& oDatabaseNodes = pNode[CcSyncGlobals::Client::ConfigTags::Database];
+  const CcJsonNode& oDatabaseNodes = pNode[CcSyncGlobals::Client::ConfigTags::Database];
   if (oDatabaseNodes.isValue() && oDatabaseNodes.getValue().getString() != "")
   {
     m_sDatabaseFile = oDatabaseNodes.getValue().getString();

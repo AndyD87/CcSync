@@ -131,43 +131,43 @@ bool CcSyncFileInfo::fromSystemDirectory()
 bool CcSyncFileInfo::fromJsonObject(const CcJsonObject& oJsonData)
 {
   bool bRet = false;
-  const CcJsonData& oIdNode = oJsonData[CcSyncGlobals::FileInfo::Id];
+  const CcJsonNode& oIdNode = oJsonData[CcSyncGlobals::FileInfo::Id];
   if (oIdNode.isValue())
     id() = oIdNode.getValue().getSize();
 
-  const CcJsonData& oDirIdNode = oJsonData[CcSyncGlobals::FileInfo::DirId];
+  const CcJsonNode& oDirIdNode = oJsonData[CcSyncGlobals::FileInfo::DirId];
   if (oDirIdNode.isValue())
     dirId() = oDirIdNode.getValue().getSize();
 
-  const CcJsonData& oNameNode = oJsonData[CcSyncGlobals::FileInfo::Name];
+  const CcJsonNode& oNameNode = oJsonData[CcSyncGlobals::FileInfo::Name];
   if (oNameNode.isValue())
     name() = oNameNode.getValue().getString();
 
-  const CcJsonData& oSizeNode = oJsonData[CcSyncGlobals::FileInfo::Size];
+  const CcJsonNode& oSizeNode = oJsonData[CcSyncGlobals::FileInfo::Size];
   if (oSizeNode.isValue())
     fileSize() = oSizeNode.getValue().getUint64();
 
-  const CcJsonData& oModifiedNode = oJsonData[CcSyncGlobals::FileInfo::Modified];
+  const CcJsonNode& oModifiedNode = oJsonData[CcSyncGlobals::FileInfo::Modified];
   if (oModifiedNode.isValue())
     modified() = oModifiedNode.getValue().getUint64();
 
-  const CcJsonData& oAttributesNode = oJsonData[CcSyncGlobals::FileInfo::Attributes];
+  const CcJsonNode& oAttributesNode = oJsonData[CcSyncGlobals::FileInfo::Attributes];
   if (oAttributesNode.isValue())
     attributes() = oAttributesNode.getValue().getString();
 
-  const CcJsonData& oCRCNode = oJsonData[CcSyncGlobals::FileInfo::CRC];
+  const CcJsonNode& oCRCNode = oJsonData[CcSyncGlobals::FileInfo::CRC];
   if (oCRCNode.isValue())
     crc() = oCRCNode.getValue().getUint32();
 
-  const CcJsonData& oMD5Node = oJsonData[CcSyncGlobals::FileInfo::MD5];
+  const CcJsonNode& oMD5Node = oJsonData[CcSyncGlobals::FileInfo::MD5];
   if (oMD5Node.isValue())
     md5().setHexString(oMD5Node.getValue().getString());
 
-  const CcJsonData& oChangedNode = oJsonData[CcSyncGlobals::FileInfo::Changed];
+  const CcJsonNode& oChangedNode = oJsonData[CcSyncGlobals::FileInfo::Changed];
   if (oChangedNode.isValue())
     changed() = oChangedNode.getValue().getUint64();
 
-  const CcJsonData& oIsFileNode = oJsonData[CcSyncGlobals::FileInfo::IsFile];
+  const CcJsonNode& oIsFileNode = oJsonData[CcSyncGlobals::FileInfo::IsFile];
   if (oIsFileNode.isValue())
     isFile() = oIsFileNode.getValue().getBool();
 
@@ -178,34 +178,34 @@ CcJsonObject CcSyncFileInfo::getJsonObject() const
 {
   CcJsonObject oFileData;
   if(getId() != 0)
-    oFileData.add(CcJsonData(CcSyncGlobals::FileInfo::Id, getId()));
+    oFileData.add(CcJsonNode(CcSyncGlobals::FileInfo::Id, getId()));
 
   if (getDirId() != 0)
-    oFileData.add(CcJsonData(CcSyncGlobals::FileInfo::DirId, getDirId()));
+    oFileData.add(CcJsonNode(CcSyncGlobals::FileInfo::DirId, getDirId()));
 
   if (getName().length() != 0)
-    oFileData.add(CcJsonData(CcSyncGlobals::FileInfo::Name, getName()));
+    oFileData.add(CcJsonNode(CcSyncGlobals::FileInfo::Name, getName()));
 
   if (getFileSize() != 0)
-    oFileData.add(CcJsonData(CcSyncGlobals::FileInfo::Size, getFileSize()));
+    oFileData.add(CcJsonNode(CcSyncGlobals::FileInfo::Size, getFileSize()));
 
   if (getModified() != 0)
-    oFileData.add(CcJsonData(CcSyncGlobals::FileInfo::Modified, getModified()));
+    oFileData.add(CcJsonNode(CcSyncGlobals::FileInfo::Modified, getModified()));
 
   if (getAttributes().length() != 0)
-    oFileData.add(CcJsonData(CcSyncGlobals::FileInfo::Attributes, getAttributes()));
+    oFileData.add(CcJsonNode(CcSyncGlobals::FileInfo::Attributes, getAttributes()));
 
   if (getCrc() != 0)
-    oFileData.add(CcJsonData(CcSyncGlobals::FileInfo::CRC, getCrc()));
+    oFileData.add(CcJsonNode(CcSyncGlobals::FileInfo::CRC, getCrc()));
 
   if (getMd5().size() > 0)
-    oFileData.add(CcJsonData(CcSyncGlobals::FileInfo::MD5, getMd5().getHexString()));
+    oFileData.add(CcJsonNode(CcSyncGlobals::FileInfo::MD5, getMd5().getHexString()));
 
   if (getChanged() != 0)
-    oFileData.add(CcJsonData(CcSyncGlobals::FileInfo::Changed, getChanged()));
+    oFileData.add(CcJsonNode(CcSyncGlobals::FileInfo::Changed, getChanged()));
 
   if (getIsFile() == false)
-    oFileData.add(CcJsonData(CcSyncGlobals::FileInfo::IsFile, getIsFile()));
+    oFileData.add(CcJsonNode(CcSyncGlobals::FileInfo::IsFile, getIsFile()));
 
   return oFileData;
 }
