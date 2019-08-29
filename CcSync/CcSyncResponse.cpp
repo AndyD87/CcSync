@@ -199,16 +199,16 @@ CcString CcSyncResponse::getSession()
 
 void CcSyncResponse::addDirectoryDirectoryInfoList(const CcSyncFileInfoList& oDirectoryInfoList, const CcSyncFileInfoList& oFileInfoList)
 {
-  CcJsonNode oDirectoriesNode(CcSyncGlobals::Commands::DirectoryGetFileList::DirsNode);
-  oDirectoriesNode.setJsonArray();
+  CcJsonNode oDirectoriesNode(EJsonDataType::Array);
+  oDirectoriesNode.setName(CcSyncGlobals::Commands::DirectoryGetFileList::DirsNode);
   for (CcSyncFileInfo& oFileInfo : oDirectoryInfoList)
   {
     oDirectoriesNode.array().add(CcJsonNode( oFileInfo.getJsonObject(), ""));
   }
   m_oData.append(std::move(oDirectoriesNode));
 
-  CcJsonNode oFilesNode(CcSyncGlobals::Commands::DirectoryGetFileList::FilesNode);
-  oFilesNode.setJsonArray();
+  CcJsonNode oFilesNode(EJsonDataType::Array);
+  oFilesNode.setName(CcSyncGlobals::Commands::DirectoryGetFileList::FilesNode);
   for (CcSyncFileInfo& oFileInfo : oFileInfoList)
   {
     oFilesNode.array().add(CcJsonNode(oFileInfo.getJsonObject(),""));
