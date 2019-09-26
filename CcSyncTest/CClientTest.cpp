@@ -24,7 +24,7 @@
  */
 #include "CClientTest.h"
 #include "CcProcess.h"
-#include "IIoDevice.h"
+#include "IIo.h"
 #include "CcByteArray.h"
 #include "CcKernel.h"
 #include "CcFileSystem.h"

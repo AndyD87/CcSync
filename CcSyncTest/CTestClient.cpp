@@ -23,7 +23,7 @@
  * @brief     Implemtation of class CTestClient
  */
 #include "CTestClient.h"
-#include "IIoDevice.h"
+#include "IIo.h"
 #include "CcByteArray.h"
 #include "CcTestFramework.h"
 #include "CcKernel.h"

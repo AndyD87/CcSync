@@ -108,35 +108,35 @@ CcString CcSyncAccountConfig::getAccountDirName()
 
 CcXmlNode CcSyncAccountConfig::getXmlNode() const
 {
-  CcXmlNode oAccountNode(EXmlNodeType::Node);
+  CcXmlNode oAccountNode(CcXmlNode::EType::Node);
   oAccountNode.setName(CcSyncGlobals::Client::ConfigTags::Account);
   {
-    CcXmlNode oAccountName(EXmlNodeType::Node);
+    CcXmlNode oAccountName(CcXmlNode::EType::Node);
     oAccountName.setName(CcSyncGlobals::Client::ConfigTags::UserName);
     oAccountName.setInnerText(m_sName);
     oAccountNode.append(std::move(oAccountName));
 
-    CcXmlNode oAccountPassword(EXmlNodeType::Node);
+    CcXmlNode oAccountPassword(CcXmlNode::EType::Node);
     oAccountPassword.setName(CcSyncGlobals::Client::ConfigTags::UserPassword);
     oAccountPassword.setInnerText(""); // Hide Password
     oAccountNode.append(std::move(oAccountPassword));
 
-    CcXmlNode oAccountServer(EXmlNodeType::Node);
+    CcXmlNode oAccountServer(CcXmlNode::EType::Node);
     oAccountServer.setName(CcSyncGlobals::Client::ConfigTags::Server);
     {
-      CcXmlNode oAccountServerHost(EXmlNodeType::Node);
+      CcXmlNode oAccountServerHost(CcXmlNode::EType::Node);
       oAccountServerHost.setName(CcSyncGlobals::Client::ConfigTags::ServerHost);
       oAccountServerHost.setInnerText(m_oServer.getHostname());
       oAccountServer.append(std::move(oAccountServerHost));
 
-      CcXmlNode oAccountServerPort(EXmlNodeType::Node);
+      CcXmlNode oAccountServerPort(CcXmlNode::EType::Node);
       oAccountServerPort.setName(CcSyncGlobals::Client::ConfigTags::ServerPort);
       oAccountServerPort.setInnerText(m_oServer.getPortString());
       oAccountServer.append(std::move(oAccountServerHost));
     }
     oAccountNode.append(std::move(oAccountServer));
 
-    CcXmlNode oAccountDatabaseFile(EXmlNodeType::Node);
+    CcXmlNode oAccountDatabaseFile(CcXmlNode::EType::Node);
     oAccountDatabaseFile.setName(CcSyncGlobals::Client::ConfigTags::Database);
     oAccountDatabaseFile.setInnerText(m_sDatabaseFile); // Hide Password
     oAccountNode.append(std::move(oAccountDatabaseFile));

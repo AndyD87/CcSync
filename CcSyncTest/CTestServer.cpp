@@ -24,7 +24,7 @@
  */
 #include "CTestServer.h"
 #include "CcSyncTestGlobals.h"
-#include "IIoDevice.h"
+#include "IIo.h"
 #include "CcTestFramework.h"
 #include "CcKernel.h"
 #include "CcByteArray.h"

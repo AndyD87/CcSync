@@ -24,7 +24,7 @@
  */
 #include "CSyncTest.h"
 #include "CcProcess.h"
-#include "IIoDevice.h"
+#include "IIo.h"
 #include "CcByteArray.h"
 #include "CcKernel.h"
 #include "CcFileSystem.h"
@@ -72,7 +72,7 @@ CSyncTest::CSyncTest( void ) :
 #endif
 
   appendTestMethod("Test if environment for sync test is successfully created", &CSyncTest::testEnvironment);
-  appendTestMethod("Setup TestServer", &CSyncTest::testSetupServer); 
+  appendTestMethod("Setup TestServer", &CSyncTest::testSetupServer);
   appendTestMethod("Setup TestClient1", &CSyncTest::testSetupClient1);
   appendTestMethod("Setup TestClient2", &CSyncTest::testSetupClient2);
   appendTestMethod("Start TestServer", &CSyncTest::testStartServer);

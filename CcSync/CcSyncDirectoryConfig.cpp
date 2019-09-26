@@ -284,15 +284,15 @@ bool CcSyncDirectoryConfig::setGroup(const CcString& sGroup)
 
 CcXmlNode CcSyncDirectoryConfig::getXmlNode()
 {
-  CcXmlNode oDirectoryNode(EXmlNodeType::Node);
+  CcXmlNode oDirectoryNode(CcXmlNode::EType::Node);
   oDirectoryNode.setName(CcSyncGlobals::Client::ConfigTags::Directory);
   {
-    CcXmlNode oDirectoryName(EXmlNodeType::Node);
+    CcXmlNode oDirectoryName(CcXmlNode::EType::Node);
     oDirectoryName.setName(CcSyncGlobals::Client::ConfigTags::DirectoryName);
     oDirectoryName.setInnerText(m_sName);
     oDirectoryNode.append(std::move(oDirectoryName));
 
-    CcXmlNode oDirectoryLocation(EXmlNodeType::Node);
+    CcXmlNode oDirectoryLocation(CcXmlNode::EType::Node);
     oDirectoryLocation.setName(CcSyncGlobals::Client::ConfigTags::DirectoryLocation);
     oDirectoryLocation.setInnerText(m_sName);
     oDirectoryNode.append(std::move(oDirectoryLocation));
@@ -326,7 +326,7 @@ uint32 CcSyncDirectoryConfig::groupIdFromString(const CcString& sGroup)
   if(!bOk)
   {
     const CcGroup& hGroup = CcKernel::getGroupList().findGroup(sGroup);
-    if (!ISNULLREF(hGroup))
+    if (!CCISNULLREF(hGroup))
     {
       return hGroup.getId();
     }
