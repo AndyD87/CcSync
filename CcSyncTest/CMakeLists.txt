@@ -19,7 +19,7 @@ if("${CMAKE_PROJECT_NAME}" STREQUAL "CcSync")
     CcSyncGenerateRcFileToCurrentDir(${CURRENT_PROJECT} SOURCE_FILES )
   endif()
   
-  add_executable( ${CURRENT_PROJECT} ${SOURCE_FILES} )
+  CcAddExecutable( ${CURRENT_PROJECT} ${SOURCE_FILES} )
   
   set_property( TARGET ${CURRENT_PROJECT} PROPERTY FOLDER "Testing")
   

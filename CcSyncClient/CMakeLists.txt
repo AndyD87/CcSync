@@ -16,7 +16,7 @@ if(WINDOWS)
   CcSyncGenerateRcFileToCurrentDir(${CURRENT_PROJECT} SOURCE_FILES )
 endif()
                    
-add_executable( ${CURRENT_PROJECT} ${SOURCE_FILES} )
+CcAddExecutable( ${CURRENT_PROJECT} ${SOURCE_FILES} )
 
 # To keep Header an Source together, display them in same Directory
 # It will only work with IDE's wich are supporting this features
