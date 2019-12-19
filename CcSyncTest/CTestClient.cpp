@@ -86,8 +86,16 @@ bool CTestClient::addNewServer(const CcString& sServerName, const CcString& sSer
     m_oClientProc.pipe().writeLine(sServerName);
     m_oClientProc.pipe().writeLine(sServerPort);
     m_oClientProc.pipe().writeLine(sPassword);
-    m_oClientProc.pipe().writeLine("exit");
-    oStatus = m_oClientProc.waitForExit(CcDateTimeFromSeconds(1));
+
+    if (readUntilSucceeded("]:"))
+    {
+      m_oClientProc.pipe().writeLine("exit");
+      oStatus = m_oClientProc.waitForExit(CcDateTimeFromSeconds(1));
+    }
+    else
+    {
+      oStatus = EStatus::Error;
+    }
   }
   return oStatus;
 }
