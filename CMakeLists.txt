@@ -9,6 +9,19 @@
 ################################################################################
 cmake_minimum_required (VERSION 3.0)
 
+# Enable to check memory usage and leakings
+#set(MEMORYMONITOR_ENABLED TRUE)
+
+# Set Debug build if not BUILD_TYPE selected
+#if(NOT CMAKE_BUILD_TYPE)
+#  set(CMAKE_BUILD_TYPE Debug)
+#endif()
+
+# Enable verbose output if required
+#set(CMAKE_VERBOSE_MAKEFILE TRUE CACHE INTERNAL "")
+
+message("-- Default build type: ${CMAKE_BUILD_TYPE}")
+
 ################################################################################
 # Setup Globals
 ################################################################################
@@ -40,18 +53,6 @@ CcOSLoadMacros()
 # Configuration is done, setup Project
 ################################################################################
 project("CcSync" VERSION "${CCSYNC_VERSION_CMAKE}")
-
-################################################################################
-# Setup Debug
-################################################################################
-if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
-  message("- Build-Type set to Debug")
-  set(CCOSEXAMPLEPROJECT_BUILD_TYPE "DEBUG" )
-  set(CMAKE_VERBOSE_MAKEFILE          ON)
-else()
-  message("- Build-Type set to Release")
-  set(CCOSEXAMPLEPROJECT_BUILD_TYPE "RELEASE" )
-endif()
 
 ################################################################################
 # Setup Output Paths

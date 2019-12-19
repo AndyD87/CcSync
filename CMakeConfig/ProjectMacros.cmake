@@ -63,14 +63,15 @@ endmacro()
 
 ################################################################################
 # Generate RC-File for MSVC Builds, output is a Version.h File in current dir
+# usage: CcSyncGenerateRcFileToCurrentDir( ProjectName [SourceFiles] )
 ################################################################################
 macro( CcSyncGenerateRcFileToCurrentDir ProjectName )
   set(PROJECT_NAME "${ProjectName}")
-  configure_file( ${CCSYNC_CMAKECONFIG_DIR}/InputFiles/ProjectVersion.rc.in ${CMAKE_CURRENT_SOURCE_DIR}/CcSyncVersion.rc.tmp @ONLY)
-  CcCopyFile(${CMAKE_CURRENT_SOURCE_DIR}/CcSyncVersion.rc.tmp ${CMAKE_CURRENT_SOURCE_DIR}/CcSyncVersion.rc)
+  configure_file( ${CCSYNC_CMAKECONFIG_DIR}/InputFiles/ProjectVersion.rc.in ${CMAKE_CURRENT_BINARY_DIR}/${ProjectName}_Version.rc.tmp @ONLY)
+  CcMoveFile(${CMAKE_CURRENT_BINARY_DIR}/${ProjectName}_Version.rc.tmp ${CMAKE_CURRENT_BINARY_DIR}/${ProjectName}_Version.rc)
   if(${ARGC} GREATER 1)
     if(NOT DEFINED GCC)
-      list(APPEND ${ARGV1} "${CMAKE_CURRENT_SOURCE_DIR}/CcSyncVersion.rc")
+      list(APPEND ${ARGV1} "${CMAKE_CURRENT_BINARY_DIR}/${ProjectName}_Version.rc")
     endif()
   endif(${ARGC} GREATER 1)
 endmacro()
@@ -122,4 +123,15 @@ macro( CcSyncLibSettings ProjectName )
     list(REMOVE_AT FILES 0)
     CcSetFiltersByFolders(${FILES})
   endif(${ARGC} GREATER 3)
+endmacro()
+
+################################################################################
+# Post config Steps afert add_executable:
+# Usage CcSyncExeSettings( ProjectName [sSetFiltersByFolders])
+################################################################################
+macro( CcOSExeSettings ProjectName )
+  if(${ARGC} GREATER 1)
+    set(FILES ${ARGN})
+    CcSetFiltersByFolders(${FILES})
+  endif(${ARGC} GREATER 1)
 endmacro()
