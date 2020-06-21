@@ -43,6 +43,8 @@ enum class ESyncClientMode
   Cli = 1,
   Once,
   Daemon,
+  Create,
+  Dirs,
   Help
 };
 
@@ -58,6 +60,8 @@ public:
   void runDaemon();
   void runCli();
   void runOnce();
+  void runCreate();
+  void runDirs();
   void runHelp();
   bool createConfig(const CcString& sConfigDir);
   bool createAccount();

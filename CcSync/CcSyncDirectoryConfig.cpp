@@ -306,7 +306,7 @@ uint32 CcSyncDirectoryConfig::userIdFromString(const CcString& sUser)
   uint32 uiUserId = sUser.toUint32(&bOk);
   if(!bOk)
   {
-    CcUserHandle hUser = CcKernel::getUserList().findUser(sUser);
+    CcUser* hUser = CcKernel::getUserList().findUser(sUser);
     if (hUser != nullptr)
     {
       return hUser->getId();

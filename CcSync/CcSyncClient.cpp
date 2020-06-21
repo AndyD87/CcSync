@@ -434,7 +434,7 @@ void CcSyncClient::resetQueues()
 
 bool CcSyncClient::updateFromRemoteAccount()
 {
-  bool bRet = false;
+  bool bRet = true;
   CcString sRet;
   if (m_pAccount != nullptr)
   {
@@ -466,7 +466,19 @@ bool CcSyncClient::updateFromRemoteAccount()
           }
         }
       }
+      else
+      {
+        bRet = false;
+      }
     }
+    else
+    {
+      bRet = false;
+    }
+  }
+  else
+  {
+    bRet = false;
   }
   return bRet;
 }

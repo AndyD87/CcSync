@@ -26,7 +26,7 @@
  *
  *  Implementation of Main Application
  */
-
+#include "CcSyncVersion.h"
 #include "CcSyncClientApp.h"
 #include "CcKernel.h"
 #include "CcAppKnown.h"
@@ -117,6 +117,14 @@ void CcSyncClientApp::run()
     {
       m_eMode = ESyncClientMode::Daemon;
     }
+    else if (m_oArguments[1].compareInsensitve("create"))
+    {
+      m_eMode = ESyncClientMode::Create;
+    }
+    else if (m_oArguments[1].compareInsensitve("dirs"))
+    {
+      m_eMode = ESyncClientMode::Dirs;
+    }
     else if (m_oArguments[1].compareInsensitve("help"))
     {
       m_eMode = ESyncClientMode::Help;
@@ -152,6 +160,12 @@ void CcSyncClientApp::run()
       break;
     case ESyncClientMode::Help:
       runHelp();
+      break;
+    case ESyncClientMode::Create:
+      runCreate();
+      break;
+    case ESyncClientMode::Dirs:
+      runDirs();
       break;
     default:
       setExitCode(EStatus::CommandInvalidParameter);
@@ -332,7 +346,15 @@ void CcSyncClientApp::runCli()
 void CcSyncClientApp::runOnce()
 {
   m_poSyncClient = CcSyncClient::create(m_sConfigDir);
-  CcStringList slAccounts = m_poSyncClient->getAccountList();
+  CcStringList slAccounts;
+  if(m_oArguments.size() > 2)
+  {
+    slAccounts.append(m_oArguments[2]);
+  }
+  else
+  {
+    slAccounts = m_poSyncClient->getAccountList();
+  }
   for (CcString& sAccount : slAccounts)
   {
     CcSyncConsole::writeLine("Select Account: " + sAccount);
@@ -363,9 +385,122 @@ void CcSyncClientApp::runOnce()
   CcSyncClient::remove(m_poSyncClient);
 }
 
+void CcSyncClientApp::runCreate()
+{
+  m_poSyncClient = CcSyncClient::create(m_sConfigDir);
+  if(m_oArguments.last().contains("@"))
+  {
+    if (m_poSyncClient->selectAccount(m_oArguments.last()))
+    {
+      CcSyncConsole::writeLine("Account already available");
+    }
+    else
+    {
+      CcStringList oList = m_oArguments.last().split("@");
+      if(oList.size() == 2)
+      {
+        CcString sPort;
+        CcString sServer;
+        if(oList[1].contains(":"))
+        {
+          CcStringList oServer = oList[1].split(":");
+          if(oServer.size() == 2)
+          {
+            sServer = oServer[0];
+            sPort = oServer[1];
+          }
+          else
+          {
+            CcSyncConsole::writeLine("Invalid server given");
+            setExitCode(EStatus::CommandInvalidParameter);
+          }
+        }
+        else
+        {
+          sServer = oList[1];
+          sPort = CcSyncGlobals::DefaultPortStr;
+        }
+        CcString sPassword = CcSyncConsole::queryHidden("Password");
+        if(m_poSyncClient->addAccount(oList[0], sPassword, sServer, sPort))
+        {
+          CcSyncConsole::writeLine("Account successfully created");
+        }
+        else
+        {
+          CcSyncConsole::writeLine("Failed to create account");
+          setExitCode(EStatus::ConfigError);
+        }
+      }
+    }
+  }
+  else
+  {
+    CcSyncConsole::writeLine("No username and server set");
+    setExitCode(EStatus::CommandInvalidParameter);
+  }
+  CcSyncClient::remove(m_poSyncClient);
+}
+
+void CcSyncClientApp::runDirs()
+{
+  m_poSyncClient = CcSyncClient::create(m_sConfigDir);
+  if(m_oArguments.size() == 4)
+  {
+    CcString sAccount = m_oArguments[2];
+    if (m_poSyncClient->selectAccount(sAccount) &&
+        m_poSyncClient->login()                 &&
+        m_poSyncClient->updateFromRemoteAccount())
+    {
+      CcString sPath = m_oArguments[3].getOsPath();
+      if(!CcDirectory::exists(sPath) &&
+         !CcDirectory::create(sPath))
+      {
+        CcSyncConsole::writeLine("Path not found and not createable");
+        setExitCode(EStatus::FSDirNotFound);
+      }
+      else
+      {
+        CcStringList oDirList = m_poSyncClient->getDirectoryList();
+        for (CcString& sDirName : oDirList)
+        {
+          CcString sDirPath = sPath;
+          sDirPath.appendPath(sDirName);
+          CcSyncConsole::writeLine("Create new Directory: " + sDirName);
+          if (!m_poSyncClient->doAccountCreateDirectory(sDirName, sDirPath))
+          {
+            CcSyncConsole::writeLine("Failed to create Directory: " + sDirName);
+            setExitCode(EStatus::FSDirCreateFailed);
+            break;
+          }
+        }
+      }
+    }
+    else
+    {
+      CcSyncConsole::writeLine("Login to account failed");
+      setExitCode(EStatus::UserAccessDenied);
+    }
+  }
+  else
+  {
+    CcSyncConsole::writeLine("Error Invalid paramters given");
+    setExitCode(EStatus::InvalidHandle);
+  }
+  CcSyncClient::remove(m_poSyncClient);
+}
+
 void CcSyncClientApp::runHelp()
 {
-
+  CcSyncConsole::writeLine(CcString("Version: ") + CCSYNC_VERSION_STRING + "");
+  CcSyncConsole::writeLine("Usage:");
+  CcSyncConsole::writeLine("  []");
+  CcSyncConsole::writeLine("    Start interactive mode");
+  CcSyncConsole::writeLine("  once [<Username>@<Server>]");
+  CcSyncConsole::writeLine("    Synchronize all directories of available accounts, or selected");
+  CcSyncConsole::writeLine("  create <Username>@<Server>");
+  CcSyncConsole::writeLine("    Create local account and connect to server");
+  CcSyncConsole::writeLine("  dirs <Username>@<Server> <Path>");
+  CcSyncConsole::writeLine("    Create all directories from client in path");
 }
 
 bool CcSyncClientApp::createConfig(const CcString& sConfigDir)
