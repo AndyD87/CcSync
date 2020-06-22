@@ -1069,10 +1069,7 @@ bool CcSyncClient::sendFile(CcSyncFileInfo& oFileInfo)
     m_oRequest.setCrc(oCrc);
     if (sendRequestGetResponse())
     {
-      if (m_oResponse.hasError() == false)
-        bRet = true;
-      else
-        bRet = false;
+      bRet = m_oResponse.hasError() == false;
     }
     else
     {
@@ -1105,7 +1102,6 @@ bool CcSyncClient::receiveFile(CcFile* pFile, CcSyncFileInfo& oFileInfo)
         uiReceived += uiReadSize;
         if (!pFile->write(oByteArray.getArray(), uiReadSize))
         {
-          bRet = false;
           bTransfer = false;
         }
       }
@@ -1125,12 +1121,6 @@ bool CcSyncClient::receiveFile(CcFile* pFile, CcSyncFileInfo& oFileInfo)
       {
         if (m_oResponse.hasError() == false)
           bRet = true;
-        else
-          bRet = false;
-      }
-      else
-      {
-        bRet = false;
       }
     }
   }
