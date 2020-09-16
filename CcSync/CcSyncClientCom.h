@@ -52,6 +52,7 @@ public:
   { return connect(m_oUrl); }
   void close();
   void reconnect();
+  bool login();
   bool sendRequestGetResponse();
 
   CcSocket& getSocket()

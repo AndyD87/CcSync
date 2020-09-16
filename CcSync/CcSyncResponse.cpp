@@ -190,7 +190,7 @@ CcSyncAccountConfig CcSyncResponse::getAccountConfig()
 CcString CcSyncResponse::getSession()
 {
   CcString sSession;
-  if (m_oData.contains(CcSyncGlobals::Commands::AccountLogin::Session))
+  if (m_oData.contains(CcSyncGlobals::Commands::AccountLogin::Session, EJsonDataType::Value))
   {
     sSession = m_oData[CcSyncGlobals::Commands::AccountLogin::Session].getValue().getString();
   }
@@ -236,7 +236,7 @@ CcSyncFileInfo CcSyncResponse::getFileInfo()
 bool CcSyncResponse::getDirectoryDirectoryInfoList(CcSyncFileInfoList& oDirectoryInfoList, CcSyncFileInfoList& oFileInfoList)
 {
   bool bRet = false;
-  if (m_oData.contains(CcSyncGlobals::Commands::DirectoryGetFileList::DirsNode))
+  if (m_oData.contains(CcSyncGlobals::Commands::DirectoryGetFileList::DirsNode, EJsonDataType::Array))
   {
     CcJsonArray& oJsonArray = m_oData[CcSyncGlobals::Commands::DirectoryGetFileList::DirsNode].array();
     for (CcJsonNode& oJsonData : oJsonArray)
@@ -247,7 +247,7 @@ bool CcSyncResponse::getDirectoryDirectoryInfoList(CcSyncFileInfoList& oDirector
       oDirectoryInfoList.append(std::move(oFileInfo));
     }
   }
-  if (m_oData.contains(CcSyncGlobals::Commands::DirectoryGetFileList::FilesNode))
+  if (m_oData.contains(CcSyncGlobals::Commands::DirectoryGetFileList::FilesNode, EJsonDataType::Array))
   {
     CcJsonArray& oJsonArray = m_oData[CcSyncGlobals::Commands::DirectoryGetFileList::FilesNode].array();
     for (CcJsonNode& oJsonData : oJsonArray)

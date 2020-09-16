@@ -1437,7 +1437,7 @@ bool CcSyncClient::doUploadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
         switch (m_oCom.getResponse().getError().getError())
         {
           case EStatus::FSFileAlreadyExisting:
-            if (m_oCom.getResponse().data().contains(CcSyncGlobals::FileInfo::Id))
+            if (m_oCom.getResponse().data().contains(CcSyncGlobals::FileInfo::Id, EJsonDataType::Value))
             {
               CcSyncFileInfo oResponseFileInfo = m_oCom.getResponse().getFileInfo();
               oDirectory.fileListInsert(oResponseFileInfo, true);

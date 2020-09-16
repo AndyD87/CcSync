@@ -133,7 +133,7 @@ CcByteArray CcSyncRequest::getBinary()
 CcCrc32 CcSyncRequest::getCrc()
 {
   CcCrc32 oCrc;
-  if (m_oData.contains(CcSyncGlobals::Commands::Crc::Crc))
+  if (m_oData.contains(CcSyncGlobals::Commands::Crc::Crc, EJsonDataType::Value))
     oCrc = m_oData[CcSyncGlobals::Commands::Crc::Crc].getValue().getUint32();
   return  oCrc;
 }
@@ -141,7 +141,7 @@ CcCrc32 CcSyncRequest::getCrc()
 bool CcSyncRequest::getServerRescan()
 {
   bool bDeep = false;
-  if (m_oData.contains(CcSyncGlobals::Commands::ServerAccountRescan::Deep))
+  if (m_oData.contains(CcSyncGlobals::Commands::ServerAccountRescan::Deep, EJsonDataType::Value))
     bDeep = m_oData[CcSyncGlobals::Commands::ServerAccountRescan::Deep].getValue().getBool();
   return  bDeep;
 }
@@ -201,6 +201,12 @@ void CcSyncRequest::setAccountLogin(const CcString& sAccount, const CcString& sU
   m_oData.add(CcJsonNode(CcSyncGlobals::Commands::AccountLogin::Account, sAccount));
   m_oData.add(CcJsonNode(CcSyncGlobals::Commands::AccountLogin::Username, sUsername));
   m_oData.add(CcJsonNode(CcSyncGlobals::Commands::AccountLogin::Password, sPassword));
+}
+
+void CcSyncRequest::setAccountLogin(const CcString& sSession)
+{
+  init(ESyncCommandType::AccountLogin);
+  m_oData.add(CcJsonNode(CcSyncGlobals::Commands::AccountLogin::Session, sSession));
 }
 
 void CcSyncRequest::setServerCreateAccount(const CcString& sAccount, const CcString& sPassword)

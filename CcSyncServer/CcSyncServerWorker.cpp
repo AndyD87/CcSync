@@ -215,7 +215,7 @@ bool CcSyncServerWorker::loadConfigsBySessionRequest()
   { 
     bRet = true;
   }
-  else if (m_oRequest.data().contains(CcSyncGlobals::Commands::Session))
+  else if (m_oRequest.data().contains(CcSyncGlobals::Commands::Session, EJsonDataType::Value))
   {
     if (loadConfigsBySession(m_oRequest.data()[CcSyncGlobals::Commands::Session].getValue().getString()))
     {
@@ -372,7 +372,7 @@ bool CcSyncServerWorker::loadDirectory()
 {
   bool bRet = false;
   // Check all required data
-  if (m_oRequest.data().contains(CcSyncGlobals::Commands::DirectoryGetFileList::DirectoryName))
+  if (m_oRequest.data().contains(CcSyncGlobals::Commands::DirectoryGetFileList::DirectoryName, EJsonDataType::Value))
   {
     CcString sDirectoryName = m_oRequest.data()[CcSyncGlobals::Commands::DirectoryGetFileList::DirectoryName].getValue().getString();
     if (m_oDirectory.getName() == sDirectoryName)
@@ -501,9 +501,9 @@ void CcSyncServerWorker::doAccountCreate()
 
 void CcSyncServerWorker::doAccountLogin()
 {
-  if (m_oRequest.getData().contains(CcSyncGlobals::Commands::AccountLogin::Account) &&
-      m_oRequest.getData().contains(CcSyncGlobals::Commands::AccountLogin::Username) &&
-      m_oRequest.getData().contains(CcSyncGlobals::Commands::AccountLogin::Password) )
+  if (m_oRequest.getData().contains(CcSyncGlobals::Commands::AccountLogin::Account, EJsonDataType::Value) &&
+      m_oRequest.getData().contains(CcSyncGlobals::Commands::AccountLogin::Username, EJsonDataType::Value) &&
+      m_oRequest.getData().contains(CcSyncGlobals::Commands::AccountLogin::Password, EJsonDataType::Value) )
   {
     CcString sAccount = m_oRequest.data()[CcSyncGlobals::Commands::AccountLogin::Account].getValue().getString();
     CcString sUserName = m_oRequest.data()[CcSyncGlobals::Commands::AccountLogin::Username].getValue().getString();
@@ -517,6 +517,21 @@ void CcSyncServerWorker::doAccountLogin()
     else
     {
       CcSyncLog::writeDebug("AccountLogin failed: " + sUserName);
+      m_oResponse.setError(EStatus::LoginFailed, "Login Failed");
+    }
+  }
+  else if (m_oRequest.getData().contains(CcSyncGlobals::Commands::AccountLogin::Session, EJsonDataType::Value))
+  {
+    CcString sSession = m_oRequest.data()[CcSyncGlobals::Commands::AccountLogin::Session].getValue().getString();
+    CcSyncUser oUser = m_pServer->getUserByToken(sSession);
+    if (oUser.isValid())
+    {
+      m_oUser = oUser;
+      m_oResponse.setLogin(oUser.getToken());
+    }
+    else
+    {
+      CcSyncLog::writeDebug("AccountLogin with session failed");
       m_oResponse.setError(EStatus::LoginFailed, "Login Failed");
     }
   }
@@ -721,7 +736,7 @@ void CcSyncServerWorker::doDirectoryGetFileList()
   if (loadConfigsBySessionRequest() &&
       loadDirectory())
   {
-    if (m_oRequest.data().contains(CcSyncGlobals::Commands::DirectoryGetFileList::Id))
+    if (m_oRequest.data().contains(CcSyncGlobals::Commands::DirectoryGetFileList::Id, EJsonDataType::Value))
     {
       size_t uiId = m_oRequest.data()[CcSyncGlobals::Commands::DirectoryGetFileList::Id].getValue().getSize();
       CcSyncFileInfoList oDirectoryInfos = m_oDirectory.getDirectoryInfoListById(uiId);
@@ -731,11 +746,11 @@ void CcSyncServerWorker::doDirectoryGetFileList()
     }
     else
     {
-      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId))
+      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::DirId);
-      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name))
+      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::Name);
-      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified))
+      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::Modified);
       else
         m_oResponse.setError(EStatus::CommandRequiredParameter, "At least one parameter is missing.");
@@ -750,7 +765,7 @@ void CcSyncServerWorker::doDirectoryGetFileInfo()
   if (loadConfigsBySessionRequest() &&
       loadDirectory())
   {
-    if (m_oRequest.data().contains(CcSyncGlobals::Commands::DirectoryGetFileList::Id))
+    if (m_oRequest.data().contains(CcSyncGlobals::Commands::DirectoryGetFileList::Id, EJsonDataType::Value))
     {
       uint64 uiFileId = m_oRequest.data()[CcSyncGlobals::Commands::DirectoryGetFileInfo::Id].getValue().getUint64();
       CcSyncFileInfo oDirInfo = m_oDirectory.getFileInfoById(uiFileId);
@@ -769,7 +784,7 @@ void CcSyncServerWorker::doDirectoryGetDirectoryInfo()
   if (loadConfigsBySessionRequest() &&
     loadDirectory())
   {
-    if (m_oRequest.data().contains(CcSyncGlobals::Commands::DirectoryGetDirectoryInfo::Id))
+    if (m_oRequest.data().contains(CcSyncGlobals::Commands::DirectoryGetDirectoryInfo::Id, EJsonDataType::Value))
     {
       uint64 uiDirId = m_oRequest.data()[CcSyncGlobals::Commands::DirectoryGetDirectoryInfo::Id].getValue().getUint64();
       CcSyncDirInfo oDirInfo = m_oDirectory.getDirectoryInfoById(uiDirId);
@@ -777,11 +792,11 @@ void CcSyncServerWorker::doDirectoryGetDirectoryInfo()
     }
     else
     {
-      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId))
+      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::DirId);
-      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name))
+      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::Name);
-      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified))
+      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::Modified);
       else
         m_oResponse.setError(EStatus::CommandRequiredParameter, "At least one parameter is missing.");
@@ -795,8 +810,8 @@ void CcSyncServerWorker::doDirectoryCreateDirectory()
   if (loadConfigsBySessionRequest() &&
     loadDirectory())
   {
-    if (m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name) &&
-        m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified))
+    if (m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name, EJsonDataType::Value) &&
+        m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified, EJsonDataType::Value))
     {
       CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
       if(!m_oDirectory.directoryListExists(oFileInfo.getDirId()))
@@ -830,11 +845,11 @@ void CcSyncServerWorker::doDirectoryCreateDirectory()
     }
     else
     {
-      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId))
+      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::DirId);
-      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name))
+      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::Name);
-      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified))
+      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::Modified);
       else
         m_oResponse.setError(EStatus::CommandRequiredParameter, "At least one parameter is missing.");
@@ -848,8 +863,8 @@ void CcSyncServerWorker::doDirectoryRemoveDirectory()
   if (loadConfigsBySessionRequest() &&
       loadDirectory())
   {
-    if (m_oRequest.data().contains(CcSyncGlobals::FileInfo::Id) &&
-        m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name))
+    if (m_oRequest.data().contains(CcSyncGlobals::FileInfo::Id, EJsonDataType::Value) &&
+        m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name, EJsonDataType::Value))
     {
       CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
       if (m_oDirectory.directoryListExists(oFileInfo.getId()))
@@ -870,11 +885,11 @@ void CcSyncServerWorker::doDirectoryRemoveDirectory()
     }
     else
     {
-      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId))
+      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::DirId);
-      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name))
+      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::Name);
-      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified))
+      else if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::Modified);
       else
         m_oResponse.setError(EStatus::CommandRequiredParameter, "At least one parameter is missing.");
@@ -888,9 +903,9 @@ void CcSyncServerWorker::doDirectoryUploadFile()
   if (loadConfigsBySessionRequest() &&
       loadDirectory())
   {
-    if (m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId) &&
-        m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name) &&
-        m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified))
+    if (m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId, EJsonDataType::Value) &&
+        m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name, EJsonDataType::Value) &&
+        m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified, EJsonDataType::Value))
     {
       CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
       if (m_oDirectory.directoryListExists(oFileInfo.getDirId()))
@@ -968,11 +983,11 @@ void CcSyncServerWorker::doDirectoryUploadFile()
     }
     else
     {
-      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId))
+      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::DirId);
-      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name))
+      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::Name);
-      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified))
+      if (!m_oRequest.data().contains(CcSyncGlobals::FileInfo::Modified, EJsonDataType::Value))
         m_oResponse.setError(EStatus::CommandRequiredParameter, "Required parameter not found: " + CcSyncGlobals::FileInfo::Modified);
     }
   }
@@ -984,8 +999,8 @@ void CcSyncServerWorker::doDirectoryRemoveFile()
   if (loadConfigsBySessionRequest() &&
       loadDirectory())
   {
-    if (m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId)           &&
-        m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name))
+    if (m_oRequest.data().contains(CcSyncGlobals::FileInfo::DirId, EJsonDataType::Value)           &&
+        m_oRequest.data().contains(CcSyncGlobals::FileInfo::Name, EJsonDataType::Value))
     {
       CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
       if (m_oDirectory.directoryListExists(oFileInfo.getDirId()) == false)
@@ -1014,7 +1029,7 @@ void CcSyncServerWorker::doDirectoryDownloadFile()
   if (loadConfigsBySessionRequest() &&
       loadDirectory())
   {
-    if (m_oRequest.data().contains(CcSyncGlobals::FileInfo::Id))
+    if (m_oRequest.data().contains(CcSyncGlobals::FileInfo::Id, EJsonDataType::Value))
     {
       uint64 uiFileId = m_oRequest.data()[CcSyncGlobals::FileInfo::Id].getValue().getUint64();
       CcSyncFileInfo oFileInfo = m_oDirectory.getFileInfoById(uiFileId);

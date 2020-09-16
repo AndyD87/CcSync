@@ -119,6 +119,7 @@ public:
   void setCrc(const CcCrc32& oCrc);
   void setSession(const CcString& sSession);
   void setAccountLogin(const CcString& sAccount, const CcString& sUsername, const CcString& sPassword);
+  void setAccountLogin(const CcString& sSession);
   void setServerCreateAccount(const CcString& sAccount, const CcString& sPassword);
   void setAccountCreateDirectory(const CcString& sDirectoryName);
   void setAccountRemoveDirectory(const CcString& sDirectoryName);

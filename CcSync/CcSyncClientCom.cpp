@@ -77,8 +77,25 @@ void CcSyncClientCom::reconnect()
   while (m_uiReconnections < CcSyncGlobals::MaxReconnections &&
         !connect())
   {
-    m_uiReconnections++;
+    if (login())
+      break;
+    else
+      close();
   }
+}
+
+bool CcSyncClientCom::login()
+{
+  bool bLogin = false;
+  getRequest().setAccountLogin(m_sSession);
+  if (sendRequestGetResponse())
+  {
+    if (!getResponse().hasError())
+    {
+      bLogin = true;
+    }
+  }
+  return bLogin;
 }
 
 bool CcSyncClientCom::sendRequestGetResponse()
