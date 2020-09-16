@@ -41,6 +41,8 @@
 #include "CcSyncLog.h"
 #include "CcGlobalStrings.h"
 
+#include "private/CcSyncWorkerClientDownload.h"
+
 CcSyncClient::CcSyncClient(const CcString& sConfigFilePath)
 {
   if (sConfigFilePath.length() == 0)
@@ -127,12 +129,12 @@ bool CcSyncClient::login()
   m_bLogin = false;
   if (m_pAccount != nullptr)
   {
-    m_oRequest.setAccountLogin(m_pAccount->getName(), m_pAccount->getName(), m_pAccount->getPassword().getString());
-    if (sendRequestGetResponse())
+    m_oCom.getRequest().setAccountLogin(m_pAccount->getName(), m_pAccount->getName(), m_pAccount->getPassword().getString());
+    if (m_oCom.sendRequestGetResponse())
     {
-      if (!m_oResponse.hasError())
+      if (!m_oCom.getResponse().hasError())
       {
-        m_sSession = m_oResponse.getSession();
+        m_oCom.getSession() = m_oCom.getResponse().getSession();
         m_bLogin = true;
       }
     }
@@ -154,23 +156,23 @@ void CcSyncClient::logout()
 {
   if (m_pAccount != nullptr)
   {
-    m_oRequest.init(ESyncCommandType::Close);
-    sendRequestGetResponse();
+    m_oCom.getRequest().init(ESyncCommandType::Close);
+    m_oCom.sendRequestGetResponse();
     m_oBackupDirectories.clear();
     m_pDatabase.deleteCurrent();
     m_pAccount = nullptr;
   }
-  close();
+  m_oCom.close();
 }
 
 bool CcSyncClient::isAdmin()
 {
   if (m_pAccount != nullptr)
   {
-    m_oRequest.init(ESyncCommandType::AccountRights);
-    if (sendRequestGetResponse())
+    m_oCom.getRequest().init(ESyncCommandType::AccountRights);
+    if (m_oCom.sendRequestGetResponse())
     {
-      ESyncRights eRights = m_oResponse.getAccountRight();
+      ESyncRights eRights = m_oCom.getResponse().getAccountRight();
       if (eRights == ESyncRights::Admin)
       {
         return true;
@@ -184,8 +186,8 @@ bool CcSyncClient::serverRescan(bool bDeep)
 {
   if (m_pAccount != nullptr)
   {
-    m_oRequest.setServerRescan(bDeep);
-    if (sendRequestGetResponse())
+    m_oCom.getRequest().setServerRescan(bDeep);
+    if (m_oCom.sendRequestGetResponse())
     {
       return true;
     }
@@ -197,8 +199,8 @@ bool CcSyncClient::serverStop()
 {
   if (m_pAccount != nullptr)
   {
-    m_oRequest.setServerStop();
-    if (sendRequestGetResponse())
+    m_oCom.getRequest().setServerStop();
+    if (m_oCom.sendRequestGetResponse())
     {
       return true;
     }
@@ -300,7 +302,7 @@ void CcSyncClient::doQueue(const CcString& sDirectoryName)
       oDirectory.queueResetAttempts();
       while (oDirectory.queueHasItems())
       {
-        if (connect() == false)
+        if (m_oCom.connect(m_pAccount->getServer()) == false)
         {
           CcSyncLog::writeDebug("Connection Lost, stop process", ESyncLogTarget::Client);
           break;
@@ -337,8 +339,12 @@ void CcSyncClient::doQueue(const CcString& sDirectoryName)
               doRemoveFile(oDirectory, oFileInfo, uiQueueIndex);
               break;
             case EBackupQueueType::DownloadFile:
-              doDownloadFile(oDirectory, oFileInfo, uiQueueIndex);
+            {
+              CcSync::CcSyncWorkerClientDownload oDownloader(oDirectory, oFileInfo, uiQueueIndex, m_oCom);
+              oDownloader.start();
+              oDownloader.waitForExit();
               break;
+            }
             default:
               oDirectory.queueIncrementItem(uiQueueIndex);
           }
@@ -365,8 +371,8 @@ void CcSyncClient::doUpdateChanged()
     m_pDatabase->directoryListUpdateChangedAll(oDirectory.getName());
     m_pDatabase->endTransaction();
   }
-  m_oRequest.init(ESyncCommandType::AccountDatabaseUpdateChanged);
-  if (!sendRequestGetResponse())
+  m_oCom.getRequest().init(ESyncCommandType::AccountDatabaseUpdateChanged);
+  if (!m_oCom.sendRequestGetResponse())
   {
     CCDEBUG("Update changed in database request failed");
   }
@@ -375,9 +381,9 @@ void CcSyncClient::doUpdateChanged()
 bool CcSyncClient::doAccountCreateDirectory(const CcString sDirectoryName, const CcString& sDirectoryPath)
 {
   bool bSuccess = false;
-  m_oRequest.setAccountCreateDirectory(sDirectoryName);
-  if (sendRequestGetResponse() &&
-      m_oResponse.hasError() == false)
+  m_oCom.getRequest().setAccountCreateDirectory(sDirectoryName);
+  if (m_oCom.sendRequestGetResponse() &&
+      m_oCom.getResponse().hasError() == false)
   {
     if (sDirectoryPath.length() == 0 ||
         CcDirectory::exists(sDirectoryPath) ||
@@ -394,7 +400,7 @@ bool CcSyncClient::doAccountCreateDirectory(const CcString sDirectoryName, const
   }
   else
   {
-    CcSyncLog::writeError(m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+    CcSyncLog::writeError(m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
   }
   return bSuccess;
 }
@@ -402,15 +408,15 @@ bool CcSyncClient::doAccountCreateDirectory(const CcString sDirectoryName, const
 bool CcSyncClient::doAccountRemoveDirectory(const CcString sDirectoryName)
 {
   bool bSuccess = false;
-  m_oRequest.setAccountRemoveDirectory(sDirectoryName);
-  if (sendRequestGetResponse())
+  m_oCom.getRequest().setAccountRemoveDirectory(sDirectoryName);
+  if (m_oCom.sendRequestGetResponse())
   {
     m_pDatabase->removeDirectory(sDirectoryName);
     bSuccess = m_pAccount->removeAccountDirectory(sDirectoryName);
   }
   else
   {
-    CcSyncLog::writeError(m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+    CcSyncLog::writeError(m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
   }
   return bSuccess;
 }
@@ -438,11 +444,11 @@ bool CcSyncClient::updateFromRemoteAccount()
   CcString sRet;
   if (m_pAccount != nullptr)
   {
-    m_oRequest.init(ESyncCommandType::AccountGetData);
-    m_oRequest.setSession(m_sSession);
-    if (sendRequestGetResponse())
+    m_oCom.getRequest().init(ESyncCommandType::AccountGetData);
+    m_oCom.getRequest().setSession(m_oCom.getSession());
+    if (m_oCom.sendRequestGetResponse())
     {
-      CcSyncAccountConfig oAccountConfig = m_oResponse.getAccountConfig();
+      CcSyncAccountConfig oAccountConfig = m_oCom.getResponse().getAccountConfig();
       if (oAccountConfig.getName() == m_pAccount->getName())
       {
         for (const CcSyncDirectoryConfig& oServerDirectory : oAccountConfig.getDirectoryList())
@@ -489,9 +495,9 @@ bool CcSyncClient::updateToRemoteAccount()
   CcString sRet;
   if (m_pAccount != nullptr)
   {
-    m_oRequest.init(ESyncCommandType::AccountSetData);
-    m_oRequest.addAccountInfo(*m_pAccount.ptr());
-    if (sendRequestGetResponse())
+    m_oCom.getRequest().init(ESyncCommandType::AccountSetData);
+    m_oCom.getRequest().addAccountInfo(*m_pAccount.ptr());
+    if (m_oCom.sendRequestGetResponse())
     {
       bRet = true;
     }
@@ -563,26 +569,6 @@ bool CcSyncClient::setDirectoryUnlock(const CcString& sDirname)
   return bSuccess;
 }
 
-void CcSyncClient::close()
-{
-  m_oSocket.close();
-  m_bLogin = false;
-}
-
-
-void CcSyncClient::reconnect()
-{
-  close();
-  while(m_uiReconnections < CcSyncGlobals::MaxReconnections &&
-        connect())
-  {
-    if (login())
-      break;
-    else
-      close();
-  }
-}
-
 bool CcSyncClient::selectAccount(const CcString& sNewAccount)
 {
   bool bRet = false;
@@ -616,6 +602,10 @@ bool CcSyncClient::selectAccount(const CcString& sNewAccount)
       CcSyncLog::writeInfo("Client location not found " + sClientConfigDir, ESyncLogTarget::Client);
       bRet = false;
     }
+  }
+  if (bRet)
+  {
+    m_oCom.setUrl(m_pAccount->getServer());
   }
   return bRet;
 }
@@ -656,8 +646,8 @@ bool CcSyncClient::addAccount(const CcString& sUsername, const CcString& sPasswo
 
 bool CcSyncClient::addRemoteAccount(const CcString& sUsername, const CcString& sPassword)
 {
-  m_oRequest.setServerCreateAccount(sUsername, sPassword);
-  if(sendRequestGetResponse())
+  m_oCom.getRequest().setServerCreateAccount(sUsername, sPassword);
+  if(m_oCom.sendRequestGetResponse())
   {
     return true;
   }
@@ -824,12 +814,12 @@ void CcSyncClient::init(const CcString& sConfigFile)
 
 void CcSyncClient::deinit()
 {
-  close();
+  m_oCom.close();
   m_pAccount = nullptr;
   m_pDatabase = nullptr;
   m_oBackupDirectories.clear();
-  m_oRequest.data().clear();
-  m_oResponse.data().clear();
+  m_oCom.getRequest().data().clear();
+  m_oCom.getResponse().data().clear();
 }
 
 bool CcSyncClient::setupDatabase()
@@ -895,114 +885,6 @@ bool CcSyncClient::setupSqlTables()
   return bRet;
 }
 
-bool CcSyncClient::connect()
-{
-  bool bRet = false;
-  if (m_oSocket.isValid() && m_uiReconnections < CcSyncGlobals::MaxReconnections)
-  {
-    bRet = true;
-  }
-  else
-  {
-    ISocket* pSocket = new CcSslSocket();
-    CCMONITORNEW(pSocket);
-    m_oSocket = pSocket;
-    if (static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->initClient())
-    {
-      if (m_oSocket.connect(m_pAccount->getServer().getHostname(), m_pAccount->getServer().getPortString()))
-      {
-        // reset counter;
-        m_uiReconnections = 0;
-        m_oSocket.setTimeout(CcDateTimeFromSeconds(30));
-        bRet = true;
-      }
-      else
-      {
-        m_uiReconnections++;
-        m_oSocket.close();
-      }
-    }
-    else
-    {
-      m_uiReconnections++;
-      m_oSocket.close();
-    }
-  }
-  return bRet;
-}
-
-bool CcSyncClient::sendRequestGetResponse()
-{
-  bool bRet = false;
-  CcJsonDocument oJsonDoc(m_oRequest.getData());
-  if (connect())
-  {
-    m_oResponse.clear();
-    if (m_oSocket.writeArray(oJsonDoc.getDocument()))
-    {
-      if (m_oRequest.getCommandType() != ESyncCommandType::Close)
-      {
-        CcString sRead;
-        size_t uiReadSize = 0;
-        CcByteArray oLastRead(static_cast<size_t>(CcSyncGlobals::MaxResponseSize));
-        do
-        {
-          uiReadSize = m_oSocket.readArray(oLastRead, false);
-          if ( uiReadSize > 0 && uiReadSize <= CcSyncGlobals::MaxResponseSize)
-          {
-            sRead.append(oLastRead, 0, uiReadSize);
-          }
-        } while ( uiReadSize <= CcSyncGlobals::MaxResponseSize &&
-                  sRead.length() <= CcSyncGlobals::MaxResponseSize  &&
-                  CcJsonDocument::isValidData(sRead) == false);
-
-        if (uiReadSize > CcSyncGlobals::MaxResponseSize)
-        {
-          CcSyncLog::writeError("Read from socket failed, try reconnection", ESyncLogTarget::Client);
-          CcSyncLog::writeError("Request:", ESyncLogTarget::Client);
-          CcSyncLog::writeError(oJsonDoc.getDocument(), ESyncLogTarget::Client);
-          CcSyncLog::writeError("Response 24 signs:", ESyncLogTarget::Client);
-          CcSyncLog::writeError(sRead.substr(0,24), ESyncLogTarget::Client);
-        }
-        else if (sRead.length() > CcSyncGlobals::MaxResponseSize)
-        {
-          CcSyncLog::writeError("Incoming data exceed maximum", ESyncLogTarget::Client);
-          CcSyncLog::writeError("Request:", ESyncLogTarget::Client);
-          CcSyncLog::writeError(oJsonDoc.getDocument(), ESyncLogTarget::Client);
-          CcSyncLog::writeError("Response 24 signs:", ESyncLogTarget::Client);
-          CcSyncLog::writeError(sRead.substr(0, 24), ESyncLogTarget::Client);
-          reconnect();
-        }
-        else
-        {
-          m_oResponse.parseData(sRead);
-          if (m_oResponse.getCommandType() == m_oRequest.getCommandType())
-          {
-            if (m_oResponse.hasError() == false)
-            {
-              bRet = true;
-            }
-          }
-          else
-          {
-            CcSyncLog::writeError("Wrong server response, try reconnect.", ESyncLogTarget::Client);
-            CcJsonDocument oDoc(m_oRequest.getData());
-            CCDEBUG(oDoc.getDocument());
-            CCDEBUG(CcString(sRead));
-            reconnect();
-          }
-        }
-      }
-    }
-    else
-    {
-      CcSyncLog::writeError("Get response failed, try reconnect.", ESyncLogTarget::Client);
-      reconnect();
-    }
-  }
-  return bRet;
-}
-
 void CcSyncClient::recursiveRemoveDirectory(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo)
 {
   CcSyncFileInfoList oClientDirectories = oDirectory.getDirectoryInfoListById(oFileInfo.getId());
@@ -1047,12 +929,13 @@ bool CcSyncClient::sendFile(CcSyncFileInfo& oFileInfo)
       uiLastTransferSize = oFile.readArray(oBuffer, false);
       if (uiLastTransferSize != 0 && uiLastTransferSize <= oBuffer.size())
       {
-        oCrc.append(oBuffer.getArray(), uiLastTransferSize);
-        if (m_oSocket.write(oBuffer.getArray(), uiLastTransferSize) == false)
+        oCrc.append(oBuffer.getArray(), uiLastTransferSize); 
+        size_t uiTransfered = m_oCom.getSocket().write(oBuffer.getArray(), uiLastTransferSize);
+        if (uiTransfered != uiLastTransferSize)
         {
           bTransfer = false;
           CcSyncLog::writeError("Write failed during File transfer, reconnect", ESyncLogTarget::Client);
-          reconnect();
+          m_oCom.reconnect();
         }
       }
       else
@@ -1066,10 +949,10 @@ bool CcSyncClient::sendFile(CcSyncFileInfo& oFileInfo)
   if (bRet == true)
   {
     oFileInfo.crc() = oCrc.getValueUint32();
-    m_oRequest.setCrc(oCrc);
-    if (sendRequestGetResponse())
+    m_oCom.getRequest().setCrc(oCrc);
+    if (m_oCom.sendRequestGetResponse())
     {
-      bRet = m_oResponse.hasError() == false;
+      bRet = m_oCom.getResponse().hasError() == false;
     }
     else
     {
@@ -1079,65 +962,17 @@ bool CcSyncClient::sendFile(CcSyncFileInfo& oFileInfo)
   return bRet;
 }
 
-bool CcSyncClient::receiveFile(CcFile* pFile, CcSyncFileInfo& oFileInfo)
-{
-  bool bRet = false;
-  bool bTransfer = true;
-  CcCrc32 oCrc;
-  uint64 uiReceived = 0;
-  size_t uiBufferSize = static_cast<size_t>(CcSyncGlobals::TransferSize);
-  if (oFileInfo.getFileSize() < CcSyncGlobals::TransferSize)
-  {
-    uiBufferSize = static_cast<size_t>(oFileInfo.getFileSize());
-  }
-  CcByteArray oByteArray(uiBufferSize);
-  while (bTransfer)
-  {
-    if (uiReceived < oFileInfo.getFileSize())
-    {
-      size_t uiReadSize = m_oSocket.readArray(oByteArray, false);
-      if (uiReadSize <= uiBufferSize)
-      {
-        oCrc.append(oByteArray.getArray(), uiReadSize);
-        uiReceived += uiReadSize;
-        if (!pFile->write(oByteArray.getArray(), uiReadSize))
-        {
-          bTransfer = false;
-        }
-      }
-      else
-      {
-        bTransfer = false;
-        CcSyncLog::writeError("Error during socket read, reconnect", ESyncLogTarget::Client);
-        reconnect();
-      }
-    }
-    else
-    {
-      bTransfer = false;
-      oFileInfo.crc() = oCrc.getValueUint32();
-      m_oRequest.setCrc(oCrc);
-      if (sendRequestGetResponse())
-      {
-        if (m_oResponse.hasError() == false)
-          bRet = true;
-      }
-    }
-  }
-  return bRet;
-}
-
 bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
 {
   bool bRet = false;
-  m_oRequest.setDirectoryGetFileList(oDirectory.getName(), uiDirId);
-  if (sendRequestGetResponse() &&
-      m_oResponse.hasError() == false)
+  m_oCom.getRequest().setDirectoryGetFileList(oDirectory.getName(), uiDirId);
+  if (m_oCom.sendRequestGetResponse() &&
+      m_oCom.getResponse().hasError() == false)
   {
     bRet = true;
     CcSyncFileInfoList oServerDirectories;
     CcSyncFileInfoList oServerFiles;
-    m_oResponse.getDirectoryDirectoryInfoList(oServerDirectories, oServerFiles);
+    m_oCom.getResponse().getDirectoryDirectoryInfoList(oServerDirectories, oServerFiles);
     CcSyncFileInfoList oClientDirectories = oDirectory.getDirectoryInfoListById(uiDirId);
     CcSyncFileInfoList oClientFiles = oDirectory.getFileInfoListById(uiDirId);
     for (CcSyncDirInfo& oServerDirInfo : oServerDirectories)
@@ -1284,11 +1119,11 @@ bool CcSyncClient::doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId)
 bool CcSyncClient::serverDirectoryEqual(CcSyncDirectory& oDirectory, uint64 uiDirId)
 {
   bool bRet = false;
-  m_oRequest.setDirectoryGetDirectoryInfo(oDirectory.getName(), uiDirId);
-  if (sendRequestGetResponse() &&
-      m_oResponse.hasError() == false)
+  m_oCom.getRequest().setDirectoryGetDirectoryInfo(oDirectory.getName(), uiDirId);
+  if (m_oCom.sendRequestGetResponse() &&
+      m_oCom.getResponse().hasError() == false)
   {
-    CcSyncDirInfo oDirInfoServer = m_oResponse.getFileInfo();
+    CcSyncDirInfo oDirInfoServer = m_oCom.getResponse().getFileInfo();
     CcSyncDirInfo oDirInfoClient = oDirectory.getDirectoryInfoById(uiDirId);
     if (oDirInfoServer == oDirInfoClient)
     {
@@ -1304,19 +1139,19 @@ bool CcSyncClient::doCreateDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDir
   oDirectory.getFullDirPathById(oDirInfo);
   if (oDirInfo.fromSystemDirectory())
   {
-    m_oRequest.setDirectoryCreateDirectory(oDirectory.getName(), oDirInfo);
-    if (sendRequestGetResponse() &&
-      m_oResponse.hasError() == false)
+    m_oCom.getRequest().setDirectoryCreateDirectory(oDirectory.getName(), oDirInfo);
+    if (m_oCom.sendRequestGetResponse() &&
+      m_oCom.getResponse().hasError() == false)
     {
       bRet = true;
-      CcSyncFileInfo oResponseFileInfo = m_oResponse.getFileInfo();
+      CcSyncFileInfo oResponseFileInfo = m_oCom.getResponse().getFileInfo();
       oDirectory.directoryListInsert(oResponseFileInfo, true);
       oDirectory.queueFinalizeDirectory(oResponseFileInfo, uiQueueIndex);
       CcSyncLog::writeDebug("Directory successfully added: " + oDirInfo.getName());
     }
     else
     {
-      switch(m_oResponse.getError().getError())
+      switch(m_oCom.getResponse().getError().getError())
       {
         case EStatus::FSDirNotFound:
           // Parent direcotry not existing
@@ -1325,7 +1160,7 @@ bool CcSyncClient::doCreateDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDir
         default:
           oDirectory.queueIncrementItem(uiQueueIndex);
           CcSyncLog::writeError("Directory failed to add:  " + oDirInfo.getName(), ESyncLogTarget::Client);
-          CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+          CcSyncLog::writeError("    ErrorMsg: " + m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
       }
     }
   }
@@ -1333,7 +1168,7 @@ bool CcSyncClient::doCreateDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDir
   {
     oDirectory.queueIncrementItem(uiQueueIndex);
     CcSyncLog::writeError("Queued Directory not found:  " + oDirInfo.getDirPath());
-    CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+    CcSyncLog::writeError("    ErrorMsg: " + m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
   }
   return bRet;
 }
@@ -1341,11 +1176,11 @@ bool CcSyncClient::doCreateDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDir
 bool CcSyncClient::doRemoveDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDirInfo, uint64 uiQueueIndex)
 {
   bool bRet = false;
-  m_oRequest.setDirectoryRemoveDirectory(oDirectory.getName(), oDirInfo);
-  if (sendRequestGetResponse() ||
-      m_oResponse.hasError())
+  m_oCom.getRequest().setDirectoryRemoveDirectory(oDirectory.getName(), oDirInfo);
+  if (m_oCom.sendRequestGetResponse() ||
+      m_oCom.getResponse().hasError())
   {
-    if (m_oResponse.hasError() == false)
+    if (m_oCom.getResponse().hasError() == false)
     {
       oDirectory.directoryListRemove(oDirInfo, true);
       // do not updated dependencies, use finalize file instead
@@ -1354,7 +1189,7 @@ bool CcSyncClient::doRemoveDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDir
     }
     else
     {
-      switch (m_oResponse.getError().getError())
+      switch (m_oCom.getResponse().getError().getError())
       {
         case EStatus::FSDirNotEmpty:
           // If directory is not empty, but our list is empty, we should remove from database,
@@ -1368,7 +1203,7 @@ bool CcSyncClient::doRemoveDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDir
           break;
         default:
           CcSyncLog::writeError("Error on deleting Directory: " + oDirInfo.getRelativePath(), ESyncLogTarget::Client);
-          CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+          CcSyncLog::writeError("    ErrorMsg: " + m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
           oDirectory.queueIncrementItem(uiQueueIndex);
       }
     }
@@ -1376,7 +1211,7 @@ bool CcSyncClient::doRemoveDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDir
   else
   {
     CcSyncLog::writeError("RemoveDirectory request failed: " + oDirInfo.getName(), ESyncLogTarget::Client);
-    CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+    CcSyncLog::writeError("    ErrorMsg: " + m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
     oDirectory.queueIncrementItem(uiQueueIndex);
   }
   return bRet;
@@ -1511,10 +1346,10 @@ bool CcSyncClient::doUpdateDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFil
 bool CcSyncClient::doDownloadDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex)
 {
   bool bRet = false;
-  m_oRequest.setDirectoryGetDirectoryInfo(oDirectory.getName(), oFileInfo.getId());
-  if (sendRequestGetResponse())
+  m_oCom.getRequest().setDirectoryGetDirectoryInfo(oDirectory.getName(), oFileInfo.getId());
+  if (m_oCom.sendRequestGetResponse())
   {
-    CcSyncDirInfo oDirInfo = m_oResponse.getFileInfo();
+    CcSyncDirInfo oDirInfo = m_oCom.getResponse().getFileInfo();
     oDirectory.getFullDirPathById(oDirInfo);
     CcDirectory oDirectoryHandl(oDirInfo.getSystemFullPath());
     if (oDirectoryHandl.exists() ||
@@ -1540,7 +1375,7 @@ bool CcSyncClient::doDownloadDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oF
       else
       {
         CcSyncLog::writeError("Directory not inserted in list found", ESyncLogTarget::Client);
-        CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+        CcSyncLog::writeError("    ErrorMsg: " + m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
         oDirectory.queueIncrementItem(uiQueueIndex);
       }
     }
@@ -1553,7 +1388,7 @@ bool CcSyncClient::doDownloadDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oF
   else
   {
     CcSyncLog::writeError("Directory not found", ESyncLogTarget::Client);
-    CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+    CcSyncLog::writeError("    ErrorMsg: " + m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
     oDirectory.queueIncrementItem(uiQueueIndex);
   }
   return bRet;
@@ -1565,14 +1400,14 @@ bool CcSyncClient::doUploadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
   oDirectory.getFullDirPathById(oFileInfo);
   if (oFileInfo.fromSystemFile(false))
   {
-    m_oRequest.setDirectoryUploadFile(oDirectory.getName(), oFileInfo);
-    if (sendRequestGetResponse())
+    m_oCom.getRequest().setDirectoryUploadFile(oDirectory.getName(), oFileInfo);
+    if (m_oCom.sendRequestGetResponse())
     {
-      if (m_oResponse.hasError() == false)
+      if (m_oCom.getResponse().hasError() == false)
       {
         if (sendFile(oFileInfo))
         {
-          CcSyncFileInfo oResponseFileInfo = m_oResponse.getFileInfo();
+          CcSyncFileInfo oResponseFileInfo = m_oCom.getResponse().getFileInfo();
           if(oDirectory.fileNameInDirExists(oFileInfo.getDirId(), oFileInfo))
           {
             CcSyncFileInfo oFileToDelete = oDirectory.getFileInfoByFilename(oFileInfo.getDirId(), oFileInfo.getName());
@@ -1594,17 +1429,17 @@ bool CcSyncClient::doUploadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
         {
           oDirectory.queueIncrementItem(uiQueueIndex);
           CcSyncLog::writeError("Sending file failed: " + oFileInfo.getSystemFullPath(), ESyncLogTarget::Client);
-          CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+          CcSyncLog::writeError("    ErrorMsg: " + m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
         }
       }
       else
       {
-        switch (m_oResponse.getError().getError())
+        switch (m_oCom.getResponse().getError().getError())
         {
           case EStatus::FSFileAlreadyExisting:
-            if (m_oResponse.data().contains(CcSyncGlobals::FileInfo::Id))
+            if (m_oCom.getResponse().data().contains(CcSyncGlobals::FileInfo::Id))
             {
-              CcSyncFileInfo oResponseFileInfo = m_oResponse.getFileInfo();
+              CcSyncFileInfo oResponseFileInfo = m_oCom.getResponse().getFileInfo();
               oDirectory.fileListInsert(oResponseFileInfo, true);
               oDirectory.queueFinalizeFile(uiQueueIndex);
               CcSyncLog::writeDebug("File Successfully uploaded: " + oFileInfo.getName(), ESyncLogTarget::Client);
@@ -1614,14 +1449,14 @@ bool CcSyncClient::doUploadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
           default:
             oDirectory.queueIncrementItem(uiQueueIndex);
             CcSyncLog::writeError("Sending file failed: " + oFileInfo.getSystemFullPath(), ESyncLogTarget::Client);
-            CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+            CcSyncLog::writeError("    ErrorMsg: " + m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
         }
       }
     }
     else
     {
       CcSyncLog::writeError("Sending file failed: " + oFileInfo.getSystemFullPath(), ESyncLogTarget::Client);
-      CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+      CcSyncLog::writeError("    ErrorMsg: " + m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
       oDirectory.queueIncrementItem(uiQueueIndex);
     }
   }
@@ -1629,7 +1464,7 @@ bool CcSyncClient::doUploadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
   {
     oDirectory.queueIncrementItem(uiQueueIndex);
     CcSyncLog::writeError("Queued Directory not found: " + oFileInfo.getDirPath(), ESyncLogTarget::Client);
-    CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+    CcSyncLog::writeError("    ErrorMsg: " + m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
   }
   return bRet;
 }
@@ -1638,11 +1473,11 @@ bool CcSyncClient::doRemoveFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
 {
   bool bRet = false;
   oDirectory.getFullDirPathById(oFileInfo);
-  m_oRequest.setDirectoryRemoveFile(oDirectory.getName(), oFileInfo);
-  if (sendRequestGetResponse() ||
-      m_oResponse.hasError())
+  m_oCom.getRequest().setDirectoryRemoveFile(oDirectory.getName(), oFileInfo);
+  if (m_oCom.sendRequestGetResponse() ||
+      m_oCom.getResponse().hasError())
   {
-    if (m_oResponse.hasError() == false)
+    if (m_oCom.getResponse().hasError() == false)
     {
       if(oDirectory.fileListRemove(oFileInfo, true, true))
       {
@@ -1653,13 +1488,13 @@ bool CcSyncClient::doRemoveFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
       else
       {
         CcSyncLog::writeError("Error on deleting File in Directory: " + oFileInfo.getName(), ESyncLogTarget::Client);
-        CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+        CcSyncLog::writeError("    ErrorMsg: " + m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
         oDirectory.queueIncrementItem(uiQueueIndex);
       }
     }
     else
     {
-      switch (m_oResponse.getError().getError())
+      switch (m_oCom.getResponse().getError().getError())
       {
         case EStatus::FSDirNotFound:
           // fall through
@@ -1671,7 +1506,7 @@ bool CcSyncClient::doRemoveFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
           break;
         default:
           CcSyncLog::writeError("Error on deleting File: " + oFileInfo.getName(), ESyncLogTarget::Client);
-          CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+          CcSyncLog::writeError("    ErrorMsg: " + m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
           oDirectory.queueIncrementItem(uiQueueIndex);
       }
     }
@@ -1679,99 +1514,7 @@ bool CcSyncClient::doRemoveFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
   else
   {
     CcSyncLog::writeError("RemoveFile request failed: " + oFileInfo.getName(), ESyncLogTarget::Client);
-    CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
-    oDirectory.queueIncrementItem(uiQueueIndex);
-  }
-  return bRet;
-}
-
-bool CcSyncClient::doDownloadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex)
-{
-  bool bRet = false;
-  m_oRequest.setDirectoryDownloadFile(oDirectory.getName(), oFileInfo.getId());
-  if (sendRequestGetResponse())
-  {
-    oFileInfo = m_oResponse.getFileInfo();
-    oDirectory.getFullDirPathById(oFileInfo);
-    if (CcDirectory::exists(oFileInfo.getSystemDirPath()) ||
-        CcDirectory::create(oFileInfo.getSystemDirPath(), true) )
-    {
-      CcString sTempFilePath = oFileInfo.getSystemFullPath();
-      sTempFilePath.append(CcSyncGlobals::TemporaryExtension);
-      CcFile oFile(sTempFilePath);
-      if (oFile.open(EOpenFlags::Overwrite))
-      {
-        if (receiveFile(&oFile, oFileInfo))
-        {
-          oFile.close();
-          if(oDirectory.fileNameInDirExists(oFileInfo.getDirId(), oFileInfo))
-          {
-            CcSyncFileInfo oFileToDelete = oDirectory.getFileInfoByFilename(oFileInfo.getDirId(), oFileInfo.getName());
-            oDirectory.fileListRemove(oFileToDelete, false, false);
-          }
-          bool bSuccess = true;
-          if (CcFile::exists(oFileInfo.getSystemFullPath()))
-          {
-            if (!CcFile::remove(oFileInfo.getSystemFullPath()))
-            {
-              bSuccess = false;
-              CcFile::remove(sTempFilePath);
-              CcSyncLog::writeDebug("Failed to remove original File: " + oFileInfo.getSystemFullPath(), ESyncLogTarget::Client);
-            }
-          }
-          if (bSuccess)
-          {
-            bSuccess = CcFile::move(sTempFilePath, oFileInfo.getSystemFullPath());
-            if (bSuccess == false)
-            {
-              CcFile::remove(sTempFilePath);
-              CcSyncLog::writeDebug("Failed to move temporary File: ", ESyncLogTarget::Client);
-              CcSyncLog::writeDebug("  " + sTempFilePath + " -> " + oFileInfo.getSystemFullPath(), ESyncLogTarget::Client);
-            }
-          }
-          if (bSuccess)
-          {
-            setFileInfo(oFileInfo.getSystemFullPath(), oDirectory.getUserId(), oDirectory.getGroupId(), oFileInfo.getModified());
-            if (oDirectory.fileListInsert(oFileInfo, true))
-            {
-              CcSyncLog::writeDebug("File downloaded: " + oFileInfo.getName(), ESyncLogTarget::Client);
-              bRet = true;
-              oDirectory.queueFinalizeFile(uiQueueIndex);
-            }
-            else
-            {
-              CcSyncLog::writeError("Insert to Filelist failed", ESyncLogTarget::Client);
-              CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
-              oDirectory.queueIncrementItem(uiQueueIndex);
-            }
-          }
-        }
-        else
-        {
-          oFile.close();
-          CcFile::remove(sTempFilePath);
-          CcSyncLog::writeError("File download failed", ESyncLogTarget::Client);
-          CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
-          oDirectory.queueIncrementItem(uiQueueIndex);
-        }
-      }
-      else
-      {
-        CcSyncLog::writeError("Unable to create file", ESyncLogTarget::Client);
-        CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
-        oDirectory.queueIncrementItem(uiQueueIndex);
-      }
-    }
-    else
-    {
-      CcSyncLog::writeError("Directory for download not found: " + oFileInfo.getSystemFullPath(), ESyncLogTarget::Client);
-      oDirectory.queueIncrementItem(uiQueueIndex);
-    }
-  }
-  else
-  {
-    CcSyncLog::writeError("DownloadFile request failed", ESyncLogTarget::Client);
-    CcSyncLog::writeError("    ErrorMsg: " + m_oResponse.getErrorMsg(), ESyncLogTarget::Client);
+    CcSyncLog::writeError("    ErrorMsg: " + m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
     oDirectory.queueIncrementItem(uiQueueIndex);
   }
   return bRet;

@@ -277,7 +277,7 @@ bool CcSyncServerWorker::receiveFile(CcFile* pFile, CcSyncFileInfo& oFileInfo)
       {
         oCrc.append(oByteArray.getArray(), uiLastReceived);
         uiReceived += uiLastReceived;
-        if (!pFile->write(oByteArray.getArray(), uiLastReceived))
+        if (pFile->write(oByteArray.getArray(), uiLastReceived) != uiLastReceived)
         {
           bRet = false;
           bTransfer = false;

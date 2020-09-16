@@ -5,10 +5,11 @@ set ( CURRENT_PROJECT CcSync)
 # Add Source Files
 ########
 file (GLOB SOURCE_FILES
-      "*.c"
       "*.cpp"
-      "config/*.xml"
-      "*.h")
+      "*.h"
+      "private/*.cpp"
+      "private/*.h"
+      "config/*.xml")
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 

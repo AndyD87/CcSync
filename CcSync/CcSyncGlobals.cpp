@@ -34,7 +34,7 @@ namespace CcSyncGlobals
   const CcVersion Version        (CCSYNC_VERSION_MAJOR, CCSYNC_VERSION_MINOR, CCSYNC_VERSION_PATCH, CCSYNC_VERSION_BUILD);
   const CcString ConfigDirName   ("CcSync");
   const size_t MaxReconnections  = 5;
-  const uint64 TransferSize      = 10240000;
+  const uint64 TransferSize      = 1024 * 1024; // 1MB Buffer size
   const uint64 MaxRequestSize    = TransferSize;
   const uint64 MaxResponseSize   = MaxRequestSize;
   const CcString DefaultCertFile ("SslCertificate.pem");

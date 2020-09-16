@@ -37,10 +37,7 @@
 #include "CcSyncClientConfig.h"
 #include "CcSyncDbClient.h"
 #include "CcSyncDirectory.h"
-#include "Network/CcSocket.h"
-#include "CcSyncRequest.h"
-#include "CcSyncResponse.h"
-#include "CcSslSocket.h"
+#include "CcSyncClientCom.h"
 
 #ifdef _MSC_VER
 template class CcSyncSHARED CcList<CcSyncDirectory>;
@@ -108,8 +105,6 @@ public:
   bool doAccountRemoveDirectory(const CcString sDirectoryName);
   void resetQueue(const CcString sDirectoryName);
   void resetQueues();
-  void close();
-  void reconnect();
   bool selectAccount(const CcString& sNewAccount);
   bool createConfig(const CcString& sConfigDir);
   bool addAccount(const CcString& sUsername, const CcString& sPassword, const CcString& sServer, const CcString& sPort);
@@ -138,11 +133,8 @@ private: // Methods
   bool setupDatabase();
   bool checkSqlTables();
   bool setupSqlTables();
-  bool connect();
-  bool sendRequestGetResponse();
   void recursiveRemoveDirectory(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo);
   bool sendFile(CcSyncFileInfo& oFileInfo);
-  bool receiveFile(CcFile* pFile, CcSyncFileInfo& oFileInfo);
   bool doRemoteSyncDir(CcSyncDirectory& oDirectory, uint64 uiDirId);
   bool serverDirectoryEqual(CcSyncDirectory& oDirectory, uint64 uiDirId);
   bool doCreateDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex);
@@ -151,7 +143,6 @@ private: // Methods
   bool doDownloadDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDirInfo, uint64 uiQueueIndex);
   bool doUploadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex);
   bool doRemoveFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex);
-  bool doDownloadFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex);
   static void setFileInfo(const CcString& sPathToFile, uint32 uiUserId, uint32 uiGroupId, int64 iModified);
 
 private: // Member
@@ -161,13 +152,9 @@ private: // Member
   CcSyncAccountConfigHandle     m_pAccount    = nullptr;
   CcSyncDbClientPointer         m_pDatabase   = nullptr;
   CcList<CcSyncDirectory>       m_oBackupDirectories;
-  CcSocket                      m_oSocket;
-  CcString        m_sSession;
-  CcSyncResponse  m_oResponse;
-  CcSyncRequest   m_oRequest;
-  bool            m_bLogin = false;
-  bool            m_bConfigAvailable = false;
-  size_t          m_uiReconnections = 0;
+  CcSyncClientCom               m_oCom;
+  bool                          m_bLogin = false;
+  bool                          m_bConfigAvailable = false;
 };
 
 #endif /* _CcSyncClient_H_ */
