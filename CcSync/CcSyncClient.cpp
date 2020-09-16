@@ -40,6 +40,7 @@
 #include "CcSyncDbClient.h"
 #include "CcSyncLog.h"
 #include "CcGlobalStrings.h"
+#include "CcConsole.h"
 
 #include "private/CcSyncWorkerClientDownload.h"
 
@@ -314,6 +315,7 @@ void CcSyncClient::doQueue(const CcString& sDirectoryName)
         }
         else
         {
+          CcSync::ISyncWorkerBase* pWorker = nullptr;
           CcSyncFileInfo oFileInfo;
           uint64 uiQueueIndex = 0;
           m_pDatabase->beginTransaction();
@@ -340,13 +342,21 @@ void CcSyncClient::doQueue(const CcString& sDirectoryName)
               break;
             case EBackupQueueType::DownloadFile:
             {
-              CcSync::CcSyncWorkerClientDownload oDownloader(oDirectory, oFileInfo, uiQueueIndex, m_oCom);
-              oDownloader.start();
-              oDownloader.waitForExit();
+              CCNEW(pWorker, CcSync::CcSyncWorkerClientDownload, oDirectory, oFileInfo, uiQueueIndex, m_oCom);
               break;
             }
             default:
               oDirectory.queueIncrementItem(uiQueueIndex);
+          }
+          if(pWorker)
+          {
+            pWorker->start();
+            while(pWorker->isInProgress())
+            {
+              CcConsole::writeSameLine(pWorker->getProgressMessage());
+            }
+            CcConsole::writeLine(pWorker->getProgressMessage());
+            CCDELETE(pWorker);
           }
           m_pDatabase->endTransaction();
         }

@@ -127,6 +127,10 @@ void CcSyncWorkerClientDownload::run()
     CcSyncLog::writeError("    ErrorMsg: " + m_oCom.getResponse().getErrorMsg(), ESyncLogTarget::Client);
     m_oDirectory.queueIncrementItem(m_uiQueueIndex);
   }
+  if(bRet)
+  {
+    setExitCode(0);
+  }
 }
 
 float CcSyncWorkerClientDownload::getProgress()
