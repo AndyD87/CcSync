@@ -54,7 +54,7 @@ void CcSyncWorkerClientDownload::run()
       CcFile oFile(sTempFilePath);
       if (oFile.open(EOpenFlags::Overwrite))
       {
-        if (receiveFile(&oFile, m_oFileInfo))
+        if (receiveFile(&oFile))
         {
           oFile.close();
           if (m_oDirectory.fileNameInDirExists(m_oFileInfo.getDirId(), m_oFileInfo))
@@ -135,13 +135,16 @@ void CcSyncWorkerClientDownload::run()
 
 float CcSyncWorkerClientDownload::getProgress()
 {
-  float fProgress = 0.0;
+  float fProgress = m_uiReceived;
+  if(m_oFileInfo.getFileSize() != 0.0)
+    fProgress = (fProgress / m_oFileInfo.getFileSize()) * 100.0;
   return fProgress;
 }
 
 CcString CcSyncWorkerClientDownload::getProgressMessage()
 {
-  CcString sMessage;
+  CcString sMessage = "Download File: ";
+  sMessage += m_oFileInfo.getRelativePath() + " (" + CcString::fromNumber(getProgress(), 1, true) + "%)   ";
   return sMessage;
 }
 
@@ -163,27 +166,26 @@ void CcSyncWorkerClientDownload::setFileInfo(const CcString& sPathToFile, uint32
   CcFile::setModified(sPathToFile, CcDateTimeFromSeconds(iModified));
 }
 
-bool CcSyncWorkerClientDownload::receiveFile(CcFile* pFile, CcSyncFileInfo& oFileInfo)
+bool CcSyncWorkerClientDownload::receiveFile(CcFile* pFile)
 {
   bool bRet = false;
   bool bTransfer = true;
   CcCrc32 oCrc;
-  uint64 uiReceived = 0;
   size_t uiBufferSize = static_cast<size_t>(CcSyncGlobals::TransferSize);
-  if (oFileInfo.getFileSize() < CcSyncGlobals::TransferSize)
+  if (m_oFileInfo.getFileSize() < CcSyncGlobals::TransferSize)
   {
-    uiBufferSize = static_cast<size_t>(oFileInfo.getFileSize());
+    uiBufferSize = static_cast<size_t>(m_oFileInfo.getFileSize());
   }
   CcByteArray oByteArray(uiBufferSize);
   while (bTransfer)
   {
-    if (uiReceived < oFileInfo.getFileSize())
+    if (m_uiReceived < m_oFileInfo.getFileSize())
     {
       size_t uiReadSize = m_oCom.getSocket().readArray(oByteArray, false);
       if (uiReadSize <= uiBufferSize)
       {
         oCrc.append(oByteArray.getArray(), uiReadSize);
-        uiReceived += uiReadSize;
+        m_uiReceived += uiReadSize;
         if (pFile->write(oByteArray.getArray(), uiReadSize) != uiReadSize)
         {
           bTransfer = false;
@@ -199,7 +201,7 @@ bool CcSyncWorkerClientDownload::receiveFile(CcFile* pFile, CcSyncFileInfo& oFil
     else
     {
       bTransfer = false;
-      oFileInfo.crc() = oCrc.getValueUint32();
+      m_oFileInfo.crc() = oCrc.getValueUint32();
       m_oCom.getRequest().setCrc(oCrc);
       if (m_oCom.sendRequestGetResponse())
       {

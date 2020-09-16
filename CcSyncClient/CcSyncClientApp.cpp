@@ -175,7 +175,7 @@ void CcSyncClientApp::run()
 
 void CcSyncClientApp::runDaemon()
 {
-  m_poSyncClient = CcSyncClient::create(m_sConfigDir);
+  m_poSyncClient = CcSyncClient::create(m_sConfigDir, false);
   CcStringList slAccounts = m_poSyncClient->getAccountList();
   while (getThreadState() == EThreadState::Running)
   {
@@ -213,7 +213,7 @@ void CcSyncClientApp::runDaemon()
 void CcSyncClientApp::runCli()
 {
   bool bSuccess = true;
-  m_poSyncClient = CcSyncClient::create(m_sConfigDir);
+  m_poSyncClient = CcSyncClient::create(m_sConfigDir, false);
   if (!m_poSyncClient->isConfigAvailable())
   {
     bSuccess = createConfig(m_sConfigDir);
@@ -345,7 +345,7 @@ void CcSyncClientApp::runCli()
 
 void CcSyncClientApp::runOnce()
 {
-  m_poSyncClient = CcSyncClient::create(m_sConfigDir);
+  m_poSyncClient = CcSyncClient::create(m_sConfigDir, false);
   CcStringList slAccounts;
   if(m_oArguments.size() > 2)
   {
@@ -387,7 +387,7 @@ void CcSyncClientApp::runOnce()
 
 void CcSyncClientApp::runCreate()
 {
-  m_poSyncClient = CcSyncClient::create(m_sConfigDir);
+  m_poSyncClient = CcSyncClient::create(m_sConfigDir, true);
   if(m_oArguments.last().contains("@"))
   {
     if (m_poSyncClient->selectAccount(m_oArguments.last()))

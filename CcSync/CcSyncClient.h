@@ -57,7 +57,7 @@ public:
   /**
    * @brief Constructor
    */
-  CcSyncClient(const CcString& sConfigFilePath);
+  CcSyncClient(const CcString& sConfigFilePath, bool bCreate = false);
 
   /**
    * @brief CopyConstructor
@@ -124,7 +124,7 @@ public:
 
   bool changeHostname(const CcString& sHostName);
 
-  static CcSyncClient* create(const CcString& sConfigFilePath);
+  static CcSyncClient* create(const CcString& sConfigFilePath, bool bCreate = false);
   static void remove(CcSyncClient* pToRemove);
 
 private: // Methods

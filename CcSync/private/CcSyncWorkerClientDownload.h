@@ -55,7 +55,10 @@ public:
   static void setFileInfo(const CcString& sPathToFile, uint32 uiUserId, uint32 uiGroupId, int64 iModified);
 
 private:
-  bool receiveFile(CcFile* pFile, CcSyncFileInfo& oFileInfo);
+  bool receiveFile(CcFile* pFile);
+
+private: // Member
+  uint64 m_uiReceived = 0;
 };
 
 }

@@ -44,7 +44,7 @@
 
 #include "private/CcSyncWorkerClientDownload.h"
 
-CcSyncClient::CcSyncClient(const CcString& sConfigFilePath)
+CcSyncClient::CcSyncClient(const CcString& sConfigFilePath, bool bCreate)
 {
   if (sConfigFilePath.length() == 0)
   {
@@ -72,11 +72,15 @@ CcSyncClient::CcSyncClient(const CcString& sConfigFilePath)
       {
         init(sPath);
       }
+      else if(bCreate)
+      {
+        m_oConfig.create(sPath);
+      }
       else
       {
-        sPath = sConfigFilePath;
-        sPath.appendPath(CcSyncGlobals::ConfigDirName);
-        sPath.appendPath(CcSyncGlobals::Client::ConfigFileName);
+        CcString sOldPath = sConfigFilePath;
+        sOldPath.appendPath(CcSyncGlobals::ConfigDirName);
+        sOldPath.appendPath(CcSyncGlobals::Client::ConfigFileName);
         if (CcFile::exists(sPath))
         {
           init(sPath);
@@ -351,10 +355,21 @@ void CcSyncClient::doQueue(const CcString& sDirectoryName)
           if(pWorker)
           {
             pWorker->start();
+            uint16 uiCounter = 0;
             while(pWorker->isInProgress())
             {
-              CcConsole::writeSameLine(pWorker->getProgressMessage());
+              if(uiCounter >= 10)
+              {
+                uiCounter = 0;
+                CcConsole::writeSameLine(pWorker->getProgressMessage());
+              }
+              else
+              {
+                CcKernel::sleep(20);
+                uiCounter++;
+              }
             }
+            CcConsole::writeSameLine(CcGlobalStrings::Empty);
             CcConsole::writeLine(pWorker->getProgressMessage());
             CCDELETE(pWorker);
           }
@@ -798,9 +813,9 @@ bool CcSyncClient::changeHostname(const CcString& sHostName)
   return bSuccess;
 }
 
-CcSyncClient* CcSyncClient::create(const CcString& sConfigFilePath)
+CcSyncClient* CcSyncClient::create(const CcString& sConfigFilePath, bool bCreate)
 {
-  CcSyncClient* pNew = new CcSyncClient(sConfigFilePath);
+  CcSyncClient* pNew = new CcSyncClient(sConfigFilePath, bCreate);
   CCMONITORNEW(pNew);
   return pNew;
 }
