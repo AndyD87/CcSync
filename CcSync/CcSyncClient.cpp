@@ -50,12 +50,13 @@ CcSyncClient::CcSyncClient(const CcString& sConfigFilePath, bool bCreate)
   {
     CcString sConfigFile = CcKernel::getUserDataDir();
     sConfigFile.appendPath(CcSyncGlobals::ConfigDirName);
+    CcString sDir = sConfigFile;
     sConfigFile.appendPath(CcSyncGlobals::Client::ConfigFileName);
     if (CcFile::exists(sConfigFile))
     {
       init(sConfigFile);
     }
-    else if (bCreate)
+    else if (bCreate && (CcDirectory::exists(sDir) || CcDirectory::create(sDir, true)))
     {
       m_oConfig.create(sConfigFile);
     }
@@ -71,12 +72,13 @@ CcSyncClient::CcSyncClient(const CcString& sConfigFilePath, bool bCreate)
     if (oFileObject.isDir())
     {
       CcString sPath = sConfigFilePath;
+      CcString sDir = sConfigFilePath;
       sPath.appendPath(CcSyncGlobals::Client::ConfigFileName);
       if (CcFile::exists(sPath))
       {
         init(sPath);
       }
-      else if(bCreate)
+      else if (bCreate && (CcDirectory::exists(sDir) || CcDirectory::create(sDir, true)))
       {
         m_oConfig.create(sPath);
       }
