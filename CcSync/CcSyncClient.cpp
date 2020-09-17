@@ -55,6 +55,10 @@ CcSyncClient::CcSyncClient(const CcString& sConfigFilePath, bool bCreate)
     {
       init(sConfigFile);
     }
+    else if (bCreate)
+    {
+      m_oConfig.create(sConfigFile);
+    }
     else
     {
       CcSyncLog::writeDebug("No configuration file in config-directory", ESyncLogTarget::Client);
