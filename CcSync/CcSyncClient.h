@@ -58,7 +58,7 @@ public:
    * @brief Constructor
    */
   CcSyncClient(const CcString& sConfigFilePath, bool bCreate = false);
-  CCDEFINE_COPY_DENIED(CcSyncClient);
+  CCDEFINE_COPY_DENIED(CcSyncClient)
 
   /**
    * @brief Destructor
