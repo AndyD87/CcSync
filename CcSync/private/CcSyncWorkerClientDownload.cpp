@@ -133,11 +133,11 @@ void CcSyncWorkerClientDownload::run()
   }
 }
 
-float CcSyncWorkerClientDownload::getProgress()
+double CcSyncWorkerClientDownload::getProgress()
 {
-  float fProgress = m_uiReceived;
-  if(m_oFileInfo.getFileSize() != 0.0)
-    fProgress = (fProgress / m_oFileInfo.getFileSize()) * 100.0;
+  double fProgress = 0.0;
+  if (m_oFileInfo.getFileSize() != 0.0)
+    fProgress = (static_cast<double>(m_uiReceived) / static_cast<double>(m_oFileInfo.getFileSize())) * 100.0;
   return fProgress;
 }
 

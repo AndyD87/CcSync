@@ -51,7 +51,7 @@ class CcSyncSHARED ISyncWorkerBase : public IThread
 {
 public:
   ISyncWorkerBase(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex, CcSyncClientCom& pSocket);
-  virtual float getProgress() = 0;
+  virtual double getProgress() = 0;
   virtual CcString getProgressMessage() = 0;
 
 protected:

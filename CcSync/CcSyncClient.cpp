@@ -98,35 +98,9 @@ CcSyncClient::CcSyncClient(const CcString& sConfigFilePath, bool bCreate)
   }
 }
 
-CcSyncClient::CcSyncClient(const CcSyncClient& oToCopy)
-{
-  operator=(oToCopy);
-}
-
-CcSyncClient::CcSyncClient(CcSyncClient&& oToMove)
-{
-  operator=(std::move(oToMove));
-}
-
 CcSyncClient::~CcSyncClient(void)
 {
   deinit();
-}
-
-CcSyncClient& CcSyncClient::operator=(const CcSyncClient& oToCopy)
-{
-  CCUNUSED(oToCopy);
-  CcSyncLog::writeError("Do not copy CcSyncClient!!!", ESyncLogTarget::Client);
-  return *this;
-}
-
-CcSyncClient& CcSyncClient::operator=(CcSyncClient&& oToMove)
-{
-  if (this != &oToMove)
-  {
-    CcSyncLog::writeError("Do not move CcSyncClient!!!", ESyncLogTarget::Client);
-  }
-  return *this;
 }
 
 bool CcSyncClient::login()

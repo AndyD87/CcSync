@@ -50,7 +50,7 @@ class CcSyncSHARED CcSyncWorkerClientDownload : public ISyncWorkerBase
 public:
   CcSyncWorkerClientDownload(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex, CcSyncClientCom& pSocket);
   virtual void run() override;
-  virtual float getProgress() override;
+  virtual double getProgress() override;
   virtual CcString getProgressMessage() override;
   static void setFileInfo(const CcString& sPathToFile, uint32 uiUserId, uint32 uiGroupId, int64 iModified);
 

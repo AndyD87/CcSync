@@ -58,24 +58,12 @@ public:
    * @brief Constructor
    */
   CcSyncClient(const CcString& sConfigFilePath, bool bCreate = false);
-
-  /**
-   * @brief CopyConstructor
-   */
-  CcSyncClient( const CcSyncClient& oToCopy );
-
-  /**
-   * @brief MoveConstructor
-   */
-  CcSyncClient( CcSyncClient&& oToMove );
+  CCDEFINE_COPY_DENIED(CcSyncClient);
 
   /**
    * @brief Destructor
    */
   virtual ~CcSyncClient(void);
-
-  CcSyncClient& operator=(const CcSyncClient& oToCopy);
-  CcSyncClient& operator=(CcSyncClient&& oToMove);
 
   bool login();
   bool isLoggedIn();
