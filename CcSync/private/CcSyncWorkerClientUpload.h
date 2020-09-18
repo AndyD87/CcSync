@@ -35,6 +35,7 @@
 #include "ISyncWorkerBase.h"
 #include "CcSyncFileInfo.h"
 #include "CcFile.h"
+#include "CcDateTime.h"
 
 // forward declarations
 class CcString;
@@ -59,6 +60,7 @@ private:
 
 private: // Member
   uint64 m_uiReceived = 0;
+  CcDateTime m_oStartTime;
 };
 
 }

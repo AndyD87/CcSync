@@ -29,12 +29,15 @@
 #include "CcDirectory.h"
 #include "CcFile.h"
 #include "Hash/CcCrc32.h"
+#include "CcKernel.h"
+#include "CcStringUtil.h"
 
 namespace CcSync
 {
 
 CcSyncWorkerClientDownload::CcSyncWorkerClientDownload(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex, CcSyncClientCom& pSocket) :
-  ISyncWorkerBase(oDirectory, oFileInfo, uiQueueIndex, pSocket)
+  ISyncWorkerBase(oDirectory, oFileInfo, uiQueueIndex, pSocket),
+  m_oStartTime(CcKernel::getUpTime())
 {
 }
 
@@ -144,7 +147,10 @@ double CcSyncWorkerClientDownload::getProgress()
 CcString CcSyncWorkerClientDownload::getProgressMessage()
 {
   CcString sMessage = "Download File: ";
-  sMessage += m_oFileInfo.getRelativePath() + " (" + CcString::fromNumber(getProgress(), 1, true) + "%)   ";
+  CcString sRate = CcStringUtil::getHumanReadableSizePerSeconds(m_uiReceived, CcKernel::getUpTime() - m_oStartTime);
+  sMessage  << m_oFileInfo.getRelativePath() << " (" 
+            << CcString::fromNumber(getProgress(), 1, true) 
+            << "%, with " << sRate << ")   ";
   return sMessage;
 }
 
