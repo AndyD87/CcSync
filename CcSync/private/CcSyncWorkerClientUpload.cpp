@@ -43,7 +43,6 @@ CcSyncWorkerClientUpload::CcSyncWorkerClientUpload(CcSyncDirectory& oDirectory, 
 
 void CcSyncWorkerClientUpload::run()
 {
-  bool bRet = false;
   m_oDirectory.getFullDirPathById(m_oFileInfo);
   if (m_oFileInfo.fromSystemFile(false))
   {
@@ -70,7 +69,6 @@ void CcSyncWorkerClientUpload::run()
             m_oDirectory.queueIncrementItem(m_uiQueueIndex);
             CcSyncLog::writeError("Inserting to filelist failed: " + m_oFileInfo.getSystemFullPath(), ESyncLogTarget::Client);
           }
-          bRet = true;
         }
         else
         {
@@ -90,7 +88,6 @@ void CcSyncWorkerClientUpload::run()
               m_oDirectory.fileListInsert(oResponseFileInfo, true);
               m_oDirectory.queueFinalizeFile(m_uiQueueIndex);
               CcSyncLog::writeDebug("File Successfully uploaded: " + m_oFileInfo.getName(), ESyncLogTarget::Client);
-              bRet = true;
             }
             // fall through
           default:
