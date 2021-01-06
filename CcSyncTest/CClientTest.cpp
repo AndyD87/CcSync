@@ -43,11 +43,10 @@ CClientTest::CClientTest( void ) :
     sApplicationPath.append(".exe");
 #endif
   }
-  m_pClient = new CTestClient(sApplicationPath, sConfigDir);
+  CCNEW(m_pClient, CTestClient, sApplicationPath, sConfigDir);
 
   appendTestMethod("Test if client can be exectued", &CClientTest::testClientExists);
   appendTestMethod("Test if sync server is waiting for input", &CClientTest::testClientWaitInput);
-  CCMONITORNEW(m_pClient);
 }
 
 CClientTest::~CClientTest( void )

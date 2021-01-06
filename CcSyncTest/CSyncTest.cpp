@@ -53,15 +53,14 @@ public:
 };
 
 const CcString CSyncTestPrivate::sAdminName("Admin");
-const CcString CSyncTestPrivate::sAdminPW("AdminPW");
+const CcString CSyncTestPrivate::sAdminPW("AdminPW$123");
 const CcString CSyncTestPrivate::sServerName("127.0.0.1");
 const CcString CSyncTestPrivate::sServerPort("27499");
 
 CSyncTest::CSyncTest( void ) :
   CcTest("CcSyncTest")
 {
-  m_pPrivate = new CSyncTestPrivate();
-  CCMONITORNEW(m_pPrivate);
+  CCNEW(m_pPrivate, CSyncTestPrivate);
   m_pPrivate->sServerAppPath = CcTestFramework::getBinaryDir();
   m_pPrivate->sClientAppPath = CcTestFramework::getBinaryDir();
   m_pPrivate->sServerAppPath.appendPath("CcSyncServer");
@@ -113,11 +112,11 @@ bool CSyncTest::testEnvironment()
     {
       if (CcFile::exists(m_pPrivate->sServerAppPath))
       {
-        m_pPrivate->pServer = new CTestServer(m_pPrivate->sServerAppPath, m_pPrivate->sTestServerDir);
+        CCNEW(m_pPrivate->pServer, CTestServer, m_pPrivate->sServerAppPath, m_pPrivate->sTestServerDir);
         if (CcFile::exists(m_pPrivate->sClientAppPath))
         {
-          m_pPrivate->pClient1 = new CTestClient(m_pPrivate->sClientAppPath, m_pPrivate->sTestClient1Dir);
-          m_pPrivate->pClient2 = new CTestClient(m_pPrivate->sClientAppPath, m_pPrivate->sTestClient2Dir);
+          CCNEW(m_pPrivate->pClient1, CTestClient, m_pPrivate->sClientAppPath, m_pPrivate->sTestClient1Dir);
+          CCNEW(m_pPrivate->pClient2, CTestClient, m_pPrivate->sClientAppPath, m_pPrivate->sTestClient2Dir);
           bSuccess = true;
         }
         else
@@ -180,7 +179,8 @@ bool CSyncTest::testSetupClient2()
 
 bool CSyncTest::testStartServer()
 {
-  return m_pPrivate->pServer->start();
+  bool bSuccess = m_pPrivate->pServer->start();
+  return bSuccess;
 }
 
 bool CSyncTest::testStopServer()
@@ -193,14 +193,22 @@ bool CSyncTest::testCheckLoginClient1()
   bool bSuccess = m_pPrivate->pClient1->checkLogin(
         m_pPrivate->sServerName,
         m_pPrivate->sAdminName);
+  if (!bSuccess)
+  {
+    CcTestFramework::writeError("Failed to login Client 1");
+  }
   return bSuccess;
 }
 
 bool CSyncTest::testCheckLoginClient2()
 {
   bool bSuccess = m_pPrivate->pClient2->checkLogin(
-        m_pPrivate->sServerName,
-        m_pPrivate->sAdminName);
+    m_pPrivate->sServerName,
+    m_pPrivate->sAdminName);
+  if (!bSuccess)
+  {
+    CcTestFramework::writeError("Failed to login Client 2");
+  }
   return bSuccess;
 }
 

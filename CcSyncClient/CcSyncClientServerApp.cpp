@@ -73,9 +73,11 @@ bool CcSyncClientServerApp::createAccount()
   if (m_poSyncClient != nullptr)
   {
     CcSyncConsole::writeLine("Setup new Account");
-    CcString sAccount = CcSyncConsole::query("Name");
-    CcString sPassword = CcSyncConsole::queryHidden("Password");
-    if (sAccount.length() == 3)
+    CcString sAccount ;
+    CcSyncConsole::query("Name", sAccount);
+    CcString sPassword;
+    CcSyncConsole::queryHidden("Password", sPassword);
+    if (sAccount.length() < 3)
     {
       CcSyncConsole::writeLine("Account requires at least 3 signs");
     }
@@ -100,65 +102,72 @@ void CcSyncClientServerApp::run()
   while (bCommandlineLoop &&
     m_poSyncClient->isLoggedIn())
   {
-    CcString sCommandLine = CcSyncConsole::clientQuery();
-    CcArguments oArguments(sCommandLine);
-    if (oArguments.size() == 0)
+    CcString sCommandLine;
+    if (CcSyncConsole::clientQuery(sCommandLine) != SIZE_MAX)
     {
-      continue;
-    }
-    else if (oArguments[0].compareInsensitve(ServerStrings::Exit))
-    {
-      bCommandlineLoop = false;
-    }
-    else if (oArguments[0].compareInsensitve(ServerStrings::New))
-    {
-      if (createAccount())
+      CcArguments oArguments(sCommandLine);
+      if (oArguments.size() == 0)
       {
-        CcSyncConsole::writeLine("Account successfully created");
-        CcSyncConsole::writeLine("");
+        continue;
       }
-      else
-      {
-        CcSyncConsole::writeLine("Account failed to create");
-        CcSyncConsole::writeLine("");
-      }
-    }
-    else if (oArguments[0].compareInsensitve(ServerStrings::Del))
-    {
-      if (oArguments.size() > 1)
-      {
-        if (m_poSyncClient->removeAccount(oArguments[1]))
-        {
-          CcSyncConsole::writeLine("Account successfully removed");
-        }
-        else
-        {
-          CcSyncConsole::writeLine("Failed to delete Account.");
-        }
-      }
-      else
-      {
-        CcSyncConsole::writeLine("no account given, please type \"help\"");
-      }
-    }
-    else if (oArguments[0].compareInsensitve(ServerStrings::Rescan))
-    {
-      m_poSyncClient->serverRescan();
-    }
-    else if (oArguments[0].compareInsensitve(ServerStrings::Stop))
-    {
-      if (m_poSyncClient->serverStop())
+      else if (oArguments[0].compareInsensitve(ServerStrings::Exit))
       {
         bCommandlineLoop = false;
       }
-    }
-    else if (oArguments[0].compareInsensitve(ServerStrings::Help))
-    {
-      help();
+      else if (oArguments[0].compareInsensitve(ServerStrings::New))
+      {
+        if (createAccount())
+        {
+          CcSyncConsole::writeLine("Account successfully created");
+          CcSyncConsole::writeLine("");
+        }
+        else
+        {
+          CcSyncConsole::writeLine("Account failed to create");
+          CcSyncConsole::writeLine("");
+        }
+      }
+      else if (oArguments[0].compareInsensitve(ServerStrings::Del))
+      {
+        if (oArguments.size() > 1)
+        {
+          if (m_poSyncClient->removeAccount(oArguments[1]))
+          {
+            CcSyncConsole::writeLine("Account successfully removed");
+          }
+          else
+          {
+            CcSyncConsole::writeLine("Failed to delete Account.");
+          }
+        }
+        else
+        {
+          CcSyncConsole::writeLine("no account given, please type \"help\"");
+        }
+      }
+      else if (oArguments[0].compareInsensitve(ServerStrings::Rescan))
+      {
+        m_poSyncClient->serverRescan();
+      }
+      else if (oArguments[0].compareInsensitve(ServerStrings::Stop))
+      {
+        if (m_poSyncClient->serverStop())
+        {
+          bCommandlineLoop = false;
+        }
+      }
+      else if (oArguments[0].compareInsensitve(ServerStrings::Help))
+      {
+        help();
+      }
+      else
+      {
+        CcSyncConsole::writeLine("Unknown Command, run \"help\" to view all commands");
+      }
     }
     else
     {
-      CcSyncConsole::writeLine("Unknown Command, run \"help\" to view all commands");
+      bCommandlineLoop = false;
     }
   }
   CcSyncConsole::setPrepend(sSavePrepende);

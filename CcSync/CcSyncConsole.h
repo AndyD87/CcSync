@@ -46,10 +46,10 @@ public:
   static void writeLine(const CcString& sMessage);
   static void writeString(const CcString& sString);
   static void printHelpLine(const CcString& sCommand, size_t iNr, const CcString& sDescription);
-  static CcString clientQuery();
-  static CcString query(const CcString& sQuery);
-  static CcString query(const CcString& sQuery, const CcString& sDefault);
-  static CcString queryHidden(const CcString& sQuery);
+  static size_t clientQuery(CcString& sRead);
+  static size_t query(const CcString& sQuery, CcString& sRead);
+  static size_t query(const CcString& sQuery, const CcString& sDefault, CcString& sRead);
+  static size_t queryHidden(const CcString& sQuery, CcString& sRead);
   static CcString& getPrepend();
   static void setPrepend(const CcString& sPrepend);
 private:

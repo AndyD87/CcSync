@@ -84,89 +84,45 @@ void CcSyncClientAccountApp::run()
   CcString sSavePrepende = CcSyncConsole::getPrepend();
   CcSyncConsole::setPrepend("[/" + m_poSyncClient->getAccountName() + "]");
   bool bCommandlineLoop = true;
-  while (bCommandlineLoop &&
-    m_poSyncClient->isLoggedIn())
+  while ( bCommandlineLoop &&
+          m_poSyncClient->isLoggedIn() &&
+          isRunning()
+  )
   {
-    CcString sCommandLine = CcSyncConsole::clientQuery();
-    CcArguments oArguments(sCommandLine);
-    if (oArguments.size() == 0)
+    CcString sCommandLine;
+    if (CcSyncConsole::clientQuery(sCommandLine) != SIZE_MAX)
     {
-      continue;
-    }
-    else if (oArguments[0].compareInsensitve(AccountStrings::Logout) ||
-      oArguments[0].compareInsensitve(AccountStrings::Exit))
-    {
-      m_poSyncClient->logout();
-      CcSyncConsole::writeLine("Logout done, connection closed");
-      bCommandlineLoop = false;
-    }
-    else if (oArguments[0].compareInsensitve(AccountStrings::List))
-    {
-      CcSyncConsole::writeLine(m_poSyncClient->getAccountInfo());
-    }
-    else if (oArguments[0].compareInsensitve(AccountStrings::Select))
-    {
-      if (oArguments.size() > 1)
+      CcArguments oArguments(sCommandLine);
+      if (oArguments.size() == 0)
       {
-        CcSyncClientDirectoryApp oDirectory(m_poSyncClient, oArguments[1]);
-        oDirectory.exec();
+        continue;
       }
-      else
+      else if (oArguments[0].compareInsensitve(AccountStrings::Logout) ||
+        oArguments[0].compareInsensitve(AccountStrings::Exit))
       {
-        CcSyncConsole::writeLine("not enough arguments");
+        m_poSyncClient->logout();
+        CcSyncConsole::writeLine("Logout done, connection closed");
+        bCommandlineLoop = false;
       }
-    }
-    else if (oArguments[0].compareInsensitve(AccountStrings::Rebuild))
-    {
-      m_poSyncClient->cleanDatabase();
-      m_poSyncClient->updateFromRemoteAccount();
-      CcSyncConsole::writeLine("Reset Queue");
-      m_poSyncClient->resetQueues();
-      CcSyncConsole::writeLine("Remote sync: scan");
-      m_poSyncClient->doRemoteSyncAll();
-      CcSyncConsole::writeLine("Remote sync: do");
-      m_poSyncClient->doQueues();
-      CcSyncConsole::writeLine("Remote sync: done");
-      CcSyncConsole::writeLine("Local sync: scan");
-      m_poSyncClient->doLocalSyncAll();
-      CcSyncConsole::writeLine("Local sync: do");
-      m_poSyncClient->doQueues();
-      CcSyncConsole::writeLine("Local sync: done");
-
-    }
-    else if (oArguments[0].compareInsensitve(AccountStrings::Reset))
-    {
-      m_poSyncClient->resetQueues();
-    }
-    else if (oArguments[0].compareInsensitve(AccountStrings::Admin))
-    {
-      if (m_poSyncClient->isAdmin())
+      else if (oArguments[0].compareInsensitve(AccountStrings::List))
       {
-        CcSyncClientServerApp oServerCtrl(m_poSyncClient);
-        oServerCtrl.exec();
+        CcSyncConsole::writeLine(m_poSyncClient->getAccountInfo());
       }
-      else
+      else if (oArguments[0].compareInsensitve(AccountStrings::Select))
       {
-        CcSyncConsole::writeLine("You are not admin on server.");
-      }
-    }
-    else if (oArguments[0].compareInsensitve(AccountStrings::Sync))
-    {
-      bool bDeep = false;
-      bool bSuccess = true;
-      if(oArguments.size() > 1)
-      {
-        if(oArguments[1] == "deep")
+        if (oArguments.size() > 1)
         {
-          bDeep = true;
+          CcSyncClientDirectoryApp oDirectory(m_poSyncClient, oArguments[1]);
+          oDirectory.exec();
         }
         else
         {
-          bSuccess = false;
+          CcSyncConsole::writeLine("not enough arguments");
         }
       }
-      if(bSuccess)
+      else if (oArguments[0].compareInsensitve(AccountStrings::Rebuild))
       {
+        m_poSyncClient->cleanDatabase();
         m_poSyncClient->updateFromRemoteAccount();
         CcSyncConsole::writeLine("Reset Queue");
         m_poSyncClient->resetQueues();
@@ -176,78 +132,131 @@ void CcSyncClientAccountApp::run()
         m_poSyncClient->doQueues();
         CcSyncConsole::writeLine("Remote sync: done");
         CcSyncConsole::writeLine("Local sync: scan");
-        m_poSyncClient->doLocalSyncAll(bDeep);
+        m_poSyncClient->doLocalSyncAll();
         CcSyncConsole::writeLine("Local sync: do");
         m_poSyncClient->doQueues();
         CcSyncConsole::writeLine("Local sync: done");
+
       }
-    }
-    else if (oArguments[0].compareInsensitve(AccountStrings::Database))
-    {
-      if (oArguments.size() > 1)
+      else if (oArguments[0].compareInsensitve(AccountStrings::Reset))
       {
-        if(oArguments[1] == AccountStrings::DatabaseVerify)
+        m_poSyncClient->resetQueues();
+      }
+      else if (oArguments[0].compareInsensitve(AccountStrings::Admin))
+      {
+        if (m_poSyncClient->isAdmin())
         {
-          verify();
-        }
-        else if(oArguments[1] == AccountStrings::DatabaseRefresh)
-        {
-          refresh();
+          CcSyncClientServerApp oServerCtrl(m_poSyncClient);
+          oServerCtrl.exec();
         }
         else
         {
-          CcSyncConsole::writeLine("wrong argument specified: "+oArguments[1]);
+          CcSyncConsole::writeLine("You are not admin on server.");
         }
       }
+      else if (oArguments[0].compareInsensitve(AccountStrings::Sync))
+      {
+        bool bDeep = false;
+        bool bSuccess = true;
+        if(oArguments.size() > 1)
+        {
+          if(oArguments[1] == "deep")
+          {
+            bDeep = true;
+          }
+          else
+          {
+            bSuccess = false;
+          }
+        }
+        if(bSuccess)
+        {
+          m_poSyncClient->updateFromRemoteAccount();
+          CcSyncConsole::writeLine("Reset Queue");
+          m_poSyncClient->resetQueues();
+          CcSyncConsole::writeLine("Remote sync: scan");
+          m_poSyncClient->doRemoteSyncAll();
+          CcSyncConsole::writeLine("Remote sync: do");
+          m_poSyncClient->doQueues();
+          CcSyncConsole::writeLine("Remote sync: done");
+          CcSyncConsole::writeLine("Local sync: scan");
+          m_poSyncClient->doLocalSyncAll(bDeep);
+          CcSyncConsole::writeLine("Local sync: do");
+          m_poSyncClient->doQueues();
+          CcSyncConsole::writeLine("Local sync: done");
+        }
+      }
+      else if (oArguments[0].compareInsensitve(AccountStrings::Database))
+      {
+        if (oArguments.size() > 1)
+        {
+          if(oArguments[1] == AccountStrings::DatabaseVerify)
+          {
+            verify();
+          }
+          else if(oArguments[1] == AccountStrings::DatabaseRefresh)
+          {
+            refresh();
+          }
+          else
+          {
+            CcSyncConsole::writeLine("wrong argument specified: "+oArguments[1]);
+          }
+        }
+        else
+        {
+          CcSyncConsole::writeLine("not enough arguments");
+        }
+      }
+      else if (oArguments[0].compareInsensitve(AccountStrings::Create))
+      {
+        createDirectory();
+      }
+      else if (oArguments[0].compareInsensitve(AccountStrings::Del))
+      {
+        if (oArguments.size() > 1)
+        {
+          m_poSyncClient->doAccountRemoveDirectory(oArguments[1]);
+        }
+        else
+        {
+          CcSyncConsole::writeLine("not enough arguments");
+        }
+      }
+      else if (oArguments[0].compareInsensitve(AccountStrings::AllDirs))
+      {
+        createAllDirectories();
+      }
+      else if (oArguments[0].compareInsensitve(AccountStrings::Update))
+      {
+        m_poSyncClient->doUpdateChanged();
+      }
+      else if (oArguments[0].compareInsensitve(AccountStrings::Help))
+      {
+        CcSyncConsole::printHelpLine(AccountStrings::Admin, 20, AccountStrings::AdminDesc);
+        CcSyncConsole::printHelpLine(AccountStrings::Create, 20, AccountStrings::CreateDesc);
+        CcSyncConsole::printHelpLine(AccountStrings::AllDirs, 20, AccountStrings::AllDirsDesc);
+        CcSyncConsole::printHelpLine(AccountStrings::Update, 20, AccountStrings::UpdateDesc);
+        CcSyncConsole::printHelpLine(AccountStrings::Exit, 20, AccountStrings::ExitDesc);
+        CcSyncConsole::printHelpLine(AccountStrings::Help, 20, AccountStrings::HelpDesc);
+        CcSyncConsole::printHelpLine(AccountStrings::List, 20, AccountStrings::ListDesc);
+        CcSyncConsole::printHelpLine(AccountStrings::Logout, 20, AccountStrings::LogoutDesc);
+        CcSyncConsole::printHelpLine(AccountStrings::Reset, 20, AccountStrings::ResetDesc);
+        CcSyncConsole::printHelpLine(AccountStrings::Rebuild, 20, AccountStrings::RebuildDesc);
+        CcSyncConsole::printHelpLine(AccountStrings::Select, 20, AccountStrings::SelectDesc);
+        CcSyncConsole::printHelpLine(AccountStrings::Sync, 20, AccountStrings::SyncDesc);
+        CcSyncConsole::printHelpLine(AccountStrings::Database,  20, AccountStrings::DatabaseDesc);
+        CcSyncConsole::printHelpLine("",                        20, AccountStrings::DatabaseDesc1);
+        CcSyncConsole::printHelpLine("",                        20, AccountStrings::DatabaseDesc2);
+      }
       else
       {
-        CcSyncConsole::writeLine("not enough arguments");
+        CcSyncConsole::writeLine("Unknown Command, run \"help\" to view all commands");
       }
-    }
-    else if (oArguments[0].compareInsensitve(AccountStrings::Create))
-    {
-      createDirectory();
-    }
-    else if (oArguments[0].compareInsensitve(AccountStrings::Del))
-    {
-      if (oArguments.size() > 1)
-      {
-        m_poSyncClient->doAccountRemoveDirectory(oArguments[1]);
-      }
-      else
-      {
-        CcSyncConsole::writeLine("not enough arguments");
-      }
-    }
-    else if (oArguments[0].compareInsensitve(AccountStrings::AllDirs))
-    {
-      createAllDirectories();
-    }
-    else if (oArguments[0].compareInsensitve(AccountStrings::Update))
-    {
-      m_poSyncClient->doUpdateChanged();
-    }
-    else if (oArguments[0].compareInsensitve(AccountStrings::Help))
-    {
-      CcSyncConsole::printHelpLine(AccountStrings::Admin, 20, AccountStrings::AdminDesc);
-      CcSyncConsole::printHelpLine(AccountStrings::Create, 20, AccountStrings::CreateDesc);
-      CcSyncConsole::printHelpLine(AccountStrings::AllDirs, 20, AccountStrings::AllDirsDesc);
-      CcSyncConsole::printHelpLine(AccountStrings::Update, 20, AccountStrings::UpdateDesc);
-      CcSyncConsole::printHelpLine(AccountStrings::Exit, 20, AccountStrings::ExitDesc);
-      CcSyncConsole::printHelpLine(AccountStrings::Help, 20, AccountStrings::HelpDesc);
-      CcSyncConsole::printHelpLine(AccountStrings::List, 20, AccountStrings::ListDesc);
-      CcSyncConsole::printHelpLine(AccountStrings::Logout, 20, AccountStrings::LogoutDesc);
-      CcSyncConsole::printHelpLine(AccountStrings::Reset, 20, AccountStrings::ResetDesc);
-      CcSyncConsole::printHelpLine(AccountStrings::Rebuild, 20, AccountStrings::RebuildDesc);
-      CcSyncConsole::printHelpLine(AccountStrings::Select, 20, AccountStrings::SelectDesc);
-      CcSyncConsole::printHelpLine(AccountStrings::Sync, 20, AccountStrings::SyncDesc);
-      CcSyncConsole::printHelpLine(AccountStrings::Database,  20, AccountStrings::DatabaseDesc);
-      CcSyncConsole::printHelpLine("",                        20, AccountStrings::DatabaseDesc1);
-      CcSyncConsole::printHelpLine("",                        20, AccountStrings::DatabaseDesc2);
     }
     else
     {
-      CcSyncConsole::writeLine("Unknown Command, run \"help\" to view all commands");
+    bCommandlineLoop = false;
     }
   }
   CcSyncConsole::setPrepend(sSavePrepende);
@@ -257,9 +266,11 @@ bool CcSyncClientAccountApp::createDirectory()
 {
   bool bRet = false;
   CcSyncConsole::writeLine("Create new Directory");
-  CcString sName = CcSyncConsole::query("Name");
+  CcString sName;
+  CcSyncConsole::query("Name", sName);
   CcString sPath;
-  sPath.setOsPath(CcSyncConsole::query("Path"));
+  CcSyncConsole::query("Path", sPath);
+  sPath.setOsPath(sPath);
   if (sName.length() > 0 &&
       sPath.length() > 0)
   {
@@ -272,7 +283,8 @@ bool CcSyncClientAccountApp::createAllDirectories()
 {
   bool bRet = false;
   CcString sPath;
-  sPath.setOsPath(CcSyncConsole::query("Path"));
+  CcSyncConsole::query("Path", sPath);
+  sPath.setOsPath(sPath);
   if (sPath.length() > 0)
   {
     CcStringList oDirList = m_poSyncClient->getDirectoryList();

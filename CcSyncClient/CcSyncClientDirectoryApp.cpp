@@ -78,88 +78,95 @@ void CcSyncClientDirectoryApp::run()
   while (bCommandlineLoop &&
     m_pSyncClient->isLoggedIn())
   {
-    CcString sCommandLine = CcSyncConsole::clientQuery();
-    CcArguments oArguments(sCommandLine);
-    if (oArguments.size() == 0)
+    CcString sCommandLine;
+    if (CcSyncConsole::clientQuery(sCommandLine) != SIZE_MAX)
     {
-      continue;
-    }
-    else if (oArguments[0].compareInsensitve(DirectoryStrings::Info))
-    {
-      CcString sDirInfo = m_pSyncClient->getDirectoryInfo(m_sDirectory);
-      CcSyncConsole::writeLine(sDirInfo);
-    }
-    else if (oArguments[0].compareInsensitve(DirectoryStrings::BackupCommand))
-    {
-      setBackupCommand();
-    }
-    else if (oArguments[0].compareInsensitve(DirectoryStrings::RestoreCommand))
-    {
-      setRestoreCommand();
-    }
-    else if (oArguments[0].compareInsensitve(DirectoryStrings::Sync))
-    {
-      CcSyncConsole::writeLine("Reset Queue");
-      m_pSyncClient->resetQueue(m_sDirectory);
-      CcSyncConsole::writeLine("Remote sync: scan");
-      m_pSyncClient->doRemoteSync(m_sDirectory);
-      CcSyncConsole::writeLine("Remote sync: do");
-      m_pSyncClient->doQueue(m_sDirectory);
-      CcSyncConsole::writeLine("Remote sync: done");
-      CcSyncConsole::writeLine("Local sync: scan");
-      m_pSyncClient->doLocalSync(m_sDirectory);
-      CcSyncConsole::writeLine("Local sync: do");
-      m_pSyncClient->doQueue(m_sDirectory);
-      CcSyncConsole::writeLine("Local sync: done");
-    }
-    else if (oArguments[0].compareInsensitve(DirectoryStrings::Verify))
-    {
-      verify();
-    }
-    else if (oArguments[0].compareInsensitve(DirectoryStrings::Set))
-    {
-      if (oArguments.size() != 3)
+      CcArguments oArguments(sCommandLine);
+      if (oArguments.size() == 0)
       {
-        CcSyncConsole::writeLine("Wrong number of Arguments:");
-        CcSyncConsole::writeLine(DirectoryStrings::SetDesc);
+        continue;
+      }
+      else if (oArguments[0].compareInsensitve(DirectoryStrings::Info))
+      {
+        CcString sDirInfo = m_pSyncClient->getDirectoryInfo(m_sDirectory);
+        CcSyncConsole::writeLine(sDirInfo);
+      }
+      else if (oArguments[0].compareInsensitve(DirectoryStrings::BackupCommand))
+      {
+        setBackupCommand();
+      }
+      else if (oArguments[0].compareInsensitve(DirectoryStrings::RestoreCommand))
+      {
+        setRestoreCommand();
+      }
+      else if (oArguments[0].compareInsensitve(DirectoryStrings::Sync))
+      {
+        CcSyncConsole::writeLine("Reset Queue");
+        m_pSyncClient->resetQueue(m_sDirectory);
+        CcSyncConsole::writeLine("Remote sync: scan");
+        m_pSyncClient->doRemoteSync(m_sDirectory);
+        CcSyncConsole::writeLine("Remote sync: do");
+        m_pSyncClient->doQueue(m_sDirectory);
+        CcSyncConsole::writeLine("Remote sync: done");
+        CcSyncConsole::writeLine("Local sync: scan");
+        m_pSyncClient->doLocalSync(m_sDirectory);
+        CcSyncConsole::writeLine("Local sync: do");
+        m_pSyncClient->doQueue(m_sDirectory);
+        CcSyncConsole::writeLine("Local sync: done");
+      }
+      else if (oArguments[0].compareInsensitve(DirectoryStrings::Verify))
+      {
+        verify();
+      }
+      else if (oArguments[0].compareInsensitve(DirectoryStrings::Set))
+      {
+        if (oArguments.size() != 3)
+        {
+          CcSyncConsole::writeLine("Wrong number of Arguments:");
+          CcSyncConsole::writeLine(DirectoryStrings::SetDesc);
+        }
+        else
+        {
+          if (oArguments[1].compareInsensitve(DirectoryStrings::SetUser))
+          {
+            m_pSyncClient->updateDirectorySetUser(m_sDirectory, oArguments[2]);
+          }
+          else if (oArguments[1].compareInsensitve(DirectoryStrings::SetGroup))
+          {
+            m_pSyncClient->updateDirectorySetGroup(m_sDirectory, oArguments[2]);
+          }
+        }
+      }
+      else if (oArguments[0].compareInsensitve(DirectoryStrings::Lock))
+      {
+        if (m_pSyncClient->setDirectoryLock(m_sDirectory))
+          CcSyncConsole::writeLine("Directory locked");
+        else
+          CcSyncConsole::writeLine("Failed to lock Directory");
+      }
+      else if (oArguments[0].compareInsensitve(DirectoryStrings::Unlock))
+      {
+        if (m_pSyncClient->setDirectoryUnlock(m_sDirectory))
+          CcSyncConsole::writeLine("Directory unlocked");
+        else
+          CcSyncConsole::writeLine("Failed to unlock Directory");
+      }
+      else if (oArguments[0].compareInsensitve(DirectoryStrings::Exit))
+      {
+        bCommandlineLoop = false;
+      }
+      else if (oArguments[0].compareInsensitve(DirectoryStrings::Help))
+      {
+        help();
       }
       else
       {
-        if (oArguments[1].compareInsensitve(DirectoryStrings::SetUser))
-        {
-          m_pSyncClient->updateDirectorySetUser(m_sDirectory, oArguments[2]);
-        }
-        else if (oArguments[1].compareInsensitve(DirectoryStrings::SetGroup))
-        {
-          m_pSyncClient->updateDirectorySetGroup(m_sDirectory, oArguments[2]);
-        }
+        CcSyncConsole::writeLine("Unknown Command, run \"help\" to view all commands");
       }
-    }
-    else if (oArguments[0].compareInsensitve(DirectoryStrings::Lock))
-    {
-      if (m_pSyncClient->setDirectoryLock(m_sDirectory))
-        CcSyncConsole::writeLine("Directory locked");
-      else
-        CcSyncConsole::writeLine("Failed to lock Directory");
-    }
-    else if (oArguments[0].compareInsensitve(DirectoryStrings::Unlock))
-    {
-      if (m_pSyncClient->setDirectoryUnlock(m_sDirectory))
-        CcSyncConsole::writeLine("Directory unlocked");
-      else
-        CcSyncConsole::writeLine("Failed to unlock Directory");
-    }
-    else if (oArguments[0].compareInsensitve(DirectoryStrings::Exit))
-    {
-      bCommandlineLoop = false;
-    }
-    else if (oArguments[0].compareInsensitve(DirectoryStrings::Help))
-    {
-      help();
     }
     else
     {
-      CcSyncConsole::writeLine("Unknown Command, run \"help\" to view all commands");
+      bCommandlineLoop = false;
     }
   }
 
@@ -182,16 +189,24 @@ void CcSyncClientDirectoryApp::help()
 bool CcSyncClientDirectoryApp::setBackupCommand()
 {
   CcSyncConsole::writeLine("Create new Directory");
-  CcString sCommand = CcSyncConsole::query("Command");
-  m_pSyncClient->updateDirectoryBackupCommand(m_sDirectory, sCommand);
+  CcString sCommand;
+  CcSyncConsole::query("Command", sCommand);
+  if (sCommand.length())
+  {
+    m_pSyncClient->updateDirectoryBackupCommand(m_sDirectory, sCommand);
+  }
   return false;
 }
 
 bool CcSyncClientDirectoryApp::setRestoreCommand()
 {
   CcSyncConsole::writeLine("Create new Directory");
-  CcString sCommand = CcSyncConsole::query("Command");
-  m_pSyncClient->updateDirectoryRestoreCommand(m_sDirectory, sCommand);
+  CcString sCommand;
+  CcSyncConsole::query("Command", sCommand);
+  if (sCommand.length())
+  {
+    m_pSyncClient->updateDirectoryRestoreCommand(m_sDirectory, sCommand);
+  }
   return false;
 }
 

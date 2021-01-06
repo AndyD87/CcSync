@@ -40,32 +40,34 @@ void CcSyncConsole::writeString(const CcString& sMessage)
   CcConsole::writeString(sMessage);
 }
 
-CcString CcSyncConsole::clientQuery()
+size_t CcSyncConsole::clientQuery(CcString& sRead)
 {
-  return query(s_sPrepend);
+  return query(s_sPrepend, sRead);
 }
 
-CcString CcSyncConsole::query(const CcString& sQuery)
+size_t CcSyncConsole::query(const CcString& sQuery, CcString& sRead)
 {
   CcConsole::writeString(sQuery + ": ");
-  return CcConsole::readLine();
+  return CcConsole::readLine(sRead);
 }
 
-CcString CcSyncConsole::query(const CcString& sQuery, const CcString& sDefault)
+size_t CcSyncConsole::query(const CcString& sQuery, const CcString& sDefault, CcString& sRead)
 {
   CcConsole::writeString(sQuery + ": ");
-  CcString sResult = CcConsole::readLine();
-  if (sResult.trim().length() == 0)
+  size_t uiRead = CcConsole::readLine(sRead);
+  if (uiRead != sRead.size() ||
+      sRead.trim().length() == 0)
   {
-    return sDefault;
+    sRead = sDefault;
+    uiRead = sDefault.length();
   }
-  return sResult;
+  return uiRead;
 }
 
-CcString CcSyncConsole::queryHidden(const CcString& sQuery)
+size_t CcSyncConsole::queryHidden(const CcString& sQuery, CcString& sRead)
 {
   CcConsole::writeString(sQuery + ": ");
-  return CcConsole::readLineHidden();
+  return CcConsole::readLineHidden(sRead);
 }
 
 void CcSyncConsole::printHelpLine(const CcString& sCommand, size_t iNr, const CcString& sDescription)

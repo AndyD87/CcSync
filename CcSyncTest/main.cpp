@@ -35,13 +35,19 @@
 // Application entry point. 
 int main(int argc, char **argv)
 {
-  CcTestFramework::init(argc, argv);
-  CcConsole::writeLine("Start: CcSyncTest");
+  int iReturn = 0;
+  int iNumberOfTests = 2;
+  do
+  {
+    CcTestFramework::init(argc, argv);
+    CcTestFramework::enableLog("D:/Test.log");
+    CcConsole::writeLine("Start: CcSyncTest");
 
-  CcTestFramework_addTest(CServerTest);
-  CcTestFramework_addTest(CClientTest);
-  CcTestFramework_addTest(CSyncTest);
+    CcTestFramework_addTest(CServerTest);
+    CcTestFramework_addTest(CClientTest);
+    CcTestFramework_addTest(CSyncTest);
 
-  CcTestFramework::runTests();
-  return CcTestFramework::deinit();
+    CcTestFramework::runTests();
+  } while((iReturn = CcTestFramework::deinit()) == 0 && --iNumberOfTests);
+  return iReturn;
 }

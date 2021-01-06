@@ -111,8 +111,8 @@ CcSyncClientConfigPointer CcSyncServerAccount::clientConfig(const CcString& sCli
 {
   if (m_pClientConfig == nullptr)
   {
-    CcSyncClientConfigPointer pClientConfig = new CcSyncClientConfig(); 
-    CCMONITORNEW(pClientConfig.getPtr());
+    CcSyncClientConfigPointer pClientConfig;
+    CCNEW(pClientConfig, CcSyncClientConfig);
     CcString sConfigFilePath(sClientLocation);
     if (CcDirectory::exists(sConfigFilePath) ||
         CcDirectory::create(sConfigFilePath, true))
@@ -146,9 +146,8 @@ CcSyncDbClientPointer CcSyncServerAccount::database(const CcString& sClientLocat
   {
     if (clientConfig(sClientLocation) != nullptr)
     {
-      m_pDatabase = new CcSyncDbClient();
+      CCNEW(m_pDatabase, CcSyncDbClient);
       m_pDatabase->historyEnable();
-      CCMONITORNEW(m_pDatabase.getPtr());
       CcString sConfigFilePath(sClientLocation);
       sConfigFilePath.appendPath(CcSyncGlobals::Client::DatabaseFileName);
       if (m_pDatabase->openDatabase(sConfigFilePath))

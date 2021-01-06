@@ -83,8 +83,7 @@ bool CcSyncDbServer::operator!=(const CcSyncDbServer& oToCompare) const
 
 bool CcSyncDbServer::openDatabase(const CcString& sPath)
 {
-  m_pDatabase = new CcSqlite();
-  CCMONITORNEW(m_pDatabase.getPtr());
+  CCNEW(m_pDatabase, CcSqlite);
   bool bRet = false;
   m_pDatabase->setDatabase(sPath);
   if (m_pDatabase->open())

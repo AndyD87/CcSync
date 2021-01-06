@@ -9,8 +9,19 @@
 ################################################################################
 cmake_minimum_required (VERSION 3.0)
 
-# Enable to check memory usage and leakings
-#set(MEMORYMONITOR_ENABLED TRUE)
+
+set(CMAKE_PROJECT_NAME "CcSync")
+
+
+if($ENV{TEST_CCOS})
+  set(MEMORYMONITOR_ENABLED      TRUE)
+  set(MEMORYMONITOR_CHECK_KERNEL TRUE)
+else()
+  # Enable to check memory usage and leakings
+  #set(MEMORYMONITOR_ENABLED      TRUE)
+  #set(MEMORYMONITOR_CHECK_KERNEL TRUE)
+  #add_definitions(-DTESTING_REDUCE_STRESS)
+endif()
 
 # Set Debug build if not BUILD_TYPE selected
 #if(NOT CMAKE_BUILD_TYPE)

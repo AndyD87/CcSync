@@ -99,15 +99,16 @@ bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUs
             if (readUntilSucceeded(":"))
             {
               m_oServerProc.pipe().writeLine(sPath);
+              m_oServerProc.pipe().writeLine("y");
               if (m_oServerProc.waitForExit(CcSyncTestGlobals::DefaultSyncTimeout))
               {
                 bSuccess = m_oServerProc.getExitCode();
               }
               else
               {
-                m_oServerProc.stop();
                 CcTestFramework::writeError("Server didn't stop as expected:");
                 CcTestFramework::writeError(m_oServerProc.pipe().readAll());
+                m_oServerProc.stop();
               }
             }
           }
@@ -133,6 +134,7 @@ bool CTestServer::start()
   {
     if(readUntilSucceeded(CcSyncTestGlobals::Server::ServerStarted))
     {
+      CcKernel::sleep(500);
       bStarted = true;
     }
   }
@@ -142,7 +144,11 @@ bool CTestServer::start()
 bool CTestServer::stop()
 {
   m_oServerProc.stop();
-  return m_oServerProc.waitForState(EThreadState::Stopped);
+  bool bSuccess = m_oServerProc.waitForState(EThreadState::Stopped, 
+                                             CcSyncTestGlobals::DefaultSyncTimeout
+  );
+  CcKernel::sleep(500);
+  return bSuccess;
 }
 
 CcString CTestServer::readAllData()

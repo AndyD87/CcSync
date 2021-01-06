@@ -794,8 +794,7 @@ bool CcSyncClient::changeHostname(const CcString& sHostName)
 
 CcSyncClient* CcSyncClient::create(const CcString& sConfigFilePath, bool bCreate)
 {
-  CcSyncClient* pNew = new CcSyncClient(sConfigFilePath, bCreate);
-  CCMONITORNEW(pNew);
+  CCNEWTYPE(pNew, CcSyncClient, sConfigFilePath, bCreate);
   return pNew;
 }
 
@@ -836,9 +835,8 @@ bool CcSyncClient::setupDatabase()
   m_sDatabaseFile.appendPath(CcSyncGlobals::ConfigDirName);
   m_sDatabaseFile.appendPath(m_pAccount->getAccountDirName());
   m_sDatabaseFile.appendPath(m_pAccount->getDatabaseFilePath());
-  m_pDatabase = new CcSyncDbClient();
+  CCNEW(m_pDatabase, CcSyncDbClient);
   m_pDatabase->historyDisable();
-  CCMONITORNEW(m_pDatabase.getPtr());
   if (m_pDatabase->openDatabase(m_sDatabaseFile))
   {
     if (!checkSqlTables())

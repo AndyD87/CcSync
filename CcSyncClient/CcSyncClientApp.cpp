@@ -173,6 +173,14 @@ void CcSyncClientApp::run()
   }
 }
 
+void CcSyncClientApp::onStop()
+{
+  if(m_poSyncClient)
+  {
+    m_poSyncClient->logout();
+  }
+}
+
 void CcSyncClientApp::runDaemon()
 {
   m_poSyncClient = CcSyncClient::create(m_sConfigDir, false);
@@ -208,6 +216,7 @@ void CcSyncClientApp::runDaemon()
     CcKernel::delayS(60);
   }
   CcSyncClient::remove(m_poSyncClient);
+  m_poSyncClient = nullptr;
 }
 
 void CcSyncClientApp::runCli()
@@ -223,115 +232,122 @@ void CcSyncClientApp::runCli()
     bool bCommandlineLoop = true;
     while (bCommandlineLoop)
     {
-      CcString sCommandLine = CcSyncConsole::clientQuery();
-      CcArguments oArguments(sCommandLine);
-      if (oArguments.size() == 0)
+      CcString sCommandLine;
+      if (CcSyncConsole::clientQuery(sCommandLine) != SIZE_MAX)
       {
-        continue;
-      }
-      else if (oArguments[0].compareInsensitve(Strings::New))
-      {
-        if (!createAccount())
+        CcArguments oArguments(sCommandLine);
+        if (oArguments.size() == 0)
         {
-          CcSyncConsole::writeLine("Account creation failed.");
+          continue;
         }
-      }
-      else if (oArguments[0].compareInsensitve(Strings::Edit))
-      {
-        if (oArguments.size() > 1)
+        else if (oArguments[0].compareInsensitve(Strings::New))
         {
-          if (!editAccount(oArguments[1]))
+          if (!createAccount())
           {
-            CcSyncConsole::writeLine("Account editing failed.");
+            CcSyncConsole::writeLine("Account creation failed.");
           }
         }
-        else
+        else if (oArguments[0].compareInsensitve(Strings::Edit))
         {
-          CcSyncConsole::writeLine("no account given, please type \"help\"");
-        }
-      }
-      else if (oArguments[0].compareInsensitve(Strings::Del))
-      {
-        if (oArguments.size() > 1)
-        {
-          if (m_poSyncClient->removeAccount(oArguments[1]))
+          if (oArguments.size() > 1)
           {
-            CcSyncConsole::writeLine("Account successfully removed");
+            if (!editAccount(oArguments[1]))
+            {
+              CcSyncConsole::writeLine("Account editing failed.");
+            }
           }
           else
           {
-            CcSyncConsole::writeLine("Failed to delete Account.");
+            CcSyncConsole::writeLine("no account given, please type \"help\"");
           }
         }
-        else
+        else if (oArguments[0].compareInsensitve(Strings::Del))
         {
-          CcSyncConsole::writeLine("no account given, please type \"help\"");
-        }
-      }
-      else if (oArguments[0].compareInsensitve(Strings::List))
-      {
-        for (CcString& sAccount : m_poSyncClient->getAccountList())
-        {
-          CcSyncConsole::writeLine(sAccount);
-        }
-      }
-      else if (oArguments[0].compareInsensitve(Strings::Login))
-      {
-        if (oArguments.size() > 1)
-        {
-          if (m_poSyncClient->selectAccount(oArguments[1]))
+          if (oArguments.size() > 1)
           {
-            CcSyncConsole::writeLine("Account selected: " + m_poSyncClient->getAccountName());
+            if (m_poSyncClient->removeAccount(oArguments[1]))
+            {
+              CcSyncConsole::writeLine("Account successfully removed");
+            }
+            else
+            {
+              CcSyncConsole::writeLine("Failed to delete Account.");
+            }
           }
           else
           {
-            CcSyncConsole::writeLine("No account found");
+            CcSyncConsole::writeLine("no account given, please type \"help\"");
           }
         }
-        else
+        else if (oArguments[0].compareInsensitve(Strings::List))
         {
-          if (m_poSyncClient->selectAccount(""))
+          for (CcString& sAccount : m_poSyncClient->getAccountList())
           {
-            CcSyncConsole::writeLine("First account selcted: " + m_poSyncClient->getAccountName());
+            CcSyncConsole::writeLine(sAccount);
+          }
+        }
+        else if (oArguments[0].compareInsensitve(Strings::Login))
+        {
+          if (oArguments.size() > 1)
+          {
+            if (m_poSyncClient->selectAccount(oArguments[1]))
+            {
+              CcSyncConsole::writeLine("Account selected: " + m_poSyncClient->getAccountName());
+            }
+            else
+            {
+              CcSyncConsole::writeLine("No account found");
+            }
           }
           else
           {
-            CcSyncConsole::writeLine("No account found");
+            if (m_poSyncClient->selectAccount(""))
+            {
+              CcSyncConsole::writeLine("First account selcted: " + m_poSyncClient->getAccountName());
+            }
+            else
+            {
+              CcSyncConsole::writeLine("No account found");
+            }
+          }
+          if (m_poSyncClient->login())
+          {
+            CcSyncConsole::writeLine("Login succeeded");
+            CcSyncClientAccountApp oAccount(m_poSyncClient);
+            oAccount.exec();
+          }
+          else
+          {
+            CcSyncConsole::writeLine("Login failed");
           }
         }
-        if (m_poSyncClient->login())
+        else if (oArguments[0].compareInsensitve(Strings::Exit))
         {
-          CcSyncConsole::writeLine("Login succeeded");
-          CcSyncClientAccountApp oAccount(m_poSyncClient);
-          oAccount.exec();
+          CcSyncConsole::writeLine("Bye :)");
+          bCommandlineLoop = false;
         }
-        else
+        else if (oArguments[0].compareInsensitve(Strings::Help))
         {
-          CcSyncConsole::writeLine("Login failed");
-        }
-      }
-      else if (oArguments[0].compareInsensitve(Strings::Exit))
-      {
-        CcSyncConsole::writeLine("Bye :)");
-        bCommandlineLoop = false;
-      }
-      else if (oArguments[0].compareInsensitve(Strings::Help))
-      {
-        CcSyncConsole::writeLine("Client commands:");
-        CcSyncConsole::printHelpLine("  " + Strings::Help, 30, Strings::HelpDesc);
-        CcSyncConsole::printHelpLine("  " + Strings::Exit, 30, Strings::ExitDesc);
+          CcSyncConsole::writeLine("Client commands:");
+          CcSyncConsole::printHelpLine("  " + Strings::Help, 30, Strings::HelpDesc);
+          CcSyncConsole::printHelpLine("  " + Strings::Exit, 30, Strings::ExitDesc);
 
-        CcSyncConsole::writeLine(CcGlobalStrings::Empty);
-        CcSyncConsole::writeLine("Manage Accounts:");
-        CcSyncConsole::printHelpLine("  " + Strings::Login, 30, Strings::LoginDesc);
-        CcSyncConsole::printHelpLine("  " + Strings::List, 30, Strings::ListDesc);
-        CcSyncConsole::printHelpLine("  " + Strings::New, 30, Strings::NewDesc);
-        CcSyncConsole::printHelpLine("  " + Strings::Edit, 30, Strings::EditDesc);
-        CcSyncConsole::printHelpLine("  " + Strings::Del, 30, Strings::DelDesc);
+          CcSyncConsole::writeLine(CcGlobalStrings::Empty);
+          CcSyncConsole::writeLine("Manage Accounts:");
+          CcSyncConsole::printHelpLine("  " + Strings::Login, 30, Strings::LoginDesc);
+          CcSyncConsole::printHelpLine("  " + Strings::List, 30, Strings::ListDesc);
+          CcSyncConsole::printHelpLine("  " + Strings::New, 30, Strings::NewDesc);
+          CcSyncConsole::printHelpLine("  " + Strings::Edit, 30, Strings::EditDesc);
+          CcSyncConsole::printHelpLine("  " + Strings::Del, 30, Strings::DelDesc);
+        }
+        else
+        {
+          CcSyncConsole::writeLine("Unknown Command, run \"help\" to view all commands");
+        }
       }
       else
       {
-        CcSyncConsole::writeLine("Unknown Command, run \"help\" to view all commands");
+        bCommandlineLoop = false;
       }
     }
   }
@@ -341,6 +357,7 @@ void CcSyncClientApp::runCli()
     setExitCode((int32)EStatus::FSDirNotFound);
   }
   CcSyncClient::remove(m_poSyncClient);
+  m_poSyncClient = nullptr;
 }
 
 void CcSyncClientApp::runOnce()
@@ -383,6 +400,7 @@ void CcSyncClientApp::runOnce()
     }
   }
   CcSyncClient::remove(m_poSyncClient);
+  m_poSyncClient = nullptr;
 }
 
 void CcSyncClientApp::runCreate()
@@ -420,15 +438,23 @@ void CcSyncClientApp::runCreate()
           sServer = oList[1];
           sPort = CcSyncGlobals::DefaultPortStr;
         }
-        CcString sPassword = CcSyncConsole::queryHidden("Password");
-        if(m_poSyncClient->addAccount(oList[0], sPassword, sServer, sPort))
+        CcString sPassword;
+        CcSyncConsole::queryHidden("Password", sPassword);
+        if (sPassword.length() >= 8)
         {
-          CcSyncConsole::writeLine("Account successfully created");
+          if (m_poSyncClient->addAccount(oList[0], sPassword, sServer, sPort))
+          {
+            CcSyncConsole::writeLine("Account successfully created");
+          }
+          else
+          {
+            CcSyncConsole::writeLine("Failed to create account");
+            setExitCode(EStatus::ConfigError);
+          }
         }
         else
         {
-          CcSyncConsole::writeLine("Failed to create account");
-          setExitCode(EStatus::ConfigError);
+          CcSyncConsole::writeLine("Password requires at least 8 signs");
         }
       }
     }
@@ -439,6 +465,7 @@ void CcSyncClientApp::runCreate()
     setExitCode(EStatus::CommandInvalidParameter);
   }
   CcSyncClient::remove(m_poSyncClient);
+  m_poSyncClient = nullptr;
 }
 
 void CcSyncClientApp::runDirs()
@@ -487,6 +514,7 @@ void CcSyncClientApp::runDirs()
     setExitCode(EStatus::InvalidHandle);
   }
   CcSyncClient::remove(m_poSyncClient);
+  m_poSyncClient = nullptr;
 }
 
 void CcSyncClientApp::runHelp()
@@ -516,22 +544,42 @@ bool CcSyncClientApp::createAccount()
   if (m_poSyncClient != nullptr)
   {
     CcSyncConsole::writeLine("Setup new Account");
-    CcString sAccount = CcSyncConsole::query("Name");
-    CcString sServer = CcSyncConsole::query("Server");
-    CcString sPort = CcSyncConsole::query("Port [27500]", CcSyncGlobals::DefaultPortStr);
+    CcString sAccount;
+    CcSyncConsole::query("Name", sAccount);
+    CcString sServer ;
+    CcSyncConsole::query("Server", sServer);
+    CcString sPort   ;
+    CcSyncConsole::query("Port [27500]", CcSyncGlobals::DefaultPortStr, sPort);
     if (m_poSyncClient->selectAccount(sAccount + "@" + sServer))
     {
-      CcString sAnswer = CcSyncConsole::query("Account already existing, change password? [y/N]", "n");
+      CcString sAnswer;
+      CcSyncConsole::query("Account already existing, change password? [y/N]", "n", sAnswer);
       if (sAnswer.toLower()[0] == 'y')
       {
-        CcString sPassword = CcSyncConsole::queryHidden("Password");
-        bSuccess = m_poSyncClient->getCurrentAccountConfig()->changePassword(sPassword);
+        CcString sPassword;
+        CcSyncConsole::queryHidden("Password", sPassword);
+        if (sPassword.length() >= 8)
+        {
+          bSuccess = m_poSyncClient->getCurrentAccountConfig()->changePassword(sPassword);
+        }
+        else
+        {
+          CcSyncConsole::writeLine("Password requires at least 8 signs");
+        }
       }
     }
     else
     {
-      CcString sPassword = CcSyncConsole::queryHidden("Password");
-      bSuccess = m_poSyncClient->addAccount(sAccount, sPassword, sServer, sPort);
+      CcString sPassword;
+      CcSyncConsole::queryHidden("Password", sPassword);
+      if (sPassword.length() >= 8)
+      {
+        bSuccess = m_poSyncClient->addAccount(sAccount, sPassword, sServer, sPort);
+      }
+      else
+      {
+        CcSyncConsole::writeLine("Password requires at least 8 signs");
+      }
     }
   }
   return bSuccess;
@@ -547,10 +595,15 @@ bool CcSyncClientApp::editAccount(const CcString& sAccount)
       bSuccess = true;
       CcSyncConsole::writeLine("Edit Account");
       CcString sOldServer = m_poSyncClient->getCurrentAccountConfig()->getServer().getHostname();
-      CcString sServer = CcSyncConsole::query("Server ["+ sOldServer +"]", m_poSyncClient->getCurrentAccountConfig()->getServer().getHostname());
-      if (sServer != sOldServer)
+      CcString sServer;
+      CcSyncConsole::query("Server [" + sOldServer + "]", m_poSyncClient->getCurrentAccountConfig()->getServer().getHostname(), sServer);
+      if (sServer.length() > 0  && sServer != sOldServer)
       {
         bSuccess &= m_poSyncClient->changeHostname(sServer);
+      }
+      else if (sServer.length())
+      {
+        CcSyncConsole::writeLine("  No server set, not changed");
       }
       else
       {
@@ -558,7 +611,8 @@ bool CcSyncClientApp::editAccount(const CcString& sAccount)
       }
       if (bSuccess)
       {
-        CcString sPort = CcSyncConsole::query("Port [" + m_poSyncClient->getCurrentAccountConfig()->getServer().getPortString() + "]", m_poSyncClient->getCurrentAccountConfig()->getServer().getPortString());
+        CcString sPort;
+        CcSyncConsole::query("Port [" + m_poSyncClient->getCurrentAccountConfig()->getServer().getPortString() + "]", m_poSyncClient->getCurrentAccountConfig()->getServer().getPortString(), sPort);
         if (sPort != m_poSyncClient->getCurrentAccountConfig()->getServer().getPortString())
         {
           bSuccess &= m_poSyncClient->getCurrentAccountConfig()->changePort(sPort);
@@ -575,11 +629,20 @@ bool CcSyncClientApp::editAccount(const CcString& sAccount)
       }
       if (bSuccess)
       {
-        CcString sAnswer = CcSyncConsole::query("Change password? [y/N]", "n");
+        CcString sAnswer;
+        CcSyncConsole::query("Change password? [y/N]", "n", sAnswer);
         if (sAnswer.toLower()[0] == 'y')
         {
-          CcString sPassword = CcSyncConsole::queryHidden("Password");
-          bSuccess &= m_poSyncClient->getCurrentAccountConfig()->changePassword(sPassword);
+          CcString sPassword;
+          CcSyncConsole::queryHidden("Password", sPassword);
+          if (sPassword.length() >= 8)
+          {
+            bSuccess &= m_poSyncClient->getCurrentAccountConfig()->changePassword(sPassword);
+          }
+          else
+          {
+            CcSyncConsole::writeLine("Password requires at least 8 signs");
+          }
         }
         else
         {

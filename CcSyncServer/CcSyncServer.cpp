@@ -195,7 +195,8 @@ void CcSyncServer::runServer()
   {
     CcSslControl::createCert(m_oConfig.getSslCertFile(), m_oConfig.getSslKeyFile());
   }
-  m_oSocket = new CcSslSocket();
+  CCNEWTYPE(pSocket, CcSslSocket);
+  m_oSocket = pSocket;
   static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->initServer();
   int iTrue = 1;
 
@@ -219,11 +220,10 @@ void CcSyncServer::runServer()
         if (oTemp != nullptr)
         {
           CcSyncLog::writeDebug("Server recognized an incomming connection, starting thread");
-          CcSyncServerWorker* oNewWorker = new CcSyncServerWorker(this, oTemp);
+          CCNEWTYPE(oNewWorker, CcSyncServerWorker, this, oTemp);
           m_oWorkerListLock.lock();
           m_oWorkerList.append(oNewWorker);
           m_oWorkerListLock.unlock();
-          CCMONITORNEW(oNewWorker);
           oNewWorker->start();
         }
       }
@@ -243,7 +243,7 @@ void CcSyncServer::runServer()
 
 void CcSyncServer::onStop()
 {
-  shutdown();
+  m_oSocket.close();
   CcSyncLog::writeDebug("Stop received");
 }
 
@@ -473,8 +473,11 @@ bool CcSyncServer::createConfig()
     bool bAnswered = false;
     while (bAnswered == false)
     {
-      sAdmin = CcSyncConsole::query("Administrator");
-      if (sAdmin == "")
+      if (CcSyncConsole::query("Administrator", sAdmin) == SIZE_MAX)
+      {
+        bSuccess = false;
+      }
+      else if (sAdmin == "")
       {
         CcSyncConsole::writeLine("Name is required, please retry");
       }
@@ -483,68 +486,88 @@ bool CcSyncServer::createConfig()
         bAnswered = true;
       }
     }
-    bAnswered = false;
-    while (bAnswered == false)
+    if (bSuccess)
     {
-      sAdminPw = CcSyncConsole::query("Password");
-      CcString sAdminPwTest = CcSyncConsole::query("Repeat");
-      if (sAdminPw == "" || sAdminPw != sAdminPwTest)
+      bAnswered = false;
+      while (bAnswered == false)
       {
-        CcSyncConsole::writeLine("Passwords not matching or empty, please retry");
-      }
-      else
-      {
-        bAnswered = true;
-      }
-    }
-    bAnswered = false;
-    while (bAnswered == false)
-    {
-
-      CcString sPort = CcSyncConsole::query("Port [" + CcString::fromNumber(m_oConfig.getPort()) + "]", CcString::fromNumber(m_oConfig.getPort()));
-      uiPort = sPort.trim().toUint16(&bAnswered);
-      if (bAnswered == false||
-          uiPort == 0)
-      {
-        CcSyncConsole::writeLine("Port must be a number between 0 and 65536");
-      }
-      else
-      {
-        bAnswered = true;
-      }
-    }
-    bAnswered = false;
-    while (bAnswered == false)
-    {
-      sLocation.setOsPath(CcSyncConsole::query("Location [" + m_oConfig.getLocation().getPath() + "]", m_oConfig.getLocation().getPath()));
-      if (!CcDirectory::exists(sLocation))
-      {
-        CcString sAnswer = CcSyncConsole::query("Location not existing, create? [Y/n]", "y");
-        if (sAnswer[0] == 'y' || sAnswer[0] == 'Y')
+        CcString sAdminPwTest;
+        if (CcSyncConsole::query("Password", sAdminPw) != SIZE_MAX &&
+            CcSyncConsole::query("Repeat", sAdminPwTest) != SIZE_MAX
+            )
         {
-          bAnswered = true;
-          if (!CcDirectory::create(sLocation, true))
+          if (sAdminPw == "" || sAdminPw != sAdminPwTest)
           {
-            CcSyncConsole::writeLine("Failed to create location, please retry");
-            bAnswered = false;
-            continue;
+            CcSyncConsole::writeLine("Passwords not matching or empty, please retry");
           }
-        }
-        else if (sAnswer[0] == 'n' || sAnswer[0] == 'N')
-        {
-          CcSyncConsole::writeLine("Location will be configured, please create it later.");
-          bAnswered = true;
-          continue;
+          else
+          {
+            bAnswered = true;
+          }
         }
         else
         {
-          CcSyncConsole::writeLine("Answer not verfied, please retry");
-          continue;
+          bAnswered = true;
         }
       }
-      else
+    }
+    if (bSuccess)
+    {
+      bAnswered = false;
+      while (bAnswered == false)
       {
-        bAnswered = true;
+
+        CcString sPort;
+        CcSyncConsole::query("Port [" + CcString::fromNumber(m_oConfig.getPort()) + "]", CcString::fromNumber(m_oConfig.getPort()), sPort);
+        uiPort = sPort.trim().toUint16(&bAnswered);
+        if (bAnswered == false ||
+            uiPort == 0)
+        {
+          CcSyncConsole::writeLine("Port must be a number between 0 and 65536");
+        }
+        else
+        {
+          bAnswered = true;
+        }
+      }
+    }
+    if (bSuccess)
+    {
+      bAnswered = false;
+      while (bAnswered == false)
+      {
+        CcSyncConsole::query("Location [" + m_oConfig.getLocation().getPath() + "]", m_oConfig.getLocation().getPath(), sLocation);
+        sLocation.setOsPath(sLocation);
+        if (!CcDirectory::exists(sLocation))
+        {
+          CcString sAnswer;
+          CcSyncConsole::query("Location \"" + sLocation + "\" not existing, create? [Y/n]", "y", sAnswer);
+          if (sAnswer[0] == 'y' || sAnswer[0] == 'Y')
+          {
+            bAnswered = true;
+            if (!CcDirectory::create(sLocation, true))
+            {
+              CcSyncConsole::writeLine("Failed to create location, please retry");
+              bAnswered = false;
+              continue;
+            }
+          }
+          else if (sAnswer[0] == 'n' || sAnswer[0] == 'N')
+          {
+            CcSyncConsole::writeLine("Location will be configured, please create it later.");
+            bAnswered = true;
+            continue;
+          }
+          else
+          {
+            CcSyncConsole::writeLine("Answer not verfied, please retry");
+            continue;
+          }
+        }
+        else
+        {
+          bAnswered = true;
+        }
       }
     }
     if (bSuccess)

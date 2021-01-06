@@ -51,8 +51,7 @@ CcSyncServerWorker::CcSyncServerWorker(CcSyncServer* oServer, CcSocket oSocket) 
   m_pServer(oServer),
   m_oSocket(oSocket)
 {
-  m_pPrivate = new CcSyncServerWorkerPrivate(oServer);
-  CCMONITORNEW(m_pPrivate);
+  CCNEW(m_pPrivate, CcSyncServerWorkerPrivate, oServer);
 }
 
 CcSyncServerWorker::~CcSyncServerWorker(void)
@@ -482,6 +481,8 @@ void CcSyncServerWorker::doServerStop()
       m_oUser.getRights() >= ESyncRights::Admin)
   {
     sendResponse();
+    m_oSocket.close();
+
     m_pServer->shutdown();
     stop();
   }

@@ -43,11 +43,10 @@ CServerTest::CServerTest( void ) :
     sApplicationPath.append(".exe");
 #endif
   }
-  m_pServer = new CTestServer(sApplicationPath, sConfigDir);
+  CCNEW(m_pServer, CTestServer, sApplicationPath, sConfigDir);
 
   appendTestMethod("Test if server can be exectued", &CServerTest::testServerProc);
   appendTestMethod("Test if configure can fail", &CServerTest::testConfigureFailed);
-  CCMONITORNEW(m_pServer);
 }
 
 CServerTest::~CServerTest( void )

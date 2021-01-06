@@ -56,6 +56,7 @@ public:
 
   virtual CcVersion getVersion() const override;
 
+  void onStop() override;
   void run() override;
   void runDaemon();
   void runCli();

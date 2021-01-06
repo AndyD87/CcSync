@@ -38,8 +38,7 @@ bool CcSyncClientCom::connect(const CcUrl& oConnect)
   }
   else
   {
-    ISocket* pSocket = new CcSslSocket();
-    CCMONITORNEW(pSocket);
+    CCNEWTYPE(pSocket, CcSslSocket);
     m_oSocket = pSocket;
     if (static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->initClient())
     {
@@ -128,6 +127,7 @@ bool CcSyncClientCom::sendRequestGetResponse()
           CcSyncLog::writeError("Read from socket failed, try reconnection", ESyncLogTarget::Client);
           CcSyncLog::writeError("Request:", ESyncLogTarget::Client);
           CcSyncLog::writeError(oJsonDoc.getDocument(), ESyncLogTarget::Client);
+          CcSyncLog::writeError("Response size: " + CcString::fromSize(sRead.length()), ESyncLogTarget::Client);
           CcSyncLog::writeError("Response 24 signs:", ESyncLogTarget::Client);
           CcSyncLog::writeError(sRead.substr(0, 24), ESyncLogTarget::Client);
         }

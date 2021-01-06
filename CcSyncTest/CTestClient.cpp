@@ -81,6 +81,7 @@ bool CTestClient::addNewServer(const CcString& sServerName, const CcString& sSer
   oStatus = m_oClientProc.waitForRunning(CcDateTimeFromSeconds(1));
   if (oStatus)
   {
+    CcTestFramework::writeInfo("  Client started");
     m_oClientProc.pipe().writeLine("new");
     m_oClientProc.pipe().writeLine(sUsername);
     m_oClientProc.pipe().writeLine(sServerName);
@@ -89,11 +90,17 @@ bool CTestClient::addNewServer(const CcString& sServerName, const CcString& sSer
 
     if (readUntilSucceeded("]:"))
     {
+      CcTestFramework::writeInfo("  new command done, exit now");
       m_oClientProc.pipe().writeLine("exit");
       oStatus = m_oClientProc.waitForExit(CcDateTimeFromSeconds(1));
+      if (!oStatus)
+        CcTestFramework::writeError(CcString("  Failed with") + m_oClientProc.pipe().readAll());
+      else
+        CcTestFramework::writeInfo("  Account created");
     }
     else
     {
+      CcTestFramework::writeError("  Account creation timed out");
       oStatus = EStatus::Error;
     }
   }
@@ -132,7 +139,9 @@ bool CTestClient::logout()
 
 bool CTestClient::sync()
 {
+  CcTestFramework::writeInfo("  send sync command");
   m_oClientProc.pipe().writeLine("sync");
+  CcTestFramework::writeInfo("  wait for command done");
   return readUntilSucceeded(m_sUsername + "]:");
 }
 

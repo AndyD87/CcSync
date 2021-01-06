@@ -136,10 +136,11 @@ function StartBuildProcess
 Function Test-VisualStudio()
 {
     $VisualStudios = @()
-    if((Test-Path "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat") -and
-        (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\cl.exe")) # Compiler
+    if( (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat") -and
+        (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\devenv.exe") -and # IDE
+        (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\cl.exe"))              # Compiler
     {
-        $VisualStudios += "Visual Studio 14";
+        $VisualStudios += "Visual Studio 14 2015";
     }
     if((Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe") -and
        (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\2017"))
@@ -153,7 +154,7 @@ Function Test-VisualStudio()
     }
 
     $Architectures  = @("win32", "x64")
-    $Configurations = @("Release", "Debug") # Not required but possible to test : "RelWithDebInfo", "MinSizeRel")
+    $Configurations = @("Debug", "Release") # Not required but possible to test : "RelWithDebInfo", "MinSizeRel")
     $Statics = @("Static", "Shared")
 
     $CurrentDir  = (Get-Item .\).FullName
@@ -241,6 +242,8 @@ Function Test-MinGW()
     cd $CurrentDir
     RemoveDirs
 }
+
+$ENV:TEST_CCOS="TRUE"
 
 if($DoVisualStudio)
 {
