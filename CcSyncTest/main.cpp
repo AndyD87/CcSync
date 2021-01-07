@@ -36,7 +36,7 @@
 int main(int argc, char **argv)
 {
   int iReturn = 0;
-  int iNumberOfTests = 2;
+  int iNumberOfTests = 1;
   do
   {
     CcTestFramework::init(argc, argv);

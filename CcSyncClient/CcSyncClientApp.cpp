@@ -354,7 +354,7 @@ void CcSyncClientApp::runCli()
   else
   {
     CCDEBUG("Error in Directory Locations, stop progress");
-    setExitCode((int32)EStatus::FSDirNotFound);
+    setExitCode(EStatus::FSDirNotFound);
   }
   CcSyncClient::remove(m_poSyncClient);
   m_poSyncClient = nullptr;
