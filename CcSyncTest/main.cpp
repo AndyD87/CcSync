@@ -40,7 +40,6 @@ int main(int argc, char **argv)
   do
   {
     CcTestFramework::init(argc, argv);
-    CcTestFramework::enableLog("D:/Test.log");
     CcConsole::writeLine("Start: CcSyncTest");
 
     CcTestFramework_addTest(CServerTest);
