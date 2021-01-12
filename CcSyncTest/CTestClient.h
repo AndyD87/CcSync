@@ -63,8 +63,8 @@ public:
   bool serverShutdown();
 
 private:
-  CcString readWithTimeout(const CcString& sStringEnd, const CcDateTime &oTimeeout = CcSyncTestGlobals::DefaultSyncTimeout);
-  bool readUntilSucceeded(const CcString& sStringEnd);
+  CcString readWithTimeout(const CcString& sStringEnd, CcStatus& oStatus, const CcDateTime &oTimeeout = CcSyncTestGlobals::DefaultSyncTimeout);
+  bool readUntilSucceeded(const CcString& sStringEnd, CcStatus* oStatus = nullptr);
 
 private:
   CcProcess m_oClientProc;

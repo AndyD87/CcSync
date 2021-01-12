@@ -225,16 +225,16 @@ bool CTestClient::serverShutdown()
   return bSuccess;
 }
 
-CcString CTestClient::readWithTimeout(const CcString& sStringEnd, const CcDateTime& oTimeout)
+CcString CTestClient::readWithTimeout(const CcString& sStringEnd, CcStatus& oStatus, const CcDateTime& oTimeout)
 {
   CcString sData;
-  CcDateTime oCoundDown = oTimeout;
+  CcDateTime oCountDown = oTimeout;
   CcString sWaitForever = CcKernel::getEnvironmentVariable("WAIT_FOREVER");
 
-  while (oCoundDown.timestampUs() > 0 ||
+  while (oCountDown.timestampUs() > 0 ||
          sWaitForever.length())
   {
-    oCoundDown.addSeconds(-1);
+    oCountDown.addSeconds(-1);
     CcKernel::delayS(1);
     sData += m_oClientProc.pipe().readAll();
     sData.trim();
@@ -243,21 +243,34 @@ CcString CTestClient::readWithTimeout(const CcString& sStringEnd, const CcDateTi
       break;
     }
   }
+  if (oCountDown <= 0)
+  {
+    oStatus = EStatus::TimeoutReached;
+  }
+  else
+  {
+    oStatus = true;
+  }
   return sData;
 }
 
-bool CTestClient::readUntilSucceeded(const CcString& sStringEnd)
+bool CTestClient::readUntilSucceeded(const CcString& sStringEnd, CcStatus* oStatus)
 {
-  bool bSuccess = false;
-  CcString sData = readWithTimeout(sStringEnd);
-  if (sData.endsWith(sStringEnd))
+  CcStatus oLocalStatus;
+  if(!oStatus) oStatus = &oLocalStatus;
+  CcString sRead = readWithTimeout(sStringEnd, *oStatus);
+  if (*oStatus)
   {
-    bSuccess = true;
+    CcTestFramework::writeError("Read timed out");
+  }
+  else if (sRead.endsWith(sStringEnd))
+  {
+    *oStatus = true;
   }
   else
   {
     CcTestFramework::writeError("Last Output:");
-    CcTestFramework::writeError(sData);
+    CcTestFramework::writeError(sRead);
   }
-  return bSuccess;
+  return *oStatus;
 }
