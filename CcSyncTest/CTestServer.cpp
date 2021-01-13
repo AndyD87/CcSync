@@ -188,7 +188,7 @@ bool CTestServer::readUntilSucceeded(const CcString& sStringEnd, CcStatus* oStat
   CcStatus oLocalStatus;
   if(!oStatus) oStatus = &oLocalStatus;
   CcString sRead = readWithTimeout(sStringEnd, *oStatus);
-  if (*oStatus)
+  if (*oStatus == EStatus::TimeoutReached)
   {
     CcTestFramework::writeError("Read timed out");
   }
