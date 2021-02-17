@@ -60,7 +60,7 @@ CcSyncAccountConfig::CcSyncAccountConfig(const CcString& sUsername, const CcStri
   m_oServer.setHostname(sServer);
   m_oServer.setPort(sPort);
   CcString sPasswordCrypt = sUsername.getLower() + sPassword;
-  sPasswordCrypt = CcSha256().generate(sPasswordCrypt.getByteArray()).getValue().getHexString();
+  sPasswordCrypt = CcSha256().generateByteArray(sPasswordCrypt.getByteArray()).getValue().getHexString();
   m_oPassword.setPassword(sPasswordCrypt, EHashType::Sha256);
   m_bValid = true;
 }
@@ -261,7 +261,7 @@ bool CcSyncAccountConfig::changePassword(const CcString& sPassword)
     if (rPasswordNode.isNotNull())
     {
       CcString sPasswordCrypt = m_sName.getLower() + sPassword;
-      sPasswordCrypt = CcSha256().generate(sPasswordCrypt.getByteArray()).getValue().getHexString();
+      sPasswordCrypt = CcSha256().generateByteArray(sPasswordCrypt.getByteArray()).getValue().getHexString();
       m_oPassword.setPassword(sPasswordCrypt, EHashType::Sha256);
       rPasswordNode.setInnerText(sPasswordCrypt);
       m_oPassword.setPassword(sPasswordCrypt);

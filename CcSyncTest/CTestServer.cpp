@@ -82,22 +82,26 @@ bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUs
   resetArguments();
   addArgument("configure");
   m_oServerProc.start();
-  CcStatus oStatus;
   if (m_oServerProc.waitForRunning(CcDateTimeFromSeconds(10)))
   {
-    if (readUntilSucceeded("Administrator:"))
+    if (!readUntilSucceeded("Administrator:")) CcTestFramework::writeError("No Administrator prompt");
+    else
     {
       m_oServerProc.pipe().writeLine(sUsername);
-      if (readUntilSucceeded(":"))
+      if (!readUntilSucceeded(":")) CcTestFramework::writeError("No Username prompt");
+      else
       {
         m_oServerProc.pipe().writeLine(sPassword);
-        if (readUntilSucceeded(":"))
+        if (!readUntilSucceeded(":")) CcTestFramework::writeError("No Password prompt");
+        else
         {
           m_oServerProc.pipe().writeLine(sPassword);
-          if (readUntilSucceeded(":"))
+          if (!readUntilSucceeded(":")) CcTestFramework::writeError("No Password repeat prompt");
+          else
           {
             m_oServerProc.pipe().writeLine(sPort);
-            if (readUntilSucceeded(":"))
+            if (!readUntilSucceeded(":")) CcTestFramework::writeError("No Port prompt");
+            else
             {
               m_oServerProc.pipe().writeLine(sPath);
               m_oServerProc.pipe().writeLine("y");

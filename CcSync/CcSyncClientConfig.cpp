@@ -60,7 +60,7 @@ bool CcSyncClientConfig::readConfig(const CcString& sConfigFile)
     CcXmlNode& oRootNode = oDocRootNode.getNode(CcSyncGlobals::Client::ConfigTags::Root);
     if (oRootNode.isNotNull())
     {
-      for (CcXmlNode& pAccountNode : oRootNode.nodeList())
+      for (CcXmlNode& pAccountNode : oRootNode.getNodeList())
       {
         if (pAccountNode.getName() == CcSyncGlobals::Client::ConfigTags::Account)
         {
@@ -109,7 +109,7 @@ bool CcSyncClientConfig::removeAccount(const CcString & sAccount)
   size_t uiIndex = getAccountIndex(sAccount);
   if (uiIndex < m_oAccounts.size())
   {
-    CcXmlNodeList& rAccountsNodes = m_oXmlFile.rootNode()[CcSyncGlobals::Client::ConfigTags::Root].nodeList();
+    CcXmlNodeList& rAccountsNodes = m_oXmlFile.rootNode()[CcSyncGlobals::Client::ConfigTags::Root].getNodeList();
     for (size_t j = 0; j < rAccountsNodes.size(); j++)
     {
       CcXmlNode& rAccountNode = rAccountsNodes[j];
