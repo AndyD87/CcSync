@@ -62,8 +62,8 @@ public:
   CcString readAllData();
 
 private: // Methods
-  CcString readWithTimeout(const CcString& sStringEnd, const CcDateTime& oTimeout = CcSyncTestGlobals::DefaultSyncTimeout);
-  bool readUntilSucceeded(const CcString& sStringEnd);
+  CcString readWithTimeout(const CcString& sStringEnd, CcStatus& oStatus, const CcDateTime& oTimeout = CcSyncTestGlobals::DefaultSyncTimeout);
+  bool readUntilSucceeded(const CcString& sStringEnd, CcStatus* oStatus = nullptr);
 
 private:
   CcProcess m_oServerProc;

@@ -84,19 +84,24 @@ bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUs
   m_oServerProc.start();
   if (m_oServerProc.waitForRunning(CcDateTimeFromSeconds(10)))
   {
-    if (readUntilSucceeded("Administrator:"))
+    if (!readUntilSucceeded("Administrator:")) CcTestFramework::writeError("No Administrator prompt");
+    else
     {
       m_oServerProc.pipe().writeLine(sUsername);
-      if (readUntilSucceeded(":"))
+      if (!readUntilSucceeded(":")) CcTestFramework::writeError("No Username prompt");
+      else
       {
         m_oServerProc.pipe().writeLine(sPassword);
-        if (readUntilSucceeded(":"))
+        if (!readUntilSucceeded(":")) CcTestFramework::writeError("No Password prompt");
+        else
         {
           m_oServerProc.pipe().writeLine(sPassword);
-          if (readUntilSucceeded(":"))
+          if (!readUntilSucceeded(":")) CcTestFramework::writeError("No Password repeat prompt");
+          else
           {
             m_oServerProc.pipe().writeLine(sPort);
-            if (readUntilSucceeded(":"))
+            if (!readUntilSucceeded(":")) CcTestFramework::writeError("No Port prompt");
+            else
             {
               m_oServerProc.pipe().writeLine(sPath);
               m_oServerProc.pipe().writeLine("y");
@@ -156,7 +161,7 @@ CcString CTestServer::readAllData()
   return m_oServerProc.pipe().readAll();
 }
 
-CcString CTestServer::readWithTimeout(const CcString& sStringEnd, const CcDateTime& oTimeout)
+CcString CTestServer::readWithTimeout(const CcString& sStringEnd, CcStatus& oStatus, const CcDateTime& oTimeout)
 {
   CcString sData;
   CcDateTime oCountDown = oTimeout;
@@ -171,16 +176,34 @@ CcString CTestServer::readWithTimeout(const CcString& sStringEnd, const CcDateTi
       break;
     }
   }
+  if (oCountDown <= 0)
+  {
+    oStatus = EStatus::TimeoutReached;
+  }
+  else
+  {
+    oStatus = true;
+  }
   return sData;
 }
 
-bool CTestServer::readUntilSucceeded(const CcString& sStringEnd)
+bool CTestServer::readUntilSucceeded(const CcString& sStringEnd, CcStatus* oStatus)
 {
-  bool bSuccess = false;
-  CcString sRead = readWithTimeout(sStringEnd);
-  if (sRead.endsWith(sStringEnd))
+  CcStatus oLocalStatus;
+  if(!oStatus) oStatus = &oLocalStatus;
+  CcString sRead = readWithTimeout(sStringEnd, *oStatus);
+  if (*oStatus == EStatus::TimeoutReached)
   {
-    bSuccess = true;
+    CcTestFramework::writeError("Read timed out");
   }
-  return bSuccess;
+  else if (sRead.endsWith(sStringEnd))
+  {
+    *oStatus = true;
+  }
+  else
+  {
+    CcTestFramework::writeError("Last Output:");
+    CcTestFramework::writeError(sRead);
+  }
+  return *oStatus;
 }

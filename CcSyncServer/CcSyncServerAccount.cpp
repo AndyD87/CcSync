@@ -44,7 +44,7 @@ CcSyncServerAccount::CcSyncServerAccount(const CcString& sName, const CcString& 
   m_sName(sName)
 {
   CcString sPasswordCrypt = sName.getLower() + sPassword;
-  sPasswordCrypt = CcSha256().generate(sPasswordCrypt.getByteArray()).getValue().getHexString();
+  sPasswordCrypt = CcSha256().generateByteArray(sPasswordCrypt.getByteArray()).getValue().getHexString();
   m_oPassword.setPassword(sPasswordCrypt, EHashType::Sha256);
 }
 
