@@ -2,7 +2,7 @@ ARG Version=20.04
 FROM ubuntu:$Version
 LABEL maintainer  = "coolcow_ccos@yahoo.com"
 LABEL version     = "0.1"
-LABEL description = "Build and pack CcSync for Ubuntu $Version"
+LABEL description = "Build and pack CcOS projects for Ubuntu $Version"
 
 WORKDIR /opt
 

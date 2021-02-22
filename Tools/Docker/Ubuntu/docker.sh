@@ -1,9 +1,9 @@
 if [ -z $1 ]
 then
-  IMAGE_NAME="ccsync-ubuntu_20.04"
+  IMAGE_NAME="cc-ubuntu_20.04"
   IMAGE_VERSION="20.04"
 else
-  IMAGE_NAME="ccsync-ubuntu_$1"
+  IMAGE_NAME="cc-ubuntu_$1"
   IMAGE_VERSION="$1"
 fi
 
