@@ -36,6 +36,8 @@
 #include "CcSyncGlobals.h"
 #include "CcVersion.h"
 #include "CcDirectory.h"
+#include "CcGroupList.h"
+#include "CcUserList.h"
 
 namespace Strings
 {
@@ -125,13 +127,28 @@ void CcSyncClientApp::run()
     {
       m_eMode = ESyncClientMode::Dirs;
     }
-    else if (m_oArguments[1].compareInsensitve("help"))
+    else if (m_oArguments[1].compareInsensitve("groupid"))
+    {
+      m_eMode = ESyncClientMode::GroupId;
+    }
+    else if (m_oArguments[1].compareInsensitve("userid"))
+    {
+      m_eMode = ESyncClientMode::UserId;
+    }
+    else if (m_oArguments[1].compareInsensitve("help") ||
+             m_oArguments[1].compareInsensitve("-h") ||
+             m_oArguments[1].compareInsensitve("/h"))
     {
       m_eMode = ESyncClientMode::Help;
     }
     else
     {
       m_eMode = ESyncClientMode::Unknown;
+    }
+    if(m_eMode != ESyncClientMode::Unknown)
+    {
+      // Remove first arguments
+      m_oArguments.remove(0, 2);
     }
   }
   switch (m_eMode)
@@ -166,6 +183,12 @@ void CcSyncClientApp::run()
       break;
     case ESyncClientMode::Dirs:
       runDirs();
+      break;
+    case ESyncClientMode::GroupId:
+      runGroupId();
+      break;
+    case ESyncClientMode::UserId:
+      runUserId();
       break;
     default:
       setExitCode(EStatus::CommandInvalidParameter);
@@ -364,9 +387,9 @@ void CcSyncClientApp::runOnce()
 {
   m_poSyncClient = CcSyncClient::create(m_sConfigDir, false);
   CcStringList slAccounts;
-  if(m_oArguments.size() > 2)
+  if(m_oArguments.size() > 0)
   {
-    slAccounts.append(m_oArguments[2]);
+    slAccounts.append(m_oArguments[0]);
   }
   else
   {
@@ -406,15 +429,15 @@ void CcSyncClientApp::runOnce()
 void CcSyncClientApp::runCreate()
 {
   m_poSyncClient = CcSyncClient::create(m_sConfigDir, true);
-  if(m_oArguments.last().contains("@"))
+  if(m_oArguments[0].contains("@"))
   {
-    if (m_poSyncClient->selectAccount(m_oArguments.last()))
+    if (m_poSyncClient->selectAccount(m_oArguments[0]))
     {
       CcSyncConsole::writeLine("Account already available");
     }
     else
     {
-      CcStringList oList = m_oArguments.last().split("@");
+      CcStringList oList = m_oArguments[0].split("@");
       if(oList.size() == 2)
       {
         CcString sPort;
@@ -439,7 +462,14 @@ void CcSyncClientApp::runCreate()
           sPort = CcSyncGlobals::DefaultPortStr;
         }
         CcString sPassword;
-        CcSyncConsole::queryHidden("Password", sPassword);
+        if(m_oArguments.size() > 1)
+        {
+          sPassword = m_oArguments[1];
+        }
+        else
+        {
+          CcSyncConsole::queryHidden("Password", sPassword);
+        }
         if (sPassword.length() >= 8)
         {
           if (m_poSyncClient->addAccount(oList[0], sPassword, sServer, sPort))
@@ -471,14 +501,14 @@ void CcSyncClientApp::runCreate()
 void CcSyncClientApp::runDirs()
 {
   m_poSyncClient = CcSyncClient::create(m_sConfigDir);
-  if(m_oArguments.size() == 4)
+  if(m_oArguments.size() == 2)
   {
-    CcString sAccount = m_oArguments[2];
+    CcString sAccount = m_oArguments[0];
     if (m_poSyncClient->selectAccount(sAccount) &&
         m_poSyncClient->login()                 &&
         m_poSyncClient->updateFromRemoteAccount())
     {
-      CcString sPath = m_oArguments[3].getOsPath();
+      CcString sPath = m_oArguments[1].getOsPath();
       if(!CcDirectory::exists(sPath) &&
          !CcDirectory::create(sPath))
       {
@@ -517,6 +547,118 @@ void CcSyncClientApp::runDirs()
   m_poSyncClient = nullptr;
 }
 
+void CcSyncClientApp::runGroupId()
+{
+  m_poSyncClient = CcSyncClient::create(m_sConfigDir);
+  if(m_oArguments.size() == 2)
+  {
+    CcString sAccount = m_oArguments[0];
+    if (m_poSyncClient->selectAccount(sAccount) &&
+        m_poSyncClient->login()                 &&
+        m_poSyncClient->updateFromRemoteAccount())
+    {
+      bool bOk = false;
+      uint32 uiId = m_oArguments[1].toUint32(&bOk);
+      if(!bOk)
+      {
+        CcGroupList oGroups = CcKernel::getGroupList();
+        bOk = oGroups.containsGroup(m_oArguments[1]);
+        if(!bOk)
+        {
+          CcSyncConsole::writeLine("No matching group found");
+          setExitCode(EStatus::CommandInvalidParameter);
+        }
+        else
+        {
+          uiId = oGroups.findGroup(m_oArguments[1]).getId();
+        }
+      }
+      CCUNUSED(uiId);
+      if(bOk)
+      {
+        CcStringList oDirList = m_poSyncClient->getDirectoryList();
+        for (CcString& sDirName : oDirList)
+        {
+          if (!m_poSyncClient->updateDirectorySetGroup(sDirName, m_oArguments[1]))
+          {
+            CcSyncConsole::writeLine("Failed to set id for dir: " + sDirName);
+            setExitCode(EStatus::UserNotFound);
+            break;
+          }
+        }
+      }
+    }
+    else
+    {
+      CcSyncConsole::writeLine("Login to account failed");
+      setExitCode(EStatus::UserAccessDenied);
+    }
+  }
+  else
+  {
+    CcSyncConsole::writeLine("Error Invalid paramters given");
+    setExitCode(EStatus::InvalidHandle);
+  }
+  CcSyncClient::remove(m_poSyncClient);
+  m_poSyncClient = nullptr;
+}
+
+void CcSyncClientApp::runUserId()
+{
+  m_poSyncClient = CcSyncClient::create(m_sConfigDir);
+  if(m_oArguments.size() == 2)
+  {
+    CcString sAccount = m_oArguments[0];
+    if (m_poSyncClient->selectAccount(sAccount) &&
+        m_poSyncClient->login()                 &&
+        m_poSyncClient->updateFromRemoteAccount())
+    {
+      bool bOk = false;
+      uint32 uiId = m_oArguments[1].toUint32(&bOk);
+      if(!bOk)
+      {
+        CcUserList oUsers = CcKernel::getUserList();
+        bOk = oUsers.containsUser(m_oArguments[1]);
+        if(!bOk)
+        {
+          CcSyncConsole::writeLine("No matching User found");
+          setExitCode(EStatus::CommandInvalidParameter);
+        }
+        else
+        {
+          uiId = oUsers.findUser(m_oArguments[1])->getId();
+        }
+      }
+      CCUNUSED(uiId);
+      if(bOk)
+      {
+        CcStringList oDirList = m_poSyncClient->getDirectoryList();
+        for (CcString& sDirName : oDirList)
+        {
+          if (!m_poSyncClient->updateDirectorySetUser(sDirName, m_oArguments[1]))
+          {
+            CcSyncConsole::writeLine("Failed to set id for dir: " + sDirName);
+            setExitCode(EStatus::UserNotFound);
+            break;
+          }
+        }
+      }
+    }
+    else
+    {
+      CcSyncConsole::writeLine("Login to account failed");
+      setExitCode(EStatus::UserAccessDenied);
+    }
+  }
+  else
+  {
+    CcSyncConsole::writeLine("Error Invalid paramters given");
+    setExitCode(EStatus::InvalidHandle);
+  }
+  CcSyncClient::remove(m_poSyncClient);
+  m_poSyncClient = nullptr;
+}
+
 void CcSyncClientApp::runHelp()
 {
   CcSyncConsole::writeLine(CcString("Version: ") + CCSYNC_VERSION_STRING + "");
@@ -529,6 +671,10 @@ void CcSyncClientApp::runHelp()
   CcSyncConsole::writeLine("    Create local account and connect to server");
   CcSyncConsole::writeLine("  dirs <Username>@<Server> <Path>");
   CcSyncConsole::writeLine("    Create all directories from client in path");
+  CcSyncConsole::writeLine("  userid <Username>@<Server> <ID>");
+  CcSyncConsole::writeLine("    Set user id for all directories, names will be resolved");
+  CcSyncConsole::writeLine("  groupid <Username>@<Server> <ID>");
+  CcSyncConsole::writeLine("    Set group id for all directories, names will be resolved");
 }
 
 bool CcSyncClientApp::createConfig(const CcString& sConfigDir)

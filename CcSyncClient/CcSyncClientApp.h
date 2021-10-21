@@ -45,6 +45,8 @@ enum class ESyncClientMode
   Daemon,
   Create,
   Dirs,
+  GroupId,
+  UserId,
   Help
 };
 
@@ -63,10 +65,13 @@ public:
   void runOnce();
   void runCreate();
   void runDirs();
+  void runGroupId();
+  void runUserId();
   void runHelp();
   bool createConfig(const CcString& sConfigDir);
   bool createAccount();
   bool editAccount(const CcString& sAccount);
+
 private:
   ESyncClientMode m_eMode = ESyncClientMode::Cli;
   CcString        m_sConfigDir;

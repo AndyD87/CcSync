@@ -1255,6 +1255,7 @@ bool CcSyncClient::updateDirectorySetUser(const CcString& sDirname, const CcStri
       {
         oDirConfig.setUser(sUser);
         bSuccess = true;
+        break;
       }
     }
     if (bSuccess)
@@ -1262,7 +1263,7 @@ bool CcSyncClient::updateDirectorySetUser(const CcString& sDirname, const CcStri
       bSuccess = updateToRemoteAccount();
     }
   }
-  return false;
+  return bSuccess;
 }
 
 bool CcSyncClient::updateDirectorySetGroup(const CcString& sDirname, const CcString& sGroup)
@@ -1276,6 +1277,7 @@ bool CcSyncClient::updateDirectorySetGroup(const CcString& sDirname, const CcStr
       {
         oDirConfig.setGroup(sGroup);
         bSuccess = true;
+        break;
       }
     }
     if (bSuccess)
@@ -1283,7 +1285,7 @@ bool CcSyncClient::updateDirectorySetGroup(const CcString& sDirname, const CcStr
       bSuccess = updateToRemoteAccount();
     }
   }
-  return false;
+  return bSuccess;
 }
 
 bool CcSyncClient::doUpdateDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFileInfo, uint64 uiQueueIndex)

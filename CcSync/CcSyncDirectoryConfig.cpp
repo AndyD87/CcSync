@@ -259,7 +259,7 @@ bool CcSyncDirectoryConfig::setUser(const CcString& sUser)
 
 bool CcSyncDirectoryConfig::setGroup(const CcString& sGroup)
 {
-  m_uiGroup = userIdFromString(sGroup);
+  m_uiGroup = groupIdFromString(sGroup);
   if(m_uiGroup != UINT32_MAX)
   {
     if (m_pDirectoryNode != nullptr)
