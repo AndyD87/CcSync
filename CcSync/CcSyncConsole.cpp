@@ -55,8 +55,7 @@ size_t CcSyncConsole::query(const CcString& sQuery, const CcString& sDefault, Cc
 {
   CcConsole::writeString(sQuery + ": ");
   size_t uiRead = CcConsole::readLine(sRead);
-  if (uiRead != sRead.size() ||
-      sRead.trim().length() == 0)
+  if (sRead.trim().length() == 0)
   {
     sRead = sDefault;
     uiRead = sDefault.length();
