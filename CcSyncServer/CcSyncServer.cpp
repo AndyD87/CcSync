@@ -106,22 +106,7 @@ void CcSyncServer::run()
   // select mode
   else if (m_oArguments.size() > 1)
   {
-    if (m_oArguments[1] == "daemon")
-    {
-      switch (CcKernel::initService())
-      {
-        case -1:
-          CCERROR("Starting Service failed");
-          setExitCode(EStatus::Error);
-        case 0:
-          break;
-        default:
-          CCDEBUG("Service started, close main application.");
-          setExitCode(EStatus::Success);
-          break;
-      }
-    }
-    else if (m_oArguments[1] == "configure")
+    if (m_oArguments[1] == "configure")
     {
       createConfig();
     }
@@ -159,7 +144,6 @@ void CcSyncServer::runHelp()
   CcConsole::writeLine("  CcSyncServer <command>");
   CcConsole::writeLine("");
   CcConsole::writeLine("Commands");
-  CcConsole::writeLine("  daemon      Start server as background application");
   CcConsole::writeLine("  start       Start server and keep running until closed");
   CcConsole::writeLine("  configure   Change or create CcSyncServer settings");
   CcConsole::writeLine("  info        Get information about this server");

@@ -42,7 +42,6 @@ enum class ESyncClientMode
   Unknown = 0,
   Cli = 1,
   Once,
-  Daemon,
   Create,
   Dirs,
   GroupId,

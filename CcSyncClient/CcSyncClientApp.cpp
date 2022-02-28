@@ -115,10 +115,6 @@ void CcSyncClientApp::run()
     {
       m_eMode = ESyncClientMode::Once;
     }
-    else if (m_oArguments[1].compareInsensitve("daemon"))
-    {
-      m_eMode = ESyncClientMode::Daemon;
-    }
     else if (m_oArguments[1].compareInsensitve("create"))
     {
       m_eMode = ESyncClientMode::Create;
@@ -158,22 +154,6 @@ void CcSyncClientApp::run()
       break;
     case ESyncClientMode::Once:
       runOnce();
-      break;
-    case ESyncClientMode::Daemon:
-      switch (CcKernel::initService())
-      {
-        case -1:
-          CCERROR("Starting Service failed");
-          setExitCode(-1);
-          break;
-        case 0:
-          runDaemon();
-          break;
-        default:
-          CCDEBUG("Service started, close main application.");
-          setExitCode(0);
-          break;
-      }
       break;
     case ESyncClientMode::Help:
       runHelp();
