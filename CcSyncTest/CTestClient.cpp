@@ -204,12 +204,15 @@ bool CTestClient::serverShutdown()
 {
   bool bSuccess = false;
   m_oClientProc.pipe().writeLine("admin");
+  m_oClientProc.pipe().flush();
   if(readUntilSucceeded("[Admin]:"))
   {
     m_oClientProc.pipe().writeLine("stop");
+    m_oClientProc.pipe().flush();
   if (readUntilSucceeded("/" + m_sUsername + "]:"))
     {
       m_oClientProc.pipe().writeLine("exit");
+      m_oClientProc.pipe().flush();
       m_oClientProc.pipe().readAll();
       bSuccess = true;
     }

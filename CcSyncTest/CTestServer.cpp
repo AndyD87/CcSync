@@ -81,6 +81,8 @@ bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUs
   bool bSuccess = false;
   resetArguments();
   addArgument("configure");
+  addArgument("--config-dir");
+  addArgument("C:/Temp");
   m_oServerProc.start();
   if (m_oServerProc.waitForRunning(CcDateTimeFromSeconds(10)))
   {
@@ -100,6 +102,7 @@ bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUs
           else
           {
             m_oServerProc.pipe().writeLine(sPort);
+            Sleep(1000);
             if (!readUntilSucceeded(":")) CcTestFramework::writeError("No Port prompt");
             else
             {

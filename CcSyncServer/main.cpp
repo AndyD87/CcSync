@@ -32,5 +32,5 @@
 int main(int argc, char **argv)
 {
   CcSyncServer oServer(argc, argv);
-  return oServer.exec().getErrorInt();
+     return oServer.exec().getErrorInt();
 }

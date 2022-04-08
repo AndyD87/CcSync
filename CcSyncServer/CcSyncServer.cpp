@@ -447,6 +447,10 @@ bool CcSyncServer::createConfig()
       m_oConfig.setPort(CcCommonPorts::CcSync);
     }
   }
+  CcFile oFile("C:/temp/file.log");
+  if (oFile.open(EOpenFlags::Write))
+  {
+    oFile.writeLine("Admin name request");
   if (bSuccess)
   {
     CcString sAdmin;
@@ -457,16 +461,20 @@ bool CcSyncServer::createConfig()
     bool bAnswered = false;
     while (bAnswered == false)
     {
+
       if (CcSyncConsole::query("Administrator", sAdmin) == SIZE_MAX)
       {
+        oFile.writeLine("Admin name failed");
         bSuccess = false;
       }
       else if (sAdmin == "")
       {
+        oFile.writeLine("Admin name not set");
         CcSyncConsole::writeLine("Name is required, please retry");
       }
       else
       {
+        oFile.writeLine("Admin name detected: " + sAdmin);
         bAnswered = true;
       }
     }
@@ -562,6 +570,9 @@ bool CcSyncServer::createConfig()
       m_oConfig.writeConfig(sConfigFile);
     }
   }
+  oFile.writeLine("Admin name received");
+  oFile.close();
+      }
   return bSuccess;
 }
 
