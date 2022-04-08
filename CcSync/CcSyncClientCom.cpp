@@ -25,8 +25,8 @@
  * @brief     Implemtation of class CcSyncClient
  */
 #include "CcSyncClientCom.h"
-#include "CcJson/CcJsonDocument.h"
-#include "CcJson/CcJsonObject.h"
+#include "Json/CcJsonDocument.h"
+#include "Json/CcJsonObject.h"
 #include "CcDateTime.h"
 
 bool CcSyncClientCom::connect(const CcUrl& oConnect)

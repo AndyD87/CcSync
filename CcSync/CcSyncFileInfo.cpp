@@ -30,7 +30,7 @@
 #include "CcFile.h"
 #include "CcFileInfo.h"
 #include "CcStringUtil.h"
-#include "CcJson/CcJsonObject.h"
+#include "Json/CcJsonObject.h"
 #include "Hash/CcCrc32.h"
 
 bool CcSyncFileInfo::operator==(const CcSyncFileInfo& oToCompare) const

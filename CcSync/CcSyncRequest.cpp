@@ -26,8 +26,8 @@
  */
 #include "CcSyncRequest.h"
 #include "CcUser.h"
-#include "CcJson/CcJsonDocument.h"
-#include "CcJson/CcJsonNode.h"
+#include "Json/CcJsonDocument.h"
+#include "Json/CcJsonNode.h"
 #include "CcSyncGlobals.h"
 #include "CcByteArray.h"
 #include "CcSyncFileInfo.h"

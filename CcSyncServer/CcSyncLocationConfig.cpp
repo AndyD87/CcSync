@@ -26,8 +26,8 @@
  */
 #include "CcSyncGlobals.h"
 #include "CcSyncServerLocationConfig.h"
-#include "CcXml/CcXmlNode.h"
-#include "CcXml/CcXmlUtil.h"
+#include "Xml/CcXmlNode.h"
+#include "Xml/CcXmlUtil.h"
 #include "CcStringUtil.h"
 #include "CcSyncLog.h"
 #include "CcSyncServerConfig.h"

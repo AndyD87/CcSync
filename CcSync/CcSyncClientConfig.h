@@ -33,7 +33,7 @@
 #include "CcBase.h"
 #include "CcSync.h"
 #include "CcSyncAccountConfig.h"
-#include "CcXml/CcXmlFile.h"
+#include "Xml/CcXmlFile.h"
 #include "CcSharedPointer.h"
 
 class CcSyncClientConfig;

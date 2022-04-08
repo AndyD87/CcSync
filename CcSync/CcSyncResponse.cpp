@@ -25,10 +25,10 @@
  * @brief     Implemtation of class CcSyncResponse
  */
 #include "CcSyncResponse.h"
-#include "CcJson/CcJsonDocument.h"
-#include "CcJson/CcJsonNode.h"
-#include "CcJson/CcJsonArray.h"
-#include "CcJson/CcJsonObject.h"
+#include "Json/CcJsonDocument.h"
+#include "Json/CcJsonNode.h"
+#include "Json/CcJsonArray.h"
+#include "Json/CcJsonObject.h"
 #include "CcSyncGlobals.h"
 #include "CcByteArray.h"
 #include "CcSyncAccountConfig.h"

@@ -36,7 +36,7 @@
 #include "CcSyncServerAccount.h"
 #include "CcSyncServerLocationConfig.h"
 #include "CcSyncUser.h"
-#include "CcXml/CcXmlFile.h"
+#include "Xml/CcXmlFile.h"
 
 class CcXmlNode;
 
