@@ -52,7 +52,7 @@ public:
 
 };
 
-const CcString CSyncTestPrivate::sAdminName("Admin");
+const CcString CSyncTestPrivate::sAdminName("Admini");
 const CcString CSyncTestPrivate::sAdminPW("AdminPW$123");
 const CcString CSyncTestPrivate::sServerName("127.0.0.1");
 const CcString CSyncTestPrivate::sServerPort("27499");
