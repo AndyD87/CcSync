@@ -104,7 +104,7 @@ bool CTestServer::createConfiguration(const CcString& sPort, const CcString& sUs
           else
           {
             m_oServerProc.pipe().writeLine(sPort);
-            Sleep(1000);
+            CcKernel::delayMs(1000);
             if (!readUntilSucceeded(":")) 
 				CcTestFramework::writeError("No Port prompt");
             else
