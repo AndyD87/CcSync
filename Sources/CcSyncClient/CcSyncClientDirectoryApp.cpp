@@ -81,7 +81,8 @@ void CcSyncClientDirectoryApp::run()
     CcString sCommandLine;
     if (CcSyncConsole::clientQuery(sCommandLine) != SIZE_MAX)
     {
-      CcArguments oArguments(sCommandLine);
+      CcArguments oArguments;
+      oArguments.parse(sCommandLine);
       if (oArguments.size() == 0)
       {
         continue;

@@ -1107,7 +1107,7 @@ bool CcSyncClient::doCreateDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDir
     {
       switch(m_oCom.getResponse().getError().getError())
       {
-        case EStatus::FSDirNotFound:
+        case EStatus::FSFileNotFound:
           // Parent direcotry not existing
           CcSyncLog::writeError("Parent directory not existing:  " + oDirInfo.dirPath(), ESyncLogTarget::Client);
     CCFALLTHROUGH;
@@ -1146,10 +1146,10 @@ bool CcSyncClient::doRemoveDir(CcSyncDirectory& oDirectory, CcSyncFileInfo& oDir
       switch (m_oCom.getResponse().getError().getError())
       {
         case EStatus::FSDirNotEmpty:
-          // If directory is not empty, but our list is empty, we should remove from database,
-          // because we will get the new files from server on next sync
-          // fall through
-        case EStatus::FSDirNotFound:
+        // If directory is not empty, but our list is empty, we should remove from database,
+        // because we will get the new files from server on next sync
+        // fall through
+        case EStatus::FSFileNotFound:
           oDirectory.directoryListRemove(oDirInfo, true);
           // do not updated dependencies, use finalize file instead
           oDirectory.queueFinalizeFile(uiQueueIndex);
@@ -1377,8 +1377,6 @@ bool CcSyncClient::doRemoveFile(CcSyncDirectory& oDirectory, CcSyncFileInfo& oFi
     {
       switch (m_oCom.getResponse().getError().getError())
       {
-        case EStatus::FSDirNotFound:
-          // fall through
         case EStatus::FSFileNotFound:
           oDirectory.fileListRemove(oFileInfo, true, false);
           oDirectory.queueFinalizeFile(uiQueueIndex);

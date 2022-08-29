@@ -38,7 +38,7 @@ CClientTest::CClientTest( void ) :
   sConfigDir.appendPath("CClientTest");
   if (CcDirectory::create(sConfigDir, true))
   {
-    sApplicationPath.appendPath("CcSyncClient");
+    sApplicationPath.appendPath("CcSyncClient" CC_DEBUG_EXTENSION);
 #ifdef WINDOWS
     sApplicationPath.append(".exe");
 #endif
@@ -67,7 +67,7 @@ bool CClientTest::testClientWaitInput()
   sConfigDir.appendPath("CClientTest");
   if(CcDirectory::create(sConfigDir, true))
   {
-    sApplicationPath.appendPath("CcSyncClient");
+    sApplicationPath.appendPath("CcSyncClient" CC_DEBUG_EXTENSION);
   #ifdef WINDOWS
     sApplicationPath.append(".exe");
   #endif

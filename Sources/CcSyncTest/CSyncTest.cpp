@@ -63,8 +63,8 @@ CSyncTest::CSyncTest( void ) :
   CCNEW(m_pPrivate, CSyncTestPrivate);
   m_pPrivate->sServerAppPath = CcTestFramework::getBinaryDir();
   m_pPrivate->sClientAppPath = CcTestFramework::getBinaryDir();
-  m_pPrivate->sServerAppPath.appendPath("CcSyncServer");
-  m_pPrivate->sClientAppPath.appendPath("CcSyncClient");
+  m_pPrivate->sServerAppPath.appendPath("CcSyncServer" CC_DEBUG_EXTENSION);
+  m_pPrivate->sClientAppPath.appendPath("CcSyncClient" CC_DEBUG_EXTENSION);
 #ifdef WINDOWS
   m_pPrivate->sServerAppPath.append(".exe");
   m_pPrivate->sClientAppPath.append(".exe");

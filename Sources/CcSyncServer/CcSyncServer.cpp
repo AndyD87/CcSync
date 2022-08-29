@@ -42,8 +42,9 @@
 #include "CcConsole.h"
 
 CcSyncServer::CcSyncServer(int pArgc, char **ppArgv) : 
-  m_oArguments(pArgc, ppArgv)
+  m_oArguments()
 {
+  m_oArguments.parse(pArgc, ppArgv);
 }
 
 CcSyncServer::CcSyncServer(const CcSyncServer& oToCopy):
@@ -177,7 +178,7 @@ void CcSyncServer::runServer()
   if(CcFile::exists(m_oConfig.getSslCertFile()) == false ||
      CcFile::exists(m_oConfig.getSslKeyFile()) == false)
   {
-    CcSslControl::createCert(m_oConfig.getSslCertFile(), m_oConfig.getSslKeyFile());
+    CcSslControl::createCertFiles(m_oConfig.getSslCertFile(), m_oConfig.getSslKeyFile());
   }
   CCNEWTYPE(pSocket, CcSslSocket);
   m_oSocket = pSocket;
@@ -191,8 +192,8 @@ void CcSyncServer::runServer()
 
   m_oSocket.setOption(ESocketOption::Reuse, &iTrue, sizeof(iTrue));
   if (m_oSocket.bind()                   &&
-      static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->loadKey(m_oConfig.getSslKeyFile()) &&
-      static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->loadCertificate(m_oConfig.getSslCertFile()))
+      static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->loadKeyFile(m_oConfig.getSslKeyFile()) &&
+      static_cast<CcSslSocket*>(m_oSocket.getRawSocket())->loadCertificateFile(m_oConfig.getSslCertFile()))
   {
     CcSyncLog::writeDebug("Server is listening on: " + CcString::fromNumber(m_oConfig.getPort()));
     CcSyncLog::writeMessage(CcSyncGlobals::Server::Output::Started);
@@ -416,7 +417,7 @@ bool CcSyncServer::createConfig()
     {
       CcSyncConsole::writeLine("Configuration Directory could not be created");
       bSuccess = false;
-      setExitCode(EStatus::FSDirNotFound);
+      setExitCode(EStatus::FSFileNotFound);
     }
   }
   if (bSuccess)
@@ -447,10 +448,6 @@ bool CcSyncServer::createConfig()
       m_oConfig.setPort(CcCommonPorts::CcSync);
     }
   }
-  CcFile oFile("C:/temp/file.log");
-  if (oFile.open(EOpenFlags::Write))
-  {
-    oFile.writeLine("Admin name request");
   if (bSuccess)
   {
     CcString sAdmin;
@@ -464,17 +461,14 @@ bool CcSyncServer::createConfig()
 
       if (CcSyncConsole::query("Administrator", sAdmin) == SIZE_MAX)
       {
-        oFile.writeLine("Admin name failed");
         bSuccess = false;
       }
       else if (sAdmin == "")
       {
-        oFile.writeLine("Admin name not set");
         CcSyncConsole::writeLine("Name is required, please retry");
       }
       else
       {
-        oFile.writeLine("Admin name detected: " + sAdmin);
         bAnswered = true;
       }
     }
@@ -570,9 +564,6 @@ bool CcSyncServer::createConfig()
       m_oConfig.writeConfig(sConfigFile);
     }
   }
-  oFile.writeLine("Admin name received");
-  oFile.close();
-      }
   return bSuccess;
 }
 

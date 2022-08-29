@@ -605,11 +605,11 @@ void CcSyncServerWorker::doAccountCreateDirectory()
         CcString sName = oDirname.getValue().getString();
         if (sName.length() == 0)
         {
-          m_oResponse.setError(EStatus::FSDirCreateFailed, "Name not found");
+          m_oResponse.setError(EStatus::FSFileCreateFailed, "Name not found");
         }
         else if (sName.contains(" "))
         {
-          m_oResponse.setError(EStatus::FSDirCreateFailed, "Space is not allowed in directory name");
+          m_oResponse.setError(EStatus::FSFileCreateFailed, "Space is not allowed in directory name");
         }
         else if (m_oUser.getAccountConfig()->getDirectoryList().containsDirectory(sName))
         {
@@ -628,7 +628,7 @@ void CcSyncServerWorker::doAccountCreateDirectory()
           }
           else
           {
-            m_oResponse.setError(EStatus::FSDirCreateFailed, "No permission to create directory");
+            m_oResponse.setError(EStatus::FSFileCreateFailed, "No permission to create directory");
           }
         }
       }
@@ -662,7 +662,7 @@ void CcSyncServerWorker::doAccountRemoveDirectory()
         CcString sName = oDirname.getValue().getString();
         if (sName.length() == 0)
         {
-          m_oResponse.setError(EStatus::FSDirCreateFailed, "Name not found");
+          m_oResponse.setError(EStatus::FSFileCreateFailed, "Name not found");
         }
         else if (m_oUser.getAccountConfig()->getDirectoryList().containsDirectory(sName))
         {
@@ -670,7 +670,7 @@ void CcSyncServerWorker::doAccountRemoveDirectory()
         }
         else
         {
-          m_oResponse.setError(EStatus::FSDirNotFound, "Directory not found");
+          m_oResponse.setError(EStatus::FSFileNotFound, "Directory not found");
         }
       }
       else
@@ -817,7 +817,7 @@ void CcSyncServerWorker::doDirectoryCreateDirectory()
       CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
       if(!m_oDirectory.directoryListExists(oFileInfo.getDirId()))
       {
-        m_oResponse.setError(EStatus::FSDirNotFound, "Error parent directory not existing.");
+        m_oResponse.setError(EStatus::FSFileNotFound, "Error parent directory not existing.");
       }
       else if (m_oDirectory.directoryListSubDirExists(oFileInfo.getDirId(), oFileInfo.getName()) == false)
       {
@@ -827,7 +827,7 @@ void CcSyncServerWorker::doDirectoryCreateDirectory()
         }
         else
         {
-          m_oResponse.setError(EStatus::FSDirCreateFailed, "Error on creating sub directory.");
+          m_oResponse.setError(EStatus::FSFileCreateFailed, "Error on creating sub directory.");
         }
       }
       else
@@ -840,7 +840,7 @@ void CcSyncServerWorker::doDirectoryCreateDirectory()
         }
         else
         {
-          m_oResponse.setError(EStatus::FSDirAlreadyExists, "Enexpected: Directory already exists, but not findable?");
+          m_oResponse.setError(EStatus::FSFileAlreadyExisting, "Enexpected: Directory already exists, but not findable?");
         }
       }
     }
@@ -881,7 +881,7 @@ void CcSyncServerWorker::doDirectoryRemoveDirectory()
       }
       else
       {
-        m_oResponse.setError(EStatus::FSDirNotFound, "Directory Not Found in database");
+        m_oResponse.setError(EStatus::FSFileNotFound, "Directory Not Found in database");
       }
     }
     else
@@ -979,7 +979,7 @@ void CcSyncServerWorker::doDirectoryUploadFile()
       }
       else
       {
-        m_oResponse.setError(EStatus::FSDirNotFound, "Parent Directory for file not existing: " + CcString::fromNumber( oFileInfo.getDirId()));
+        m_oResponse.setError(EStatus::FSFileNotFound, "Parent Directory for file not existing: " + CcString::fromNumber( oFileInfo.getDirId()));
       }
     }
     else
@@ -1006,7 +1006,7 @@ void CcSyncServerWorker::doDirectoryRemoveFile()
       CcSyncFileInfo oFileInfo = m_oRequest.getFileInfo();
       if (m_oDirectory.directoryListExists(oFileInfo.getDirId()) == false)
       {
-        m_oResponse.setError(EStatus::FSDirNotFound, "Directory Not Found");
+        m_oResponse.setError(EStatus::FSFileNotFound, "Directory Not Found");
       }
       else if(m_oDirectory.fileIdInDirExists(oFileInfo.getDirId(), oFileInfo) == false)
       {

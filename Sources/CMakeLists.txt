@@ -9,9 +9,9 @@
 ################################################################################
 cmake_minimum_required (VERSION 3.0)
 
-
 set(CMAKE_PROJECT_NAME "CcSync")
 
+include(CMakeConfig/Config.cmake)
 
 if($ENV{TEST_CCOS})
   set(MEMORYMONITOR_ENABLED      TRUE)
@@ -34,36 +34,28 @@ endif()
 message("-- Default build type: ${CMAKE_BUILD_TYPE}")
 
 ################################################################################
+# Setup Output Directory if not set
+################################################################################
+# To be able to overwrite global output root use -DCC_OUTPUT_DIR=/path on configuration
+if(NOT CC_OUTPUT_DIR)
+  set(CC_OUTPUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/Output")
+endif()
+
+################################################################################
 # Setup Globals
 ################################################################################
 include( ${CMAKE_CURRENT_SOURCE_DIR}/VERSION.cmake )
-include( ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig/ProjectMacros.cmake )
-include( ${CMAKE_CURRENT_SOURCE_DIR}/CcOSImport.cmake )
+include( ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig/Config.cmake )
 
 if(WINDOWS)
-  set(CMAKE_INSTALL_PREFIX "C:/Program Files/CcSync")
+  set(CMAKE_INSTALL_PREFIX "C:/Program Files/${CMAKE_PROJECT_NAME}")
 endif()
-
-################################################################################
-# Setup Cache directory if not yet defined
-################################################################################
-if(NOT DEFINED CC_CACHE_DIR)
-  set( CC_CACHE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/Cache)
-  if(NOT EXISTS ${CC_CACHE_DIR})
-    file(MAKE_DIRECTORY ${CC_CACHE_DIR})
-  endif()
-endif()
-
-################################################################################
-# Load CcOS
-################################################################################
-CcOSLoad()
-CcOSLoadMacros()
 
 ################################################################################
 # Configuration is done, setup Project
 ################################################################################
 project("CcSync" VERSION "${CCSYNC_VERSION_CMAKE}")
+CcBuildConfigLoad()
 
 ################################################################################
 # Setup Output Paths
@@ -80,24 +72,17 @@ CcNoConfigurationDirs()
 enable_testing()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-################################################################################
-# Import CcOS
-################################################################################
-CcOSLoadProjects()
+find_package(CcOS COMPONENTS CcKernel CcSsl CcDocuments)
 
 ################################################################################
 # Setup CcSync Projects
 ################################################################################
-add_subdirectory(CcSync)
-add_subdirectory(CcSyncServer)
-add_subdirectory(CcSyncClient)
-add_subdirectory(CcSyncClientGui)
-add_subdirectory(CcSyncTest)
-
-################################################################################
-# Update dokumentation
-################################################################################
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Documents/Doxygen)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CcSync)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CcSyncServer)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CcSyncClient)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CcSyncClientGui)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CcSyncTest)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Doxygen)
 
 
 set(CPACK_PACKAGE_DESCRIPTION         "CcSync - Backup System")
@@ -106,7 +91,7 @@ set(CPACK_PACKAGE_VENDOR              "Andreas Dirmeier")
 set(CPACK_PACKAGE_CONTACT             "coolcow_ccos@yahoo.com")
 set(CPACK_PACKAGE_VERSION             ${PROJECT_VERSION})   
 set(CPACK_PACKAGE_INSTALL_DIRECTORY   ${CMAKE_PROJECT_NAME})
-set(CPACK_RESOURCE_FILE_LICENSE       ${CMAKE_CURRENT_SOURCE_DIR}/Documents/COPYING.LESSER.rtf)
+set(CPACK_RESOURCE_FILE_LICENSE       ${CMAKE_CURRENT_SOURCE_DIR}/../Documents/COPYING.LESSER.rtf)
 
 if(LINUX)
   set(CPACK_GENERATOR "DEB")
@@ -114,8 +99,8 @@ if(LINUX)
   
   include(CPack)
 elseif(WINDOWS)
-  CcLoadWixTools()
-  set(CPACK_GENERATOR                 "WIX")
-  set(CPACK_WIX_UPGRADE_GUID          "750BDD2D-8242-443A-8921-0953FA67A053")
+  #CcLoadWixTools()
+  set(CPACK_GENERATOR                 "ZIP")
+  #set(CPACK_WIX_UPGRADE_GUID          "750BDD2D-8242-443A-8921-0953FA67A053")
   include(CPack)
 endif()

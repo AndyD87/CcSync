@@ -38,7 +38,7 @@ CServerTest::CServerTest( void ) :
   sConfigDir.appendPath("CServerTest");
   if (CcDirectory::create(sConfigDir, true))
   {
-    sApplicationPath.appendPath("CcSyncServer");
+    sApplicationPath.appendPath("CcSyncServer" CC_DEBUG_EXTENSION);
 #ifdef WINDOWS
     sApplicationPath.append(".exe");
 #endif
@@ -67,7 +67,7 @@ bool CServerTest::testConfigureFailed()
   sConfigDir.appendPath("CServerTest");
   if(CcDirectory::create(sConfigDir, true))
   {
-    sApplicationPath.appendPath("CcSyncServer");
+    sApplicationPath.appendPath("CcSyncServer" CC_DEBUG_EXTENSION);
   #ifdef WINDOWS
     sApplicationPath.append(".exe");
   #endif

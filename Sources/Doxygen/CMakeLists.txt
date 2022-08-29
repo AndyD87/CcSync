@@ -1,7 +1,7 @@
 ################################################################################
 # Build doxygen documentation if doxygen is available
 ################################################################################
-set(CURRENT_PROJECT RUN_DOXYGEN)
+set(CURRENT_PROJECT "${PROJECT_NAME}Doxygen")
 
 find_package(Doxygen)
 
@@ -29,7 +29,7 @@ if(Doxygen_FOUND)
   set( SOURCE_FILES
     ${CMAKE_CURRENT_LIST_DIR}/config.in.txt
     ${CMAKE_CURRENT_LIST_DIR}/doxygen.h
-    ${CMAKE_CURRENT_LIST_DIR}/../MarkDown/Mainpage.md
+    ${CMAKE_CURRENT_LIST_DIR}/MarkDown/Mainpage.md
   )
 
   add_custom_target(

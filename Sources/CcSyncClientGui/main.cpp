@@ -27,10 +27,17 @@
 
 #include "CcBase.h"
 #include "CcKernel.h"
-#include "CcSyncServer.h"
+#include "CcArguments.h"
+#include "CcSyncClientGui.h"
+#include "CcMemoryMonitor.h"
 
 int main(int argc, char **argv)
 {
-  CcSyncServer oServer(argc, argv);
-     return oServer.exec().getErrorInt();
+  CcArguments oArguments;
+  oArguments.parse(argc, argv);
+  CcKernel::initCLI();
+  CcKernel::initGUI();
+
+  CcSyncClientGui oApplication(oArguments);
+  return oApplication.exec().getErrorInt();
 }

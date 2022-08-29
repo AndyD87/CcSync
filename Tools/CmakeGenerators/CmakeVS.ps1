@@ -30,7 +30,7 @@ if($PSScriptRoot)
     cd $PSScriptRoot
 }
 
-Import-Module ..\..\CcOS\ThirdParty\Powershell-Common\VisualStudio.ps1
+Import-Module ..\..\CcOS\Sources\ThirdParty\Powershell-Common\VisualStudio.ps1
 
 if($TestEnv)
 {
@@ -41,13 +41,14 @@ if($TestEnv)
 # Search for available versions
 ##
 $VisualStudios = @()
-if((Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe") -and
-    (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\2022"))
+if( (Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.exe") -and
+    ((Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\2022") -or
+    (Test-Path "C:\Program Files\Microsoft Visual Studio\2022")) )
 {
     $VisualStudio        = @{}
     $VisualStudio.Year   = "2022"
     $VisualStudio.Full   = "Visual Studio 17 2022"
-    $VisualStudio.CmakeX86  = @("-G", "`"Visual Studio 17 2022`"")
+    $VisualStudio.CmakeX86  = @("-G", "`"Visual Studio 17 2022`"", "-A", "Win32")
     $VisualStudio.CmakeX64  = @("-G", "`"Visual Studio 17 2022`"", "-A", "x64")
     $VisualStudios      += $VisualStudio
 }
@@ -57,7 +58,7 @@ if((Test-Path "C:\Program Files (x86)\Microsoft Visual Studio\Installer\vswhere.
     $VisualStudio           = @{}
     $VisualStudio.Year      = "2019"
     $VisualStudio.Full      = "Visual Studio 16 2019"
-    $VisualStudio.CmakeX86  = @("-G", "`"Visual Studio 16 2019`"")
+    $VisualStudio.CmakeX86  = @("-G", "`"Visual Studio 16 2019`"", "-A", "Win32")
     $VisualStudio.CmakeX64  = @("-G", "`"Visual Studio 16 2019`"", "-A", "x64")
     $VisualStudios          += $VisualStudio
 }
@@ -207,10 +208,13 @@ else
 }
 
 $BuildTypes = @("Debug","Release")
+$JoinedBuild = ""
 
 foreach($BuildType in $BuildTypes)
 {
-    $SolutionDir = "..\..\..\Solution." + $VisualStudio.Year + ".$Architecture.$StaticString"
+    if($JoinedBuild -eq "") {$JoinedBuild = $BuildType}
+    else                    {$JoinedBuild += (";" + $BuildType)}
+    $SolutionDir = "..\..\Solution." + $VisualStudio.Year + ".$Architecture.$StaticString"
 
     if((Test-Path $SolutionDir) -ne $true)
     {
@@ -232,7 +236,7 @@ foreach($BuildType in $BuildTypes)
         }
     }
 
-    $Paramters += "../Software"
+    $Paramters += "../Sources"
 
     if($Static)
     {
@@ -277,10 +281,10 @@ foreach($BuildType in $BuildTypes)
         $BuildParam = @("./", "-C", $BuildType, "--output-on-failure")
         RunCommand ctest $BuildParam
     }
-
+    
     if($DoPackage)
     {
-        $BuildParam = @("-C", $BuildType)
+        $BuildParam = @("-C", ("`"" + $JoinedBuild + "`""))
         RunCommand cpack $BuildParam
     }
 

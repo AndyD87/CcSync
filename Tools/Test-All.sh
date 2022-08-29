@@ -18,14 +18,18 @@ sh Test-Gcc.sh
 if [ $? -ne 0 ]
 then
     exit -1
+    echo Test-Gcc.sh failed >> Test.log
 fi
+echo Test-Gcc.sh succeeded > Test.log
 
 # Test clang build
 sh Test-Clang.sh
 if [ $? -ne 0 ]
 then
     exit -1
+    echo Test-Clang.sh failed >> Test.log
 fi
+echo Test-Clang.sh succeeded >> Test.log
 
 ARCHITECTURE=$(uname -m)
 if matches $ARCHITECTURE "x64" || matches $ARCHITECTURE "x86"
@@ -37,7 +41,9 @@ then
     if [ $? -ne 0 ]
     then
         exit -1
+        echo Test-MinGW.sh failed >> Test.log
     fi
+    echo Test-MinGW.sh succeeded >> Test.log
 
 
 elif matches $ARCHITECTURE "arm"

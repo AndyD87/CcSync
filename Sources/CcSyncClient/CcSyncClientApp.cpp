@@ -238,7 +238,8 @@ void CcSyncClientApp::runCli()
       CcString sCommandLine;
       if (CcSyncConsole::clientQuery(sCommandLine) != SIZE_MAX)
       {
-        CcArguments oArguments(sCommandLine);
+        CcArguments oArguments;
+        oArguments.parse(sCommandLine);
         if (oArguments.size() == 0)
         {
           continue;
@@ -357,7 +358,7 @@ void CcSyncClientApp::runCli()
   else
   {
     CCDEBUG("Error in Directory Locations, stop progress");
-    setExitCode(EStatus::FSDirNotFound);
+    setExitCode(EStatus::FSFileNotFound);
   }
   CcSyncClient::remove(m_poSyncClient);
   m_poSyncClient = nullptr;
@@ -493,7 +494,7 @@ void CcSyncClientApp::runDirs()
          !CcDirectory::create(sPath))
       {
         CcSyncConsole::writeLine("Path not found and not createable");
-        setExitCode(EStatus::FSDirNotFound);
+        setExitCode(EStatus::FSFileNotFound);
       }
       else
       {
@@ -506,7 +507,7 @@ void CcSyncClientApp::runDirs()
           if (!m_poSyncClient->doAccountCreateDirectory(sDirName, sDirPath))
           {
             CcSyncConsole::writeLine("Failed to create Directory: " + sDirName);
-            setExitCode(EStatus::FSDirCreateFailed);
+            setExitCode(EStatus::FSFileCreateFailed);
             break;
           }
         }
