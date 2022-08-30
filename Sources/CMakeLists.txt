@@ -8,7 +8,6 @@
 #
 ################################################################################
 cmake_minimum_required (VERSION 3.0)
-
 set(CMAKE_PROJECT_NAME "CcSync")
 
 include(CMakeConfig/Config.cmake)
@@ -72,7 +71,7 @@ CcNoConfigurationDirs()
 enable_testing()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-find_package(CcOS COMPONENTS CcKernel CcSsl CcDocuments)
+find_package(CcOS COMPONENTS CcKernel CcSsl CcDocuments CcSql CcGui CcTesting CcModule sqlite3 openssl)
 
 ################################################################################
 # Setup CcSync Projects
