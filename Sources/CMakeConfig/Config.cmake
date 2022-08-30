@@ -1,3 +1,4 @@
+
 if(NOT EXISTS ${CMAKE_CURRENT_LIST_DIR}/CcBuildConfig/CcBuildConfig.cmake)
   execute_process(COMMAND git submodule init "${CMAKE_CURRENT_LIST_DIR}/CcBuildConfig"
           WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR})
