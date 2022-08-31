@@ -3,7 +3,8 @@
 ################################################################################
 if("${CMAKE_PROJECT_NAME}" STREQUAL "CcSync")
 
-  set(CURRENT_PROJECT CcSyncTest)
+  set ( CURRENT_PROJECT CcSyncTest )
+  set ( CURRENT_PROJECT_IDE_PATH   Testing)
 
   ##############################################################################
   # Add Source Files
@@ -20,8 +21,8 @@ if("${CMAKE_PROJECT_NAME}" STREQUAL "CcSync")
   endif()
   
   CcAddExecutable( ${CURRENT_PROJECT} ${SOURCE_FILES} )
-  
-  set_property( TARGET ${CURRENT_PROJECT} PROPERTY FOLDER "Testing")
+
+  set_target_properties( ${CURRENT_PROJECT} PROPERTIES FOLDER "${PROJECT_NAME}/${CURRENT_PROJECT_IDE_PATH}")
   
   source_group( "" FILES ${SOURCE_FILES})
   

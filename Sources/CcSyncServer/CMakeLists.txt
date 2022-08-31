@@ -1,5 +1,5 @@
-
-set ( CURRENT_PROJECT CcSyncServer)
+set ( CURRENT_PROJECT CcSyncServer )
+set ( CURRENT_PROJECT_IDE_PATH     )
 
 ########
 # Add Source Files
@@ -16,6 +16,8 @@ if(WINDOWS)
 endif()
 
 CcAddExecutable( ${CURRENT_PROJECT} ${SOURCE_FILES})
+
+set_target_properties( ${CURRENT_PROJECT} PROPERTIES FOLDER "${PROJECT_NAME}/${CURRENT_PROJECT_IDE_PATH}")
 
 # To keep Header an Source together, display them in same Directory
 # It will only work with IDE's wich are supporting this features

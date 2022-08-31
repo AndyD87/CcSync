@@ -32,11 +32,14 @@
 #include "CClientTest.h"
 #include "CSyncTest.h"
 
+#include "CcProcess.h"
+
 // Application entry point. 
 int main(int argc, char **argv)
 {
   int iReturn = 0;
   int iNumberOfTests = 1;
+
   do
   {
     CcTestFramework::init(argc, argv);

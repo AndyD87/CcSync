@@ -1,5 +1,7 @@
 #Generated Subfolders
+/build*
 /Solution*
+/Sources/Output
 /Output
 /Debug
 /Release

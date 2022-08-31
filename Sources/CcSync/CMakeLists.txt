@@ -1,5 +1,5 @@
-
-set ( CURRENT_PROJECT CcSync)
+set ( CURRENT_PROJECT CcSync     )
+set ( CURRENT_PROJECT_IDE_PATH   )
 
 ########
 # Add Source Files
@@ -23,6 +23,8 @@ if(WINDOWS)
 endif()
 
 CcAddLibrary( ${CURRENT_PROJECT} ${CC_LINK_TYPE} ${SOURCE_FILES} )
+
+set_target_properties( ${CURRENT_PROJECT} PROPERTIES FOLDER "${PROJECT_NAME}/${CURRENT_PROJECT_IDE_PATH}")
 
 # To keep Header an Source together, display them in same Directory
 # It will only work with IDE's wich are supporting this features
