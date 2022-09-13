@@ -13,7 +13,7 @@ then
     mkdir Solution
     cd Solution
 
-    cmake ../../../ -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCC_OUTPUT_DIR=$CWD/Output -DCC_WARNING_AS_ERROR=TRUE -DCCOS_BOARD=CMakeConfig/Boards/MinGW
+    cmake ../../../Sources -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCC_OUTPUT_DIR=$CWD/Output -DCC_WARNING_AS_ERROR=TRUE -DCCOS_BOARD=MinGW
     if [ $? -ne 0 ]
     then
         exit -1
@@ -38,7 +38,7 @@ then
     mkdir Solution
     cd Solution
 
-    cmake ../../../ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr -DCC_OUTPUT_DIR=$CWD/Output -DCC_WARNING_AS_ERROR=TRUE -DCCOS_BOARD=CMakeConfig/Boards/MinGW
+    cmake ../../../Sources -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr -DCC_OUTPUT_DIR=$CWD/Output -DCC_WARNING_AS_ERROR=TRUE -DCCOS_BOARD=MinGW
     if [ $? -ne 0 ]
     then
         exit -1
@@ -64,6 +64,7 @@ else
     echo "MinGW 64bit not found"
 fi
 
+# Setup MinGW, Installation must be done before (sudo apt-get install mingw-w64)
 # 32 bit version
 export CC=i686-w64-mingw32-gcc
 export CXX=i686-w64-mingw32-g++
@@ -75,7 +76,7 @@ then
     mkdir Solution
     cd Solution
 
-    cmake ../../../ -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCC_OUTPUT_DIR=$CWD/Output -DCC_WARNING_AS_ERROR=TRUE -DCCOS_BOARD=CMakeConfig/Boards/MinGW
+    cmake ../../../Sources -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/usr -DCC_OUTPUT_DIR=$CWD/Output -DCC_WARNING_AS_ERROR=TRUE -DCCOS_BOARD=MinGW
     if [ $? -ne 0 ]
     then
         exit -1
@@ -100,7 +101,7 @@ then
     mkdir Solution
     cd Solution
 
-    cmake ../../../ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr -DCC_OUTPUT_DIR=$CWD/Output -DCC_WARNING_AS_ERROR=TRUE -DCCOS_BOARD=CMakeConfig/Boards/MinGW
+    cmake ../../../Sources -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=/usr -DCC_OUTPUT_DIR=$CWD/Output -DCC_WARNING_AS_ERROR=TRUE -DCCOS_BOARD=MinGW
     if [ $? -ne 0 ]
     then
         exit -1
