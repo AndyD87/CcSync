@@ -30,8 +30,6 @@ if($PSScriptRoot)
     cd $PSScriptRoot
 }
 
-Import-Module ..\..\CcOS\Sources\ThirdParty\Powershell-Common\VisualStudio.ps1
-
 if($TestEnv)
 {
     $ENV:TEST_CCOS="TRUE"

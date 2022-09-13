@@ -5,4 +5,6 @@ set( CCSYNC_VERSION_BUILD   1   )
 
 set( CCSYNC_VERSION_CMAKE ${CCSYNC_VERSION_MAJOR}.${CCSYNC_VERSION_MINOR}.${CCSYNC_VERSION_PATCH})
 
-set( PROJECT_DESCRIPTION    "Synchronize directories with a storage server." )
+set( CCSYNC_LANGUAGES      "C" "CXX"                          )
+set( CCSYNC_DESCRIPTION    "CcSync Project." )
+set( CCSYNC_URL            "https://coolcow.de/projects/CcSync.git" )

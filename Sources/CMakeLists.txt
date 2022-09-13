@@ -44,7 +44,6 @@ endif()
 # Setup Globals
 ################################################################################
 include( ${CMAKE_CURRENT_SOURCE_DIR}/VERSION.cmake )
-include( ${CMAKE_CURRENT_SOURCE_DIR}/CMakeConfig/Config.cmake )
 
 if(WINDOWS)
   set(CMAKE_INSTALL_PREFIX "C:/Program Files/${CMAKE_PROJECT_NAME}")
@@ -53,8 +52,34 @@ endif()
 ################################################################################
 # Configuration is done, setup Project
 ################################################################################
-project("CcSync" VERSION "${CCSYNC_VERSION_CMAKE}")
+if(NOT CC_NO_PROJECT)
+  if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.12)
+    set(PAGE_SUPPORT_NAME  HOMEPAGE_URL) 
+    set(PAGE_SUPPORT_VALUE ${CCSYNC_URL})
+  else()
+    set(PAGE_SUPPORT_NAME  )
+    set(PAGE_SUPPORT_VALUE )
+  endif()
+  project(${CMAKE_PROJECT_NAME} 
+          VERSION       ${CCSYNC_VERSION_CMAKE} # Value is defined in VERSION.cmake
+          LANGUAGES     ${CCSYNC_LANGUAGES}     # Value is defined in VERSION.cmake
+          DESCRIPTION   ${CCSYNC_DESCRIPTION}   # Value is defined in VERSION.cmake
+          ${PAGE_SUPPORT_NAME} ${PAGE_SUPPORT_VALUE}  # Value is defined in VERSION.cmake
+  )
+endif()
 CcBuildConfigLoad()
+
+################################################################################
+# Setup Debug
+################################################################################
+if(CMAKE_BUILD_TYPE MATCHES "[Dd][Ee][Bb][Uu][Gg]")
+  message("- Build-Type set to Debug")
+  set(CCSYNC_BUILD_TYPE "DEBUG" )
+  set(CMAKE_VERBOSE_MAKEFILE          ON)
+else()
+  message("- Build-Type set to Release")
+  set(CCSYNC_BUILD_TYPE "RELEASE" )
+endif()
 
 ################################################################################
 # Setup Output Paths
@@ -88,7 +113,7 @@ set(CPACK_PACKAGE_DESCRIPTION         "CcSync - Backup System")
 set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "Backup system based on CcOS")
 set(CPACK_PACKAGE_VENDOR              "Andreas Dirmeier")
 set(CPACK_PACKAGE_CONTACT             "coolcow_ccos@yahoo.com")
-set(CPACK_PACKAGE_VERSION             ${PROJECT_VERSION})   
+set(CPACK_PACKAGE_VERSION             ${PROJECT_VERSION})
 set(CPACK_PACKAGE_INSTALL_DIRECTORY   ${CMAKE_PROJECT_NAME})
 set(CPACK_RESOURCE_FILE_LICENSE       ${CMAKE_CURRENT_SOURCE_DIR}/../Documents/COPYING.LESSER.rtf)
 
@@ -98,8 +123,6 @@ if(LINUX)
   
   include(CPack)
 elseif(WINDOWS)
-  #CcLoadWixTools()
   set(CPACK_GENERATOR                 "ZIP")
-  #set(CPACK_WIX_UPGRADE_GUID          "750BDD2D-8242-443A-8921-0953FA67A053")
   include(CPack)
 endif()
