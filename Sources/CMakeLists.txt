@@ -96,7 +96,7 @@ CcNoConfigurationDirs()
 enable_testing()
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-find_package(CcOS COMPONENTS CcKernel CcSsl CcDocuments CcSql CcGui CcTesting CcModule sqlite3 openssl)
+find_package(CcOS COMPONENTS CcKernel CcSsl CcDocuments CcSql CcTesting CcModule sqlite3 openssl)
 
 ################################################################################
 # Setup CcSync Projects
@@ -104,7 +104,7 @@ find_package(CcOS COMPONENTS CcKernel CcSsl CcDocuments CcSql CcGui CcTesting Cc
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CcSync)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CcSyncServer)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CcSyncClient)
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CcSyncClientGui)
+#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CcSyncClientGui)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CcSyncTest)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/Doxygen)
 
