@@ -53,7 +53,7 @@ endif()
 # Configuration is done, setup Project
 ################################################################################
 if(NOT CC_NO_PROJECT)
-  if(${CMAKE_VERSION} VERSION_GREATER_EQUAL 3.12)
+  if(${CMAKE_VERSION} VERSION_GREATER 3.11^)
     set(PAGE_SUPPORT_NAME  HOMEPAGE_URL) 
     set(PAGE_SUPPORT_VALUE ${CCSYNC_URL})
   else()
