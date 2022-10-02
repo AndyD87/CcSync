@@ -13,14 +13,14 @@ then
     cd Solution
 
     echo "Cmake for GCC"
-    cmake ../../../Sources -DCMAKE_INSTALL_PREFIX=/usr -DCC_OUTPUT_DIR=$CWD/Output -DCC_WARNING_AS_ERROR=TRUE
+    cmake ../../../Sources -DCMAKE_INSTALL_PREFIX=/usr -DCC_OUTPUT_DIR=$CWD/Output -DCC_WARNING_AS_ERROR=TRUE -DCMAKE_BUILD_TYPE=Release 
     if [ $? -ne 0 ]
     then
         exit -1
     fi
 
     echo "Build Release with GCC"
-    cmake --build . --config Release -- -j $CPU
+    cmake --build . -- -j $CPU
     if [ $? -ne 0 ]
     then
         exit -1
@@ -33,8 +33,14 @@ then
         exit -1
     fi
 
+    cmake ../../../Sources -DCMAKE_INSTALL_PREFIX=/usr -DCC_OUTPUT_DIR=$CWD/Output -DCC_WARNING_AS_ERROR=TRUE -DCMAKE_BUILD_TYPE=Debug
+    if [ $? -ne 0 ]
+    then
+        exit -1
+    fi
+
     echo "Build Debug with GCC"
-    cmake --build . --config Debug -- -j $CPU
+    cmake --build . -- -j $CPU
     if [ $? -ne 0 ]
     then
         exit -1
